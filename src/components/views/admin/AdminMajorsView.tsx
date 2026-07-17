@@ -15,7 +15,7 @@ export const AdminMajorsView: React.FC = () => {
 
   const [newMajor, setNewMajor] = useState<Partial<Major>>({
     name: '',
-    institution_id: 1, 
+    institution_id: 101, 
     cluster: 'Saintek',
     passing_grade_total: 650
   });
@@ -58,14 +58,27 @@ export const AdminMajorsView: React.FC = () => {
         throw new Error('File Excel kosong');
       }
 
+      const defaultInstitution = state.majors.length > 0 
+        ? state.majors[0].institution_id 
+        : (state.institutions?.[0]?.id || 101);
+
+      const missingInstitution = jsonData.filter(row => {
+        const iid = row.institution_id || row.id_kampus;
+        return iid && !state.institutions?.some((inst: any) => inst.id === Number(iid));
+      });
+      if (missingInstitution.length > 0) {
+        const badIds = [...new Set(missingInstitution.map((r: any) => r.institution_id || r.id_kampus))];
+        throw new Error(`institution_id tidak ditemukan: ${badIds.join(', ')}. Pastikan ID kampus sesuai.`);
+      }
+
       const majorsToInsert = jsonData.map(row => ({
-        institution_id: row.institution_id || row.id_kampus || 1,
+        institution_id: Number(row.institution_id || row.id_kampus) || defaultInstitution,
         name: row.name || row.nama_prodi,
         cluster: row.cluster || row.rumpun || 'Campuran',
         passing_grade_total: parseFloat(row.passing_grade_total || row.passing_grade) || 600
       }));
 
-      const { error } = await supabase.from('majors').upsert(majorsToInsert);
+      const { error } = await supabase.from('majors').insert(majorsToInsert);
       if (error) throw new Error(error.message);
 
       await appStore.fetchMasterData();

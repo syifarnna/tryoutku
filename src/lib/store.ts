@@ -435,15 +435,20 @@ class AppStore {
   }
 
   public async addMajor(major: Major) {
-    this.state.majors = [major, ...this.state.majors];
-    this.notify();
-    try { await supabase.from('majors').insert(major); } catch (e) {}
+    const { id, ...majorWithoutId } = major as any;
+    const { data, error } = await supabase.from('majors').insert(majorWithoutId).select().single();
+    if (!error && data) {
+      this.state.majors = [data, ...this.state.majors];
+      this.notify();
+    }
   }
 
   public async deleteMajor(id: number) {
-    this.state.majors = this.state.majors.filter(m => m.id !== id);
-    this.notify();
-    try { await supabase.from('majors').delete().eq('id', id); } catch (e) {}
+    const { error } = await supabase.from('majors').delete().eq('id', id);
+    if (!error) {
+      this.state.majors = this.state.majors.filter(m => m.id !== id);
+      this.notify();
+    }
   }
 
   public async addTutor(tutor: TutoringCenter) {
