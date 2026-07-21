@@ -30,6 +30,7 @@ import { AdminMajorsView } from './components/views/admin/AdminMajorsView';
 import { AdminTutorsView } from './components/views/admin/AdminTutorsView';
 import { AdminResultsView } from './components/views/admin/AdminResultsView';
 import { AdminUsersView } from './components/views/admin/AdminUsersView';
+import { TooltipProvider } from './components/ui/tooltip';
 
 export default function App() {
   const state = useAppState();
@@ -68,10 +69,10 @@ export default function App() {
 
   if (!state.isLoggedIn) {
     return (
-      <>
+      <TooltipProvider>
         <AuthView />
         <SupabaseSqlModal isOpen={isSqlModalOpen} onClose={() => setIsSqlModalOpen(false)} />
-      </>
+      </TooltipProvider>
     );
   }
 
@@ -149,7 +150,7 @@ export default function App() {
       case 'supabase_cfg':
         if (state.profile.role !== 'admin') {
           return (
-            <div className="p-8 text-center bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] space-y-4 max-w-lg mx-auto mt-12 shadow-sm">
+            <div className="p-8 text-center bg-card dark:bg-card rounded-2xl border border-border space-y-4 max-w-lg mx-auto mt-12 shadow-sm">
               <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-xl">
                 🔒
               </div>
@@ -157,7 +158,7 @@ export default function App() {
               <p className="text-xs text-slate-500 dark:text-[#777] leading-relaxed">
                 Akun Anda bertindak sebagai <span className="font-bold text-indigo-600 dark:text-indigo-400">Peserta Tryout</span>. Hak pengubahan skema SQL, eksekusi DDL, maupun konfigurasi koneksi Live Supabase dibatasi hanya untuk Administrator.
               </p>
-              <button onClick={() => setActiveTab('dashboard')} className="px-5 py-2.5 bg-[#FF6B6B] text-white text-xs font-bold rounded-xl shadow-md hover:bg-[#E85D5D] transition-all cursor-pointer">
+              <button onClick={() => setActiveTab('dashboard')} className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-md hover:bg-primary/90 transition-all cursor-pointer">
                 Kembali ke Dashboard
               </button>
             </div>
@@ -170,6 +171,7 @@ export default function App() {
   };
 
   return (
+    <TooltipProvider>
     <div className={`min-h-screen ${isDarkMode ? 'dark bg-[#000000] text-slate-200' : 'bg-[#FAFAFC] text-slate-700'} font-sans selection:bg-[#FF6B6B] selection:text-white flex transition-colors duration-200`}>
       
       {/* Sneat Admin Sidebar */}
@@ -223,6 +225,7 @@ export default function App() {
       />
 
     </div>
+    </TooltipProvider>
   );
 }
 

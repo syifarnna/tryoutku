@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Award, Check, Compass, Plus, Sparkles, Target, TrendingUp, ShieldCheck } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
+import { cn } from '../../lib/utils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 
 interface RecomAlternativesViewProps {
   setActiveTab: (tab: string) => void;
@@ -26,10 +30,10 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
       {/* Header Info */}
       <div className="p-8 rounded-3xl bg-linear-to-r from-[#1A0F2E] to-[#1D1A3E] text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+          <Badge className="bg-white/20 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
             <Compass className="w-3.5 h-3.5 text-amber-300" />
             <span>Fitur Inti: Kalkulator Peluang Lolos Alternatif</span>
-          </div>
+          </Badge>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Rekomendasi Institut Alternatif Sesuai Skor Anda
           </h2>
@@ -44,16 +48,15 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
 
       {/* Alternatives Grid */}
       {summary.alternative_majors.length === 0 ? (
-        <div className="p-8 text-center bg-white dark:bg-[#000000] rounded-3xl border border-slate-100 dark:border-[#141414] shadow-sm">
+        <Card className="p-8 text-center ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-sm gap-0">
           <p className="text-slate-500 dark:text-[#777]">Belum ada alternatif prodi dengan passing grade di bawah skor Anda saat ini ({summary.latest_result.total_score}). Terus tingkatkan skor tryout Anda!</p>
-        </div>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {summary.alternative_majors.map((altMajor) => {
             const isAlreadyTarget = state.targetMajorIds.includes(altMajor.id);
             const isRecentlyAdded = addedIds.includes(altMajor.id);
 
-            // Peluang badge color
             let chanceColor = 'bg-emerald-500 text-white';
             let chanceLabel = 'Sangat Aman';
             if (altMajor.chance_percentage < 70) {
@@ -65,15 +68,15 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
             }
 
             return (
-              <div key={altMajor.id} className="p-6 rounded-3xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex flex-col justify-between hover:shadow-md transition-all group">
+              <Card key={altMajor.id} className="p-6 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex flex-col justify-between hover:shadow-md transition-all group gap-0">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#000000] text-slate-600 dark:text-slate-300">
+                    <Badge variant="outline" className="text-[10px] font-bold h-auto px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#000000] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C]">
                       {altMajor.cluster}
-                    </span>
-                    <span className={`text-xs font-black px-3 py-1 rounded-full shadow-xs ${chanceColor}`}>
+                    </Badge>
+                    <Badge className={cn("text-xs font-black h-auto px-3 py-1 rounded-full shadow-xs", chanceColor)}>
                       {altMajor.chance_percentage}% {chanceLabel}
-                    </span>
+                    </Badge>
                   </div>
 
                   <div>
@@ -90,7 +93,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
                     </div>
                     <div className="text-right">
                       <span className="text-slate-400 block text-[10px]">Surplus Skor Anda:</span>
-                      <span className={`font-black ${altMajor.gap_diff >= 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                      <span className={cn("font-black", altMajor.gap_diff >= 0 ? 'text-emerald-500' : 'text-amber-500')}>
                         {altMajor.gap_diff >= 0 ? '+' : ''}{altMajor.gap_diff} pts
                       </span>
                     </div>
@@ -98,10 +101,15 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
                 </div>
 
                 <div className="pt-6 mt-4 border-t border-slate-100 dark:border-[#141414]/80">
-                  <button
+                  <Button
                     onClick={() => !isAlreadyTarget && handleAddTarget(altMajor.id)}
                     disabled={isAlreadyTarget || isRecentlyAdded}
-                    className={`w-full py-3 px-4 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${isAlreadyTarget || isRecentlyAdded ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200' : 'bg-[#FF6B6B] text-white hover:bg-[#E85D5D] shadow-sm'}`}
+                    className={cn(
+                      "w-full py-3 px-4 h-auto rounded-2xl text-xs font-bold gap-2",
+                      (isAlreadyTarget || isRecentlyAdded)
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 hover:bg-emerald-50'
+                        : 'bg-[#FF6B6B] text-white hover:bg-[#E85D5D] shadow-sm'
+                    )}
                   >
                     {isAlreadyTarget || isRecentlyAdded ? (
                       <>
@@ -114,9 +122,9 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
                         <span>+ Jadikan Target Cadangan</span>
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>

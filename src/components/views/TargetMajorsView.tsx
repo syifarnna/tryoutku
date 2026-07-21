@@ -2,6 +2,12 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Search, Target, Trash2 } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
 import { supabase } from '../../lib/supabaseClient';
+import { cn } from '../../lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 
 export const TargetMajorsView: React.FC = () => {
   const state = useAppState();
@@ -32,7 +38,6 @@ export const TargetMajorsView: React.FC = () => {
         
       if (error) {
         console.warn("Error with relation query, falling back to simple query:", error);
-        // Fallback for when the SQL Blueprint hasn't been fully applied
         const fallback = await supabase
           .from('majors')
           .select('*')
@@ -66,10 +71,8 @@ export const TargetMajorsView: React.FC = () => {
 
   const handleAddTarget = () => {
     if (selectedMajorId) {
-      // First, ensure the major is in the appStore state so other views can use it
       const majorObj = fetchedMajors.find(m => m.id === Number(selectedMajorId));
       if (majorObj) {
-        // Basic mapping to the store's Major type
         const storeMajor = {
           id: majorObj.id,
           institution_id: majorObj.institution_id,
@@ -78,7 +81,6 @@ export const TargetMajorsView: React.FC = () => {
           cluster: majorObj.cluster,
           passing_grade_total: majorObj.passing_grade_total
         };
-        // Add to store if not exists
         if (!state.majors.find(m => m.id === storeMajor.id)) {
            appStore.syncMajorToState(storeMajor);
         }
@@ -107,12 +109,12 @@ export const TargetMajorsView: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {targetMajors.map((major, idx) => (
-            <div key={major.id} className="p-5 rounded-3xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 flex flex-col justify-between relative group">
+            <Card key={major.id} className="p-5 rounded-3xl ring-0 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 flex flex-col justify-between relative group gap-0">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FF6B6B] text-white">
+                  <Badge className="text-[10px] font-black h-auto px-2.5 py-0.5 rounded-full bg-[#FF6B6B] text-white border-[#FF6B6B]">
                     Pilihan #{idx + 1}
-                  </span>
+                  </Badge>
                   <span className="text-xs font-bold text-slate-500">PG: {major.passing_grade_total}</span>
                 </div>
                 <h4 className="font-bold text-sm text-slate-800 dark:text-white leading-snug pt-1">{major.name}</h4>
@@ -120,22 +122,29 @@ export const TargetMajorsView: React.FC = () => {
               </div>
 
               <div className="pt-4 mt-4 border-t border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => appStore.setActiveTargetMajor(major.id)}
-                  className={`text-xs font-bold ${state.activeTargetMajorId === major.id ? 'text-emerald-600 underline' : 'text-slate-500 hover:text-[#FF6B6B]'}`}
+                  className={cn(
+                    "text-xs font-bold h-auto p-1",
+                    state.activeTargetMajorId === major.id ? 'text-emerald-600 underline' : 'text-slate-500 hover:text-[#FF6B6B]'
+                  )}
                 >
                   {state.activeTargetMajorId === major.id ? '✓ Analisis Aktif' : 'Set Jadi Analisis'}
-                </button>
+                </Button>
 
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => appStore.removeTargetMajor(major.id)}
-                  className="p-2 rounded-xl text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-950 transition-colors"
+                  className="text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-950"
                   title="Hapus Target"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
           ))}
           {targetMajors.length === 0 && (
             <div className="col-span-full p-8 border-2 border-dashed border-slate-200 dark:border-[#141414] rounded-3xl text-center">
@@ -146,7 +155,7 @@ export const TargetMajorsView: React.FC = () => {
       </div>
 
       {/* Add New Target Dropdowns Grid */}
-      <div className="p-6 lg:p-8 rounded-3xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs space-y-6">
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs gap-6">
         <div>
           <h3 className="font-bold text-base text-slate-800 dark:text-white">Tambah Target Institut Baru</h3>
           <p className="text-xs text-slate-400 mt-1">Pilih Kampus lalu Pilih Program Studi incaran Anda.</p>
@@ -154,12 +163,12 @@ export const TargetMajorsView: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">1. Pilih Kampus / Institut</label>
+            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">1. Pilih Kampus / Institut</Label>
             <select
               value={selectedInstitutionId}
               onChange={(e) => {
                 setSelectedInstitutionId(e.target.value);
-                setSelectedMajorId(''); // Reset major when institution changes
+                setSelectedMajorId('');
               }}
               className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-sm focus:outline-none focus:border-[#FF6B6B] dark:text-white"
             >
@@ -171,7 +180,7 @@ export const TargetMajorsView: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">2. Pilih Program Studi</label>
+            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">2. Pilih Program Studi</Label>
             {majorsError ? (
               <div className="p-3 bg-rose-50 text-rose-600 text-xs rounded-xl">Error memuat prodi: {majorsError}</div>
             ) : (
@@ -205,33 +214,32 @@ export const TargetMajorsView: React.FC = () => {
             <div>
               <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold mb-1">Informasi Prodi</p>
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1C1C1C]">
+                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C]">
                   Rumpun: {selectedMajorInfo.cluster}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1C1C1C]">
-                  Passing Grade: <span className="text-indigo-600 dark:text-indigo-400">{selectedMajorInfo.passing_grade_total}</span>
-                </span>
+                </Badge>
+                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C]">
+                  Passing Grade: <span className="text-indigo-600 dark:text-indigo-400 ml-1">{selectedMajorInfo.passing_grade_total}</span>
+                </Badge>
                 {selectedMajorInfo.passing_grades && selectedMajorInfo.passing_grades.map((pg: any) => (
-                  <span key={pg.id} className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1C1C1C]">
-                    {pg.competency_code}: <span className="text-indigo-600 dark:text-indigo-400">{pg.min_score}</span>
-                  </span>
+                  <Badge key={pg.id} variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C]">
+                    {pg.competency_code}: <span className="text-indigo-600 dark:text-indigo-400 ml-1">{pg.min_score}</span>
+                  </Badge>
                 ))}
               </div>
             </div>
             
-            <button
+            <Button
               onClick={handleAddTarget}
               disabled={!selectedMajorId}
-              className="px-5 py-2.5 rounded-xl bg-[#FF6B6B] text-white hover:bg-[#E85D5D] text-sm font-bold shrink-0 transition-all shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 h-auto rounded-xl bg-[#FF6B6B] text-white hover:bg-[#E85D5D] text-sm font-bold shrink-0 shadow-md gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah ke Target</span>
-            </button>
+            </Button>
           </div>
         )}
-      </div>
+      </Card>
 
     </div>
   );
 };
-

@@ -3,7 +3,11 @@ import { KeyRound, ShieldCheck, AlertCircle, ArrowRight, LogOut } from 'lucide-r
 import { supabase } from '../../lib/supabaseClient';
 import { appStore } from '../../lib/store';
 import Swal from 'sweetalert2';
-import { getErrorMessage } from '../../lib/utils';
+import { getErrorMessage, cn } from '../../lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 
 export const ChangePasswordView: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
@@ -29,7 +33,6 @@ export const ChangePasswordView: React.FC = () => {
       const state = appStore.getState();
       const userId = state.profile.id;
 
-      // 1. Update auth user password
       const { error: passErr } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -38,7 +41,6 @@ export const ChangePasswordView: React.FC = () => {
         throw new Error(`Gagal mengubah password: ${getErrorMessage(passErr)}`);
       }
 
-      // 2. Update profiles table flag
       const { error: flagErr } = await supabase
         .from('profiles')
         .update({ must_change_password: false })
@@ -64,7 +66,7 @@ export const ChangePasswordView: React.FC = () => {
   if (success) {
     return (
       <div className="pt-8 animate-in fade-in zoom-in-95 duration-500 max-w-xl mx-auto px-4">
-        <div className="bg-white dark:bg-[#000000] rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-[#141414] text-center space-y-4">
+        <Card className="rounded-3xl p-8 shadow-xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] text-center gap-0">
           <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
             <ShieldCheck className="w-8 h-8" />
           </div>
@@ -72,7 +74,7 @@ export const ChangePasswordView: React.FC = () => {
           <p className="text-sm text-slate-500 dark:text-[#777]">
             Password Anda telah berhasil diperbarui. Mengalihkan Anda ke Dashboard...
           </p>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -91,7 +93,7 @@ export const ChangePasswordView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#000000] rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-[#141414]">
+      <Card className="rounded-3xl p-8 shadow-xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] gap-0">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
@@ -99,50 +101,55 @@ export const ChangePasswordView: React.FC = () => {
             </div>
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Buat Password Baru</h3>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => appStore.logout()}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:text-[#777] dark:hover:text-slate-200 transition-colors"
+            className="gap-2 text-slate-500 hover:text-slate-700 dark:text-[#777] dark:hover:text-slate-200"
           >
             <LogOut className="w-4 h-4" />
             Logout
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password Baru</label>
-            <input
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Password Baru</Label>
+            <Input
               type="password"
               required
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Minimal 8 karakter"
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B] focus:ring-2 focus:ring-[#FF6B6B]/20 transition-all"
+              className="h-10 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B] focus:ring-[#FF6B6B]/20"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi Password Baru</label>
-            <input
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Konfirmasi Password Baru</Label>
+            <Input
               type="password"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Ulangi password baru"
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B] focus:ring-2 focus:ring-[#FF6B6B]/20 transition-all"
+              className="h-10 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B] focus:ring-[#FF6B6B]/20"
             />
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-[#FF6B6B] hover:bg-[#E85D5D] disabled:opacity-70 text-white text-sm font-bold shadow-lg shadow-[#FF6B6B]/30 transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
+            className={cn(
+              "w-full py-3.5 h-auto rounded-2xl text-sm font-bold shadow-lg shadow-[#FF6B6B]/30 mt-4 cursor-pointer",
+              "bg-[#FF6B6B] hover:bg-[#E85D5D] text-white disabled:opacity-70"
+            )}
           >
             <span>{loading ? 'Menyimpan...' : 'Simpan & Lanjutkan'}</span>
             {!loading && <ArrowRight className="w-4 h-4" />}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 };

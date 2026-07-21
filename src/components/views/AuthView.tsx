@@ -3,7 +3,13 @@ import { ArrowRight, Check, GraduationCap, Lock, Mail, ShieldCheck, Sparkles, Us
 import { supabase } from '../../lib/supabaseClient';
 import { appStore } from '../../lib/store';
 import Swal from 'sweetalert2';
-import { getErrorMessage } from '../../lib/utils';
+import { getErrorMessage, cn } from '../../lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const AuthView: React.FC = () => {
   const [mode, setMode] = useState<'login' | 'register' | 'reset'>('login');
@@ -147,245 +153,238 @@ export const AuthView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#FAFAFC] dark:bg-[#000000]">
-      <div className="max-w-md w-full bg-white dark:bg-[#000000] rounded-3xl p-8 shadow-2xl border border-slate-100 dark:border-[#141414] animate-in zoom-in-95 duration-200">
-        
-        {/* Brand */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF6B6B] flex items-center justify-center text-white shadow-lg shadow-[#FF6B6B]/40">
-            <GraduationCap className="w-6 h-6" />
-          </div>
-          <span className="font-extrabold text-2xl tracking-tight text-slate-800 dark:text-white">
-            Tryout<span className="text-[#FF6B6B]">Ku</span>
-          </span>
-        </div>
-
-        {/* Title */}
-        <div className="text-center mb-6 space-y-1">
-          <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">
-            {mode === 'login' && 'Portal Masuk Siswa 🎓'}
-            {mode === 'register' && 'Daftar Tryout Simulasi 🚀'}
-            {mode === 'reset' && 'Atur Ulang Kata Sandi 🔒'}
-          </h3>
-          <p className="text-xs text-slate-400">
-            {mode === 'login' && 'Silakan masuk menggunakan kredensial akun Supabase Anda'}
-            {mode === 'register' && 'Hanya 1 role: Peserta Siswa Tryout PTN'}
-            {mode === 'reset' && 'Kami akan mengirimkan tautan reset password ke email Anda'}
-          </p>
-        </div>
-
-        {/* --- SQL CONFIG BUTTON --- */}
-        <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-100 dark:border-indigo-800 flex flex-col gap-2">
-          <p className="text-xs text-indigo-800 dark:text-indigo-300">
-            <strong>Info Admin / Kesalahan Login:</strong> Jika Anda belum menyalin blueprint SQL ke Supabase, atau tidak bisa login, klik tombol di bawah ini untuk melihat SQL Blueprint dan menjalankannya di Supabase.
-          </p>
-          <button
-            onClick={() => {
-              // Dispatch custom event that App.tsx can listen to, or simply export the modal logic.
-              // Wait, we don't have the state here. Let's just create a custom event.
-              window.dispatchEvent(new CustomEvent('open-sql-modal'));
-            }}
-            className="w-full py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors"
-          >
-            Buka Konfigurasi SQL Supabase
-          </button>
-        </div>
-
-        {resetSent && (
-          <div className="p-4 mb-6 rounded-2xl bg-emerald-50 text-emerald-700 text-xs text-center font-semibold">
-            ✓ Tautan pemulihan kata sandi telah dikirim ke {email}!
-          </div>
-        )}
-
-        {!isSupabaseConfigured && (
-          <div className="p-4 mb-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs text-center font-semibold flex flex-col items-center justify-center gap-2">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
-              <span>Supabase Belum Dikonfigurasi</span>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <Card className="max-w-md w-full shadow-2xl rounded-3xl animate-in zoom-in-95 duration-200">
+        <CardContent className="p-8">
+          
+          {/* Brand */}
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/40">
+              <GraduationCap className="w-6 h-6" />
             </div>
-            <p className="text-[10px] font-normal text-amber-700">
-              Anda belum memasukkan <strong>Supabase URL</strong> dan <strong>Anon Key</strong>. Silakan klik tombol "Buka Konfigurasi SQL Supabase" di bawah untuk mengatur koneksi Anda.
+            <span className="font-extrabold text-2xl tracking-tight text-slate-800 dark:text-white">
+              Tryout<span className="text-primary">Ku</span>
+            </span>
+          </div>
+
+          {/* Title */}
+          <div className="text-center mb-6 space-y-1">
+            <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">
+              {mode === 'login' && 'Portal Masuk Siswa 🎓'}
+              {mode === 'register' && 'Daftar Tryout Simulasi 🚀'}
+              {mode === 'reset' && 'Atur Ulang Kata Sandi 🔒'}
+            </h3>
+            <p className="text-xs text-slate-400">
+              {mode === 'login' && 'Silakan masuk menggunakan kredensial akun Supabase Anda'}
+              {mode === 'register' && 'Hanya 1 role: Peserta Siswa Tryout PTN'}
+              {mode === 'reset' && 'Kami akan mengirimkan tautan reset password ke email Anda'}
             </p>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'login' && (
-            <div className="flex bg-slate-100 dark:bg-[#000000] rounded-xl p-1 mb-4">
-              <button
-                type="button"
-                onClick={() => setLoginMethod('email')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${loginMethod === 'email' ? 'bg-white dark:bg-[#000000] text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                Gunakan Email
-              </button>
-              <button
-                type="button"
-                onClick={() => setLoginMethod('nisn')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${loginMethod === 'nisn' ? 'bg-white dark:bg-[#000000] text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                Gunakan NISN
-              </button>
+          {/* --- SQL CONFIG BUTTON --- */}
+          <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-100 dark:border-indigo-800 flex flex-col gap-2">
+            <p className="text-xs text-indigo-800 dark:text-indigo-300">
+              <strong>Info Admin / Kesalahan Login:</strong> Jika Anda belum menyalin blueprint SQL ke Supabase, atau tidak bisa login, klik tombol di bawah ini untuk melihat SQL Blueprint dan menjalankannya di Supabase.
+            </p>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('open-sql-modal'));
+              }}
+              className="w-full bg-indigo-600 text-white hover:bg-indigo-700 text-xs font-bold"
+            >
+              Buka Konfigurasi SQL Supabase
+            </Button>
+          </div>
+
+          {resetSent && (
+            <div className="p-4 mb-6 rounded-2xl bg-emerald-50 text-emerald-700 text-xs text-center font-semibold">
+              ✓ Tautan pemulihan kata sandi telah dikirim ke {email}!
             </div>
           )}
 
-          {mode === 'register' && (
-            <>
+          {!isSupabaseConfigured && (
+            <div className="p-4 mb-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs text-center font-semibold flex flex-col items-center justify-center gap-2">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600" />
+                <span>Supabase Belum Dikonfigurasi</span>
+              </div>
+              <p className="text-[10px] font-normal text-amber-700">
+                Anda belum memasukkan <strong>Supabase URL</strong> dan <strong>Anon Key</strong>. Silakan klik tombol "Buka Konfigurasi SQL Supabase" di bawah untuk mengatur koneksi Anda.
+              </p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'login' && (
+              <Tabs value={loginMethod} onValueChange={(v) => setLoginMethod(v as 'email' | 'nisn')}>
+                <TabsList className="w-full">
+                  <TabsTrigger value="email" className="flex-1">Gunakan Email</TabsTrigger>
+                  <TabsTrigger value="nisn" className="flex-1">Gunakan NISN</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+
+            {mode === 'register' && (
+              <>
+                <div>
+                  <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap Siswa</Label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Contoh: Budi Santoso"
+                      className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">NISN</Label>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      type="text"
+                      required
+                      value={nisn}
+                      onChange={(e) => setNisn(e.target.value)}
+                      placeholder="Nomor Induk Siswa Nasional"
+                      className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Asal Sekolah (SMA/MA/SMK)</Label>
+                  <div className="relative">
+                    <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      type="text"
+                      required
+                      value={school}
+                      onChange={(e) => setSchool(e.target.value)}
+                      placeholder="Contoh: SMAN 3 Bandung"
+                      className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {loginMethod === 'email' || mode !== 'login' ? (
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap Siswa</label>
+                <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Email Siswa</Label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="email"
                     required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Contoh: Budi Santoso"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B]"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="email@sekolah.sch.id"
+                    className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs"
                   />
                 </div>
               </div>
-
+            ) : (
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">NISN</label>
+                <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">NISN</Label>
                 <div className="relative">
                   <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
+                  <Input
                     type="text"
                     required
                     value={nisn}
                     onChange={(e) => setNisn(e.target.value)}
                     placeholder="Nomor Induk Siswa Nasional"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-[#FF6B6B]"
+                    className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs font-mono"
                   />
                 </div>
               </div>
+            )}
 
+            {mode !== 'reset' && (
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Asal Sekolah (SMA/MA/SMK)</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Kata Sandi (Password)</Label>
+                  {mode === 'login' && (
+                    <Button
+                      type="button"
+                      variant="link"
+                      onClick={() => switchMode('reset')}
+                      className="text-[11px] font-bold p-0 h-auto text-primary hover:underline cursor-pointer"
+                    >
+                      Lupa Password?
+                    </Button>
+                  )}
+                </div>
                 <div className="relative">
-                  <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="password"
                     required
-                    value={school}
-                    onChange={(e) => setSchool(e.target.value)}
-                    placeholder="Contoh: SMAN 3 Bandung"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B]"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs"
                   />
                 </div>
               </div>
-            </>
-          )}
+            )}
 
-          {loginMethod === 'email' || mode !== 'login' ? (
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Email Siswa</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            {mode === 'login' && (
+              <Label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600 dark:text-slate-300 pt-1">
                 <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@sekolah.sch.id"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B]"
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="w-4 h-4 rounded text-primary focus:ring-primary"
                 />
-              </div>
-            </div>
-          ) : (
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">NISN</label>
-              <div className="relative">
-                <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  required
-                  value={nisn}
-                  onChange={(e) => setNisn(e.target.value)}
-                  placeholder="Nomor Induk Siswa Nasional"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-[#FF6B6B]"
-                />
-              </div>
-            </div>
-          )}
+                <span>Remember Login (Ingat Sesi Saya)</span>
+              </Label>
+            )}
 
-          {mode !== 'reset' && (
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Kata Sandi (Password)</label>
-                {mode === 'login' && (
-                  <button
-                    type="button"
-                    onClick={() => switchMode('reset')}
-                    className="text-[11px] font-bold text-[#FF6B6B] hover:underline cursor-pointer"
-                  >
-                    Lupa Password?
-                  </button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-2xl text-xs font-extrabold shadow-lg shadow-primary/30 transition-all gap-2 mt-2 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <span>
+                {loading ? 'Memproses...' : (
+                  mode === 'login' ? 'Masuk ke Dashboard' :
+                  mode === 'register' ? 'Daftar Akun Siswa Sekarang' :
+                  'Kirim Link Reset Password'
                 )}
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B]"
-                />
-              </div>
-            </div>
-          )}
+              </span>
+              {!loading && <ArrowRight className="w-4 h-4" />}
+            </Button>
+          </form>
 
-          {mode === 'login' && (
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600 dark:text-slate-300 pt-1">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                className="w-4 h-4 rounded text-[#FF6B6B] focus:ring-[#FF6B6B]"
-              />
-              <span>Remember Login (Ingat Sesi Saya)</span>
-            </label>
-          )}
+          {/* Footer switcher */}
+          <div className="mt-8 text-center pt-6 text-xs text-slate-500">
+            <Separator className="mb-6" />
+            {mode === 'login' ? (
+              <p>
+                Belum punya akun tryout?{' '}
+                <Button type="button" variant="link" onClick={() => switchMode('register')} className="font-bold p-0 h-auto text-primary cursor-pointer">
+                  Buat Akun Siswa
+                </Button>
+              </p>
+            ) : (
+              <p>
+                Sudah memiliki akun?{' '}
+                <Button type="button" variant="link" onClick={() => switchMode('login')} className="font-bold p-0 h-auto text-primary cursor-pointer">
+                  Masuk (Login)
+                </Button>
+              </p>
+            )}
+          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-[#FF6B6B] hover:bg-[#E85D5D] disabled:opacity-70 text-white text-xs font-extrabold shadow-lg shadow-[#FF6B6B]/30 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer disabled:cursor-not-allowed"
-          >
-            <span>
-              {loading ? 'Memproses...' : (
-                mode === 'login' ? 'Masuk ke Dashboard' :
-                mode === 'register' ? 'Daftar Akun Siswa Sekarang' :
-                'Kirim Link Reset Password'
-              )}
-            </span>
-            {!loading && <ArrowRight className="w-4 h-4" />}
-          </button>
-        </form>
-
-        {/* Footer switcher */}
-        <div className="mt-8 text-center pt-6 border-t border-slate-100 dark:border-[#141414] text-xs text-slate-500">
-          {mode === 'login' ? (
-            <p>
-              Belum punya akun tryout?{' '}
-              <button type="button" onClick={() => switchMode('register')} className="font-bold text-[#FF6B6B] hover:underline cursor-pointer">
-                Buat Akun Siswa
-              </button>
-            </p>
-          ) : (
-            <p>
-              Sudah memiliki akun?{' '}
-              <button type="button" onClick={() => switchMode('login')} className="font-bold text-[#FF6B6B] hover:underline cursor-pointer">
-                Masuk (Login)
-              </button>
-            </p>
-          )}
-        </div>
-
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

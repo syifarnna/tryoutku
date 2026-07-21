@@ -2,6 +2,9 @@ import React from 'react';
 import { BarChart3, Info, Sparkles, TrendingUp } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import { useAppState } from '../../lib/store';
+import { cn } from '../../lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export const AnalysisCompView: React.FC = () => {
   const state = useAppState();
@@ -13,7 +16,7 @@ export const AnalysisCompView: React.FC = () => {
       code: comp.code,
       name: comp.name,
       skor,
-      nasional: 550 // benchmark rata-rata nasional
+      nasional: 550
     };
   });
 
@@ -28,8 +31,8 @@ export const AnalysisCompView: React.FC = () => {
       </div>
 
       {/* Bar Chart */}
-      <div className="p-6 lg:p-8 rounded-3xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs space-y-6">
-        <h3 className="font-bold text-base text-slate-800 dark:text-white">Skor Subtes Terakhir vs Rata-rata Nasional</h3>
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs gap-6">
+        <CardTitle className="text-base font-bold text-slate-800 dark:text-white">Skor Subtes Terakhir vs Rata-rata Nasional</CardTitle>
         
         <div className="w-full h-80 pt-4">
           <ResponsiveContainer width="100%" height="100%">
@@ -47,17 +50,20 @@ export const AnalysisCompView: React.FC = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Card>
 
       {/* Competencies Breakdown Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {state.competencies.map(comp => {
           const skor = latestResult?.scores[comp.code] || 0;
           return (
-            <div key={comp.code} className="p-5 rounded-2xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-2xs flex items-start gap-4">
-              <span className="w-12 h-12 rounded-2xl bg-[#FF6B6B]/10 text-[#FF6B6B] font-black text-sm flex items-center justify-center shrink-0 mt-0.5">
+            <Card key={comp.code} className="p-5 rounded-2xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-2xs flex items-start gap-4 gap-0">
+              <Badge 
+                variant="outline" 
+                className="w-12 h-12 rounded-2xl bg-[#FF6B6B]/10 text-[#FF6B6B] font-black text-sm flex items-center justify-center shrink-0 mt-0.5 border-[#FF6B6B]/20 px-0"
+              >
                 {comp.code}
-              </span>
+              </Badge>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-sm text-slate-800 dark:text-white truncate">{comp.name}</h4>
@@ -65,7 +71,7 @@ export const AnalysisCompView: React.FC = () => {
                 </div>
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">{comp.description}</p>
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>

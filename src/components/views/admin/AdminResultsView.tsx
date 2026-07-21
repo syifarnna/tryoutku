@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { LeaderboardEntry } from '../../../types';
-import { getErrorMessage } from '../../../lib/utils';
+import { getErrorMessage, cn } from '../../../lib/utils';
 import { Award, TrendingUp, Crown, Loader2, AlertCircle, Medal, User, School } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const TRYOUT_TYPES = ['Semua', 'UTBK SNBT', 'Ujian Mandiri', 'Ujian Kedinasan'] as const;
 
 const TYPE_COLORS: Record<string, string> = {
-  'Semua': 'bg-[#FF6B6B]',
+  'Semua': 'bg-primary',
   'UTBK SNBT': 'bg-[#06b6d4]',
   'Ujian Mandiri': 'bg-[#f97316]',
   'Ujian Kedinasan': 'bg-[#2DD4BF]',
@@ -112,7 +116,7 @@ export const AdminResultsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <Award className="w-6 h-6 text-[#FF6B6B]" />
+            <Award className="w-6 h-6 text-primary" />
             Leaderboard Nasional
           </h2>
           <p className="text-slate-500 dark:text-[#777] mt-1">
@@ -120,48 +124,52 @@ export const AdminResultsView: React.FC = () => {
             {!loading && <span className="ml-2">({entries.length} peserta)</span>}
           </p>
         </div>
-        <button
+        <Button
+          variant="outline"
           onClick={() => fetchLeaderboard(selectedType)}
           disabled={loading}
-          className="px-4 py-2 bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-[#1C1C1C] transition-colors shadow-sm disabled:opacity-60"
+          className="gap-2"
         >
-          <TrendingUp className={`w-4 h-4 ${loading ? 'animate-pulse' : ''}`} />
+          <TrendingUp className={cn('w-4 h-4', loading && 'animate-pulse')} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {TRYOUT_TYPES.map(t => (
-          <button
+          <Button
             key={t}
+            variant={selectedType === t ? 'default' : 'outline'}
             onClick={() => handleTypeChange(t)}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-              selectedType === t
-                ? `${TYPE_COLORS[t]} text-white shadow-md scale-105`
-                : 'bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1C1C1C]'
-            }`}
+            className={cn(
+              selectedType === t && `${TYPE_COLORS[t]} text-white shadow-md scale-105 hover:opacity-90`
+            )}
           >
             {t}
-          </button>
+          </Button>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[#FF6B6B] text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
-          <div className="relative z-10">
+        <Card className="bg-primary text-white ring-0 border-0 shadow-md relative overflow-hidden">
+          <CardContent className="p-6 relative z-10">
             <p className="text-indigo-100 text-sm font-semibold mb-1">Total Peserta</p>
             <h3 className="text-3xl font-bold">{entries.length} Siswa</h3>
-          </div>
+          </CardContent>
           <Award className="absolute right-[-20px] bottom-[-20px] w-32 h-32 text-white/10" />
-        </div>
-        <div className="bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] rounded-2xl p-6 shadow-sm">
-          <p className="text-slate-500 dark:text-[#777] text-sm font-semibold mb-1">Nilai Tertinggi</p>
-          <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{topScore.toFixed(1)}</h3>
-        </div>
-        <div className="bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] rounded-2xl p-6 shadow-sm">
-          <p className="text-slate-500 dark:text-[#777] text-sm font-semibold mb-1">Rata-rata Nasional</p>
-          <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{avgScore.toFixed(1)}</h3>
-        </div>
+        </Card>
+        <Card className="bg-white dark:bg-[#000000] ring-0 border border-slate-200 dark:border-[#141414] shadow-sm">
+          <CardContent className="p-6">
+            <p className="text-slate-500 dark:text-[#777] text-sm font-semibold mb-1">Nilai Tertinggi</p>
+            <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{topScore.toFixed(1)}</h3>
+          </CardContent>
+        </Card>
+        <Card className="bg-white dark:bg-[#000000] ring-0 border border-slate-200 dark:border-[#141414] shadow-sm">
+          <CardContent className="p-6">
+            <p className="text-slate-500 dark:text-[#777] text-sm font-semibold mb-1">Rata-rata Nasional</p>
+            <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{avgScore.toFixed(1)}</h3>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] overflow-hidden shadow-sm">
@@ -171,73 +179,74 @@ export const AdminResultsView: React.FC = () => {
             Peringkat Skor Terbaik Peserta
           </h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 dark:bg-[#000000] border-b border-slate-200 dark:border-[#141414] text-xs uppercase tracking-wider text-slate-500 dark:text-[#777]">
-                <th className="px-6 py-4 font-semibold text-center w-16">Rank</th>
-                <th className="px-6 py-4 font-semibold">Nama Peserta</th>
-                <th className="px-6 py-4 font-semibold">Sekolah</th>
-                <th className="px-6 py-4 font-semibold">NISN</th>
-                <th className="px-6 py-4 font-semibold text-center">Predikat</th>
-                <th className="px-6 py-4 font-semibold text-right">Skor Terbaik</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-slate-400">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Memuat data leaderboard...
-                  </td>
-                </tr>
-              ) : entries.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center">
-                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                    <p className="text-slate-500 dark:text-[#777]">Belum ada hasil tryout dari peserta.</p>
-                  </td>
-                </tr>
-              ) : (
-                entries.map((e, i) => (
-                  <tr key={e.user_id} className="hover:bg-slate-50/50 dark:hover:bg-[#232435]/50 transition-colors">
-                    <td className="px-6 py-4 text-center">{getRankDisplay(i)}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#FFE0E0] dark:bg-indigo-900/30 flex items-center justify-center text-[#FF6B6B] font-bold shrink-0">
-                          {e.profiles?.full_name?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-800 dark:text-white text-sm">
-                            {e.profiles?.full_name || 'Tidak dikenal'}
-                          </div>
-                          <div className="text-[11px] text-slate-400">{e.profiles?.email || ''}</div>
-                        </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-slate-50 dark:bg-[#000000] hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-[#141414]">
+              <TableHead className="px-6 py-4 font-semibold text-center w-16">Rank</TableHead>
+              <TableHead className="px-6 py-4 font-semibold">Nama Peserta</TableHead>
+              <TableHead className="px-6 py-4 font-semibold">Sekolah</TableHead>
+              <TableHead className="px-6 py-4 font-semibold">NISN</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-center">Predikat</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-right">Skor Terbaik</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="px-6 py-16 text-center text-slate-400">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                  Memuat data leaderboard...
+                </TableCell>
+              </TableRow>
+            ) : entries.length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="px-6 py-16 text-center">
+                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                  <p className="text-slate-500 dark:text-[#777]">Belum ada hasil tryout dari peserta.</p>
+                </TableCell>
+              </TableRow>
+            ) : (
+              entries.map((e, i) => (
+                <TableRow key={e.user_id} className="hover:bg-slate-50/50 dark:hover:bg-[#232435]/50">
+                  <TableCell className="px-6 py-4 text-center">{getRankDisplay(i)}</TableCell>
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-indigo-900/30 flex items-center justify-center text-primary font-bold shrink-0">
+                        {e.profiles?.full_name?.charAt(0).toUpperCase() || 'U'}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
-                        <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        {e.profiles?.school || '-'}
+                      <div>
+                        <div className="font-bold text-slate-800 dark:text-white text-sm">
+                          {e.profiles?.full_name || 'Tidak dikenal'}
+                        </div>
+                        <div className="text-[11px] text-slate-400">{e.profiles?.email || ''}</div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-xs font-mono text-slate-600 dark:text-slate-300">
-                      {e.profiles?.nisn || '-'}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold border ${getPredicateClass(e.predicate)}`}>
-                        {e.predicate}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <p className="text-lg font-bold text-[#FF6B6B]">{e.total_score.toFixed(1)}</p>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+                      <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      {e.profiles?.school || '-'}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-xs font-mono text-slate-600 dark:text-slate-300">
+                    {e.profiles?.nisn || '-'}
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <Badge 
+                      variant="outline" 
+                      className={cn('rounded-md text-[11px] font-bold h-auto py-1 px-2.5', getPredicateClass(e.predicate))}
+                    >
+                      {e.predicate}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-right">
+                    <p className="text-lg font-bold text-primary">{e.total_score.toFixed(1)}</p>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

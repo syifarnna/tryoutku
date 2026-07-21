@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Copy, Check, Database, Terminal, ShieldCheck, Key, ExternalLink, Sparkles, Server, Activity, AlertCircle, Save } from 'lucide-react';
 import { SUPABASE_SQL_BLUEPRINT } from '../../lib/mockData';
 import Swal from 'sweetalert2';
+import { cn } from '../../lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const SupabaseSqlView: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'ddl' | 'seed'>('ddl');
+  const [activeSubTab, setActiveSubTab] = useState('ddl');
   const [copied, setCopied] = useState(false);
   const [url, setUrl] = useState('');
   const [anonKey, setAnonKey] = useState('');
@@ -101,8 +107,8 @@ ON CONFLICT (id) DO NOTHING;
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] p-6 shadow-sm">
-            <h3 className="font-bold text-slate-800 dark:text-white mb-4">Panduan Implementasi Supabase</h3>
+          <Card className="rounded-2xl ring-0 bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] p-6 shadow-sm gap-4">
+            <CardTitle className="font-bold text-slate-800 dark:text-white">Panduan Implementasi Supabase</CardTitle>
             <ol className="space-y-4 text-sm text-slate-600 dark:text-[#777] list-decimal pl-4">
               <li>Buka dashboard Supabase.com dan buat proyek baru</li>
               <li>Buka menu <strong className="text-slate-800 dark:text-slate-200">SQL Editor</strong> di sidebar kiri</li>
@@ -112,7 +118,7 @@ ON CONFLICT (id) DO NOTHING;
               <li>Salin <strong>URL</strong> & <strong>Anon Key</strong> ke file <code>.env</code> di root folder project ini.</li>
             </ol>
             
-            <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl space-y-3">
               <h4 className="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-2 mb-2 text-sm">
                 <AlertCircle className="w-4 h-4" />
                 Input Koneksi (Browser Only)
@@ -122,74 +128,91 @@ ON CONFLICT (id) DO NOTHING;
               </p>
               
               <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Supabase URL</label>
-                  <input
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Supabase URL</Label>
+                  <Input
                     type="text"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://xyzcompany.supabase.co"
-                    className="w-full px-3 py-2 bg-white dark:bg-[#1a1b26] border border-slate-200 dark:border-[#1C1C1C] rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B]"
+                    className="h-auto px-3 py-2 bg-white dark:bg-[#1a1b26] border-slate-200 dark:border-[#1C1C1C] rounded-lg text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B]"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Anon Key</label>
-                  <input
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Anon Key</Label>
+                  <Input
                     type="password"
                     value={anonKey}
                     onChange={(e) => setAnonKey(e.target.value)}
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp..."
-                    className="w-full px-3 py-2 bg-white dark:bg-[#1a1b26] border border-slate-200 dark:border-[#1C1C1C] rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B]"
+                    className="h-auto px-3 py-2 bg-white dark:bg-[#1a1b26] border-slate-200 dark:border-[#1C1C1C] rounded-lg text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B]"
                   />
                 </div>
-                <button
+                <Button
                   onClick={handleSaveCredentials}
-                  className="w-full py-2 bg-[#FF6B6B] hover:bg-[#5f61e6] text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors"
+                  className="w-full py-2 h-auto bg-[#FF6B6B] hover:bg-[#5f61e6] text-white rounded-lg text-sm font-bold gap-2"
                 >
                   <Save className="w-4 h-4" />
                   Simpan Kredensial
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
 
         <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] overflow-hidden shadow-sm flex flex-col h-full">
-            <div className="flex border-b border-slate-100 dark:border-[#141414] bg-slate-50 dark:bg-[#000000] overflow-x-auto">
-              <button
-                onClick={() => setActiveSubTab('ddl')}
-                className={`px-6 py-4 text-sm font-bold whitespace-nowrap transition-colors border-b-2 flex items-center gap-2 ${activeSubTab === 'ddl' ? 'border-[#FF6B6B] text-[#FF6B6B]' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                <Terminal className="w-4 h-4" />
-                1. Table Schema & RLS
-              </button>
-              <button
-                onClick={() => setActiveSubTab('seed')}
-                className={`px-6 py-4 text-sm font-bold whitespace-nowrap transition-colors border-b-2 flex items-center gap-2 ${activeSubTab === 'seed' ? 'border-[#FF6B6B] text-[#FF6B6B]' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                <Database className="w-4 h-4" />
-                2. Master Seed Data
-              </button>
-            </div>
+          <Card className="rounded-2xl ring-0 bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] overflow-hidden shadow-sm flex flex-col h-full gap-0">
+            <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
+              <TabsList className="border-b border-slate-100 dark:border-[#141414] bg-slate-50 dark:bg-[#000000] rounded-none p-0 h-auto w-full justify-start">
+                <TabsTrigger value="ddl" className="px-6 py-4 text-sm font-bold whitespace-nowrap rounded-none data-active:border-b-2 data-active:border-[#FF6B6B] data-active:text-[#FF6B6B] data-active:bg-transparent gap-2">
+                  <Terminal className="w-4 h-4" />
+                  1. Table Schema & RLS
+                </TabsTrigger>
+                <TabsTrigger value="seed" className="px-6 py-4 text-sm font-bold whitespace-nowrap rounded-none data-active:border-b-2 data-active:border-[#FF6B6B] data-active:text-[#FF6B6B] data-active:bg-transparent gap-2">
+                  <Database className="w-4 h-4" />
+                  2. Master Seed Data
+                </TabsTrigger>
+              </TabsList>
 
-            <div className="p-4 bg-slate-900 flex-1 relative min-h-[400px]">
-              <div className="absolute top-4 right-4 z-10 flex gap-2">
-                <button
-                  onClick={handleCopy}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold flex items-center gap-2 transition-colors border border-slate-700 shadow-lg"
-                >
-                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  {copied ? 'Tersalin!' : 'Copy SQL'}
-                </button>
-              </div>
-              
-              <pre className="text-emerald-400 text-xs font-mono whitespace-pre-wrap pt-10 h-[500px] overflow-y-auto w-full custom-scrollbar leading-relaxed">
-                {activeSubTab === 'ddl' && SUPABASE_SQL_BLUEPRINT}
-                {activeSubTab === 'seed' && seedSql}
-              </pre>
-            </div>
-          </div>
+              <TabsContent value="ddl" className="mt-0">
+                <div className="p-4 bg-slate-900 relative min-h-[400px]">
+                  <div className="absolute top-4 right-4 z-10 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopy}
+                      className="px-4 py-2 h-auto bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold gap-2 border border-slate-700 shadow-lg"
+                    >
+                      {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {copied ? 'Tersalin!' : 'Copy SQL'}
+                    </Button>
+                  </div>
+                  <pre className="text-emerald-400 text-xs font-mono whitespace-pre-wrap pt-10 h-[500px] overflow-y-auto w-full custom-scrollbar leading-relaxed">
+                    {SUPABASE_SQL_BLUEPRINT}
+                  </pre>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="seed" className="mt-0">
+                <div className="p-4 bg-slate-900 relative min-h-[400px]">
+                  <div className="absolute top-4 right-4 z-10 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopy}
+                      className="px-4 py-2 h-auto bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold gap-2 border border-slate-700 shadow-lg"
+                    >
+                      {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {copied ? 'Tersalin!' : 'Copy SQL'}
+                    </Button>
+                  </div>
+                  <pre className="text-emerald-400 text-xs font-mono whitespace-pre-wrap pt-10 h-[500px] overflow-y-auto w-full custom-scrollbar leading-relaxed">
+                    {seedSql}
+                  </pre>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </Card>
         </div>
       </div>
     </div>

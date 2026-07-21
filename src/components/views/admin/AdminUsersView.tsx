@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { Profile } from '../../../types';
-import { getErrorMessage } from '../../../lib/utils';
+import { getErrorMessage, cn } from '../../../lib/utils';
 import {
   Users, Search, Mail, ShieldCheck, User as UserIcon,
   RefreshCw, ChevronLeft, ChevronRight, Loader2, AlertCircle
 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const PAGE_SIZE = 20;
 
@@ -97,7 +101,7 @@ export const AdminUsersView: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <Users className="w-6 h-6 text-[#FF6B6B]" />
+            <Users className="w-6 h-6 text-primary" />
             Daftar Pengguna
           </h2>
           <p className="text-sm text-slate-500 dark:text-[#777] mt-1">
@@ -105,26 +109,27 @@ export const AdminUsersView: React.FC = () => {
             {!loading && <span className="ml-2 text-slate-400">({totalCount} total)</span>}
           </p>
         </div>
-        <button
+        <Button
+          variant="outline"
           onClick={() => fetchUsers(page)}
           disabled={loading}
-          className="px-4 py-2 bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-[#1C1C1C] transition-colors shadow-sm disabled:opacity-60"
+          className="gap-2"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] shadow-sm overflow-hidden flex flex-col">
         <div className="p-4 border-b border-slate-100 dark:border-[#141414] bg-slate-50/50 dark:bg-[#000000]/50 flex items-center">
           <div className="relative w-full max-w-md">
             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
+            <Input
               type="text"
               placeholder="Cari nama, email, atau NISN..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#1C1C1C] bg-white dark:bg-[#000000] text-sm focus:outline-none focus:border-[#FF6B6B] dark:focus:border-[#FF6B6B] transition-colors"
+              className="pl-10 h-10"
             />
           </div>
           {search && (
@@ -134,95 +139,95 @@ export const AdminUsersView: React.FC = () => {
           )}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 dark:bg-[#000000] text-slate-500 dark:text-[#777] font-medium">
-              <tr>
-                <th className="px-6 py-4">Nama Lengkap</th>
-                <th className="px-6 py-4">Kontak</th>
-                <th className="px-6 py-4">NISN</th>
-                <th className="px-6 py-4">Peran</th>
-                <th className="px-6 py-4">Terdaftar</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-slate-400">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Memuat data pengguna...
-                  </td>
-                </tr>
-              ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center">
-                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                    <p className="text-slate-500 dark:text-[#777]">
-                      {search ? 'Tidak ada pengguna yang cocok dengan pencarian.' : 'Belum ada pengguna terdaftar.'}
-                    </p>
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-[#232435]/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#FFE0E0] dark:bg-indigo-900/30 flex items-center justify-center text-[#FF6B6B] font-bold shrink-0">
-                          {user.full_name?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-800 dark:text-white">{user.full_name}</div>
-                          <div className="text-xs text-slate-500">{user.school || 'Sekolah belum diisi'}</div>
-                        </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-slate-50 dark:bg-[#000000] hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-[#141414]">
+              <TableHead className="px-6 py-4 font-semibold">Nama Lengkap</TableHead>
+              <TableHead className="px-6 py-4 font-semibold">Kontak</TableHead>
+              <TableHead className="px-6 py-4 font-semibold">NISN</TableHead>
+              <TableHead className="px-6 py-4 font-semibold">Peran</TableHead>
+              <TableHead className="px-6 py-4 font-semibold">Terdaftar</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-center">Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="px-6 py-16 text-center text-slate-400">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                  Memuat data pengguna...
+                </TableCell>
+              </TableRow>
+            ) : filteredUsers.length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="px-6 py-16 text-center">
+                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                  <p className="text-slate-500 dark:text-[#777]">
+                    {search ? 'Tidak ada pengguna yang cocok dengan pencarian.' : 'Belum ada pengguna terdaftar.'}
+                  </p>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredUsers.map((user) => (
+                <TableRow key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-[#232435]/50">
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-indigo-900/30 flex items-center justify-center text-primary font-bold shrink-0">
+                        {user.full_name?.charAt(0).toUpperCase() || 'U'}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                        <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                        <span className="truncate max-w-[180px]">{user.email}</span>
+                      <div>
+                        <div className="font-bold text-slate-800 dark:text-white">{user.full_name}</div>
+                        <div className="text-xs text-slate-500">{user.school || 'Sekolah belum diisi'}</div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300 font-mono text-xs">
-                      {user.nisn || '-'}
-                    </td>
-                    <td className="px-6 py-4">
-                      {user.role === 'admin' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-xs font-bold border border-indigo-200 dark:border-indigo-800">
-                          <ShieldCheck className="w-3 h-3" /> Admin
-                        </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                      <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="truncate max-w-[180px]">{user.email}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-slate-600 dark:text-slate-300 font-mono text-xs">
+                    {user.nisn || '-'}
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    {user.role === 'admin' ? (
+                      <Badge variant="secondary" className="gap-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-md h-auto py-1 px-2.5 text-xs font-bold">
+                        <ShieldCheck className="w-3 h-3" /> Admin
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="gap-1 bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-[#777] border-slate-200 dark:border-[#1C1C1C] rounded-md h-auto py-1 px-2.5 text-xs font-bold">
+                        <UserIcon className="w-3 h-3" /> Peserta
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-slate-500 text-xs whitespace-nowrap">
+                    {new Date(user.updated_at).toLocaleDateString('id-ID', {
+                      day: 'numeric', month: 'short', year: 'numeric'
+                    })}
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      onClick={() => toggleRole(user)}
+                      disabled={togglingId === user.id}
+                      className="font-bold"
+                    >
+                      {togglingId === user.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : user.role === 'admin' ? (
+                        'Turunkan'
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-[#777] text-xs font-bold border border-slate-200 dark:border-[#1C1C1C]">
-                          <UserIcon className="w-3 h-3" /> Peserta
-                        </span>
+                        'Jadikan Admin'
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 text-xs whitespace-nowrap">
-                      {new Date(user.updated_at).toLocaleDateString('id-ID', {
-                        day: 'numeric', month: 'short', year: 'numeric'
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => toggleRole(user)}
-                        disabled={togglingId === user.id}
-                        className="px-3 py-1.5 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-[#1C1C1C] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1C1C1C] transition-all disabled:opacity-50"
-                      >
-                        {togglingId === user.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin inline" />
-                        ) : user.role === 'admin' ? (
-                          'Turunkan'
-                        ) : (
-                          'Jadikan Admin'
-                        )}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
 
         {totalPages > 1 && !search && (
           <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-[#141414] bg-slate-50/50 dark:bg-[#000000]/50 text-sm">
@@ -230,20 +235,22 @@ export const AdminUsersView: React.FC = () => {
               Halaman {page + 1} dari {totalPages}
             </span>
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="icon-xs"
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="p-2 rounded-lg border border-slate-200 dark:border-[#1C1C1C] text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#000000] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size="icon-xs"
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
-                className="p-2 rounded-lg border border-slate-200 dark:border-[#1C1C1C] text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#000000] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         )}
