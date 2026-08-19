@@ -42,16 +42,16 @@ export const ProfileView: React.FC = () => {
   return (
     <div className="max-w-3xl space-y-8 pb-16 animate-in fade-in duration-300">
       
-      <div className="border-b border-slate-100 dark:border-[#141414] pb-4">
+      <div className="border-b border-slate-100 dark:border-border pb-4">
         <h2 className="text-xl font-bold text-slate-800 dark:text-white">Pengaturan Profil Siswa TryoutKu</h2>
         <p className="text-xs text-slate-400 mt-0.5">Kelola identitas peserta tryout dan preferensi rumpun minat jurusan</p>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card className="p-8 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs gap-8">
+        <Card className="p-8 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs gap-8">
           
           {/* Avatar Section */}
-          <div className="flex items-center gap-6 pb-6 border-b border-slate-100 dark:border-[#141414]">
+          <div className="flex items-center gap-6 pb-6 border-b border-slate-100 dark:border-border">
             <div className="relative">
               <img 
                 src={avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${name || 'User'}`} 
@@ -65,7 +65,7 @@ export const ProfileView: React.FC = () => {
                 type="url"
                 value={avatar}
                 onChange={(e) => setAvatar(e.target.value)}
-                className="h-auto px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs focus:border-[#FF6B6B]"
+                className="h-auto px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs focus:border-[#FF6B6B]"
               />
               <p className="text-[10px] text-slate-400">Gunakan tautan gambar JPG/PNG langsung</p>
             </div>
@@ -80,7 +80,7 @@ export const ProfileView: React.FC = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white font-semibold focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white font-semibold focus:border-[#FF6B6B]"
               />
             </div>
 
@@ -90,7 +90,7 @@ export const ProfileView: React.FC = () => {
                 type="text"
                 value={nisn}
                 onChange={(e) => setNisn(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white font-mono focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white font-mono focus:border-[#FF6B6B]"
               />
             </div>
 
@@ -101,7 +101,7 @@ export const ProfileView: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
               />
             </div>
 
@@ -111,7 +111,7 @@ export const ProfileView: React.FC = () => {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
               />
             </div>
 
@@ -121,14 +121,14 @@ export const ProfileView: React.FC = () => {
                 type="text"
                 value={school}
                 onChange={(e) => setSchool(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
               />
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Rumpun Minat Jurusan</Label>
               <Select value={interest} onValueChange={(v) => setInterest(v as ClusterType)}>
-                <SelectTrigger className="w-full h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs font-bold text-[#FF6B6B] focus:border-[#FF6B6B]">
+                <SelectTrigger className="w-full h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs font-bold text-[#FF6B6B] focus:border-[#FF6B6B]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -141,7 +141,7 @@ export const ProfileView: React.FC = () => {
           </div>
 
           {/* Change password */}
-          <div className="pt-4 border-t border-slate-100 dark:border-[#141414] space-y-3">
+          <div className="pt-4 border-t border-slate-100 dark:border-border space-y-3">
             <h4 className="font-bold text-xs text-slate-700 dark:text-slate-300 flex items-center gap-2">
               <Lock className="w-4 h-4 text-amber-500" />
               <span>Ubah Kata Sandi (Password) Baru</span>
@@ -151,7 +151,7 @@ export const ProfileView: React.FC = () => {
               placeholder="Ketik password baru jika ingin mengubah..."
               value={pwd}
               onChange={(e) => setPwd(e.target.value)}
-              className="max-w-md w-full h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+              className="max-w-md w-full h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
             />
           </div>
 

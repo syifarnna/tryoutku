@@ -158,13 +158,13 @@ export const AdminResultsView: React.FC = () => {
           </CardContent>
           <Award className="absolute right-[-20px] bottom-[-20px] w-32 h-32 text-white/10" />
         </Card>
-        <Card className="bg-white dark:bg-[#000000] ring-0 border border-slate-200 dark:border-[#141414] shadow-sm">
+        <Card className="bg-white dark:bg-card ring-0 border border-slate-200 dark:border-border shadow-sm">
           <CardContent className="p-6">
             <p className="text-slate-500 dark:text-[#777] text-sm font-semibold mb-1">Nilai Tertinggi</p>
             <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{topScore.toFixed(1)}</h3>
           </CardContent>
         </Card>
-        <Card className="bg-white dark:bg-[#000000] ring-0 border border-slate-200 dark:border-[#141414] shadow-sm">
+        <Card className="bg-white dark:bg-card ring-0 border border-slate-200 dark:border-border shadow-sm">
           <CardContent className="p-6">
             <p className="text-slate-500 dark:text-[#777] text-sm font-semibold mb-1">Rata-rata Nasional</p>
             <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{avgScore.toFixed(1)}</h3>
@@ -172,8 +172,8 @@ export const AdminResultsView: React.FC = () => {
         </Card>
       </div>
 
-      <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-100 dark:border-[#141414] bg-slate-50/50 dark:bg-[#000000]">
+      <div className="bg-white dark:bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card">
           <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
             <Crown className="w-4 h-4 text-yellow-500" />
             Peringkat Skor Terbaik Peserta
@@ -181,7 +181,7 @@ export const AdminResultsView: React.FC = () => {
         </div>
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 dark:bg-[#000000] hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-[#141414]">
+            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold text-center w-16">Rank</TableHead>
               <TableHead className="px-6 py-4 font-semibold">Nama Peserta</TableHead>
               <TableHead className="px-6 py-4 font-semibold">Sekolah</TableHead>

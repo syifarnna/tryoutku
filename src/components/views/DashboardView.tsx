@@ -133,7 +133,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
         
         {/* Card 1 */}
         <Card className={cn(
-          "p-5 rounded-2xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex items-center justify-between",
+          "p-5 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
           "ring-0 gap-0 py-0 overflow-visible"
         )}>
           <CardContent className="px-0">
@@ -161,7 +161,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Card 2 */}
         <Card className={cn(
-          "p-5 rounded-2xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex items-center justify-between",
+          "p-5 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
           "ring-0 gap-0 py-0 overflow-visible"
         )}>
           <CardContent className="px-0">
@@ -178,7 +178,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Card 3 */}
         <Card className={cn(
-          "p-5 rounded-2xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex items-center justify-between",
+          "p-5 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
           "ring-0 gap-0 py-0 overflow-visible"
         )}>
           <CardContent className="px-0">
@@ -197,7 +197,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Card 4 */}
         <Card className={cn(
-          "p-5 rounded-2xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex items-center justify-between",
+          "p-5 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
           "ring-0 gap-0 py-0 overflow-visible"
         )}>
           <CardContent className="px-0">
@@ -263,7 +263,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
         
         {/* Line Chart: Perkembangan Skor Tryout */}
         <Card className={cn(
-          "lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs space-y-4 flex flex-col",
+          "lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs space-y-4 flex flex-col",
           "ring-0 gap-4 py-6"
         )}>
           <CardHeader className="flex items-center justify-between px-0">
@@ -298,7 +298,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Radar Chart: Pemetaan 7 Subtes */}
         <Card className={cn(
-          "p-6 rounded-3xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs space-y-4 flex flex-col",
+          "p-6 rounded-3xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs space-y-4 flex flex-col",
           "ring-0 gap-4 py-6"
         )}>
           <CardHeader className="px-0">
@@ -350,7 +350,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
             <Button
               variant="outline"
               onClick={() => setActiveTab('recom_alternatives')}
-              className="flex-1 md:flex-none px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#1C1C1C] hover:border-[#FF6B6B] text-xs font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs justify-center gap-1.5 bg-white dark:bg-[#000000]"
+              className="flex-1 md:flex-none px-4 py-2.5 rounded-xl border border-slate-200 dark:border-border hover:border-[#FF6B6B] text-xs font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs justify-center gap-1.5 bg-white dark:bg-card"
             >
               <Compass className="w-4 h-4 text-[#FF6B6B]" />
               <span>Lihat PTN Alternatif</span>
@@ -371,7 +371,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
         
         {/* Tryout Tersedia */}
         <Card className={cn(
-          "p-6 rounded-3xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs space-y-4",
+          "p-6 rounded-3xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs space-y-4",
           "ring-0 gap-4 py-6"
         )}>
           <CardHeader className="flex flex-row items-center justify-between px-0">
@@ -386,7 +386,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
           <CardContent className="px-0 space-y-3">
             {state.tryouts.map((to) => (
-              <div key={to.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-[#000000] border border-slate-100 dark:border-[#141414]/80 flex items-center justify-between gap-4">
+              <div key={to.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-card border border-slate-100 dark:border-border/80 flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <Badge
                     variant="secondary"
@@ -422,7 +422,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Aktivitas Terakhir */}
         <Card className={cn(
-          "p-6 rounded-3xl bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs space-y-4",
+          "p-6 rounded-3xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs space-y-4",
           "ring-0 gap-4 py-6"
         )}>
           <CardHeader className="px-0">
@@ -434,7 +434,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
           <CardContent className="px-0 space-y-3">
             {state.results.slice(0, 3).map((res) => (
-              <div key={res.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-[#000000] border border-slate-100 dark:border-[#141414]/80 flex items-center justify-between">
+              <div key={res.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-card border border-slate-100 dark:border-border/80 flex items-center justify-between">
                 <div>
                   <p className="font-bold text-xs text-slate-800 dark:text-white">{res.tryout_name}</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">Selesai pada {new Date(res.created_at).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</p>

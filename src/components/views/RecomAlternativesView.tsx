@@ -48,7 +48,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
 
       {/* Alternatives Grid */}
       {summary.alternative_majors.length === 0 ? (
-        <Card className="p-8 text-center ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-sm gap-0">
+        <Card className="p-8 text-center ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-sm gap-0">
           <p className="text-slate-500 dark:text-[#777]">Belum ada alternatif prodi dengan passing grade di bawah skor Anda saat ini ({summary.latest_result.total_score}). Terus tingkatkan skor tryout Anda!</p>
         </Card>
       ) : (
@@ -68,10 +68,10 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
             }
 
             return (
-              <Card key={altMajor.id} className="p-6 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex flex-col justify-between hover:shadow-md transition-all group gap-0">
+              <Card key={altMajor.id} className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between hover:shadow-md transition-all group gap-0">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-[10px] font-bold h-auto px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#000000] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C]">
+                    <Badge variant="outline" className="text-[10px] font-bold h-auto px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-border">
                       {altMajor.cluster}
                     </Badge>
                     <Badge className={cn("text-xs font-black h-auto px-3 py-1 rounded-full shadow-xs", chanceColor)}>
@@ -86,7 +86,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
                     </h3>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#000000] flex items-center justify-between text-xs">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-card flex items-center justify-between text-xs">
                     <div>
                       <span className="text-slate-400 block text-[10px]">Passing Grade Prodi:</span>
                       <span className="font-extrabold text-slate-800 dark:text-white">{altMajor.passing_grade_total}</span>
@@ -100,7 +100,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
                   </div>
                 </div>
 
-                <div className="pt-6 mt-4 border-t border-slate-100 dark:border-[#141414]/80">
+                <div className="pt-6 mt-4 border-t border-slate-100 dark:border-border/80">
                   <Button
                     onClick={() => !isAlreadyTarget && handleAddTarget(altMajor.id)}
                     disabled={isAlreadyTarget || isRecentlyAdded}

@@ -43,10 +43,10 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent 
         showCloseButton={false}
-        className="sm:max-w-4xl max-h-[90vh] flex flex-col rounded-3xl p-0 gap-0 ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-2xl overflow-hidden"
+        className="sm:max-w-4xl max-h-[90vh] flex flex-col rounded-3xl p-0 gap-0 ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xl overflow-hidden"
       >
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 dark:border-[#141414] flex items-center justify-between bg-slate-50/50 dark:bg-[#000000] shrink-0">
+        <div className="p-6 border-b border-slate-100 dark:border-border flex items-center justify-between bg-slate-50/50 dark:bg-card shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-[#FF6B6B]/10 text-[#FF6B6B]">
               <Database className="w-6 h-6" />
@@ -81,7 +81,7 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
             </div>
 
             {/* Supabase Connection Form */}
-            <form onSubmit={handleSaveConfig} className="p-5 rounded-2xl border border-slate-200 dark:border-[#1C1C1C]/80 bg-slate-50/40 dark:bg-[#000000]/50 space-y-4">
+            <form onSubmit={handleSaveConfig} className="p-5 rounded-2xl border border-slate-200 dark:border-border/80 bg-slate-50/40 dark:bg-card/50 space-y-4">
               <h4 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
                 <span>Konfigurasi API Supabase Client (Opsional)</span>
                 {savedSuccess && <Badge variant="outline" className="text-xs text-emerald-500 font-normal ml-2 h-auto animate-bounce bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800">✓ Tersimpan!</Badge>}
@@ -97,7 +97,7 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
                     placeholder="https://xyzxyz.supabase.co" 
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    className="h-auto px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                    className="h-auto px-3.5 py-2.5 rounded-xl bg-white dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -109,7 +109,7 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." 
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
-                    className="h-auto px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#000000] border-slate-200 dark:border-[#1C1C1C] text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                    className="h-auto px-3.5 py-2.5 rounded-xl bg-white dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
                   />
                 </div>
               </div>

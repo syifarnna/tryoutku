@@ -36,7 +36,7 @@ export const AdminDashboardView: React.FC<{ setActiveTab: (tab: string) => void 
             <Card
               key={i}
               onClick={() => setActiveTab(stat.tab)}
-              className="cursor-pointer hover:shadow-md transition-all group ring-0 border border-slate-100 dark:border-[#141414] shadow-sm bg-white dark:bg-[#000000]"
+              className="cursor-pointer hover:shadow-md transition-all group ring-0 border border-slate-100 dark:border-border shadow-sm bg-white dark:bg-card"
             >
               <CardContent className="flex items-center gap-4 p-5">
                 <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform', stat.bg, stat.color)}>

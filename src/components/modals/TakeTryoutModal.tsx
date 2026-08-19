@@ -111,10 +111,10 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent 
         showCloseButton={false}
-        className="sm:max-w-2xl rounded-3xl p-0 gap-0 ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-2xl max-h-[90vh] overflow-hidden"
+        className="sm:max-w-2xl rounded-3xl p-0 gap-0 ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xl max-h-[90vh] overflow-hidden"
       >
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 dark:border-[#141414] flex items-center justify-between bg-[#FF6B6B] text-white">
+        <div className="p-6 border-b border-slate-100 dark:border-border flex items-center justify-between bg-[#FF6B6B] text-white">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-2xl bg-white/20">
               <Sparkles className="w-6 h-6" />
@@ -136,7 +136,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
 
         {/* Tab Selection */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'quick' | 'quiz')}>
-          <TabsList className="border-b border-slate-100 dark:border-[#141414] px-6 pt-3 bg-slate-50 dark:bg-[#000000] rounded-none p-0 h-auto w-full justify-start gap-0">
+          <TabsList className="border-b border-slate-100 dark:border-border px-6 pt-3 bg-slate-50 dark:bg-card rounded-none p-0 h-auto w-full justify-start gap-0">
             <TabsTrigger value="quick" className="pb-3 px-4 text-xs font-bold rounded-none data-active:text-[#FF6B6B] data-active:bg-transparent data-active:shadow-none after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#FF6B6B] after:rounded-t-full">
               <span>⚡ Input Cepat Skor Tryout</span>
             </TabsTrigger>
@@ -156,7 +156,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {state.competencies.map((comp) => (
-                    <div key={comp.code} className="p-3.5 rounded-2xl border border-slate-200 dark:border-[#1C1C1C] bg-slate-50/50 dark:bg-[#000000]/50 flex items-center justify-between">
+                    <div key={comp.code} className="p-3.5 rounded-2xl border border-slate-200 dark:border-border bg-slate-50/50 dark:bg-card/50 flex items-center justify-between">
                       <div>
                         <span className="font-bold text-xs text-slate-800 dark:text-white block">{comp.code}</span>
                         <span className="text-[11px] text-slate-400 truncate max-w-[140px] block">{comp.name}</span>
@@ -168,7 +168,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                           max="1000"
                           value={scores[comp.code] || 0}
                           onChange={(e) => handleScoreChange(comp.code, parseInt(e.target.value) || 0)}
-                          className="w-20 h-auto px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#000000] border-slate-300 dark:border-[#1C1C1C] text-xs font-bold text-center text-[#FF6B6B] focus:border-[#FF6B6B] focus:ring-[#FF6B6B]"
+                          className="w-20 h-auto px-2.5 py-1.5 rounded-xl bg-white dark:bg-card border-slate-300 dark:border-border text-xs font-bold text-center text-[#FF6B6B] focus:border-[#FF6B6B] focus:ring-[#FF6B6B]"
                         />
                         <span className="text-[10px] text-slate-400">/1000</span>
                       </div>
@@ -211,7 +211,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                 </div>
 
                 {/* Question Card */}
-                <Card className="p-5 rounded-2xl ring-0 bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C]/80 gap-0">
+                <Card className="p-5 rounded-2xl ring-0 bg-slate-50 dark:bg-card border border-slate-200 dark:border-border/80 gap-0">
                   <p className="text-sm font-semibold text-slate-800 dark:text-white leading-relaxed mb-6">
                     {sampleQuestions[quizStep].q}
                   </p>
@@ -228,7 +228,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                             "w-full p-4 rounded-xl text-left text-xs font-medium transition-all flex items-center gap-3 border",
                             isSelected 
                               ? 'bg-[#FF6B6B] text-white border-[#FF6B6B] shadow-md shadow-[#FF6B6B]/20 font-bold' 
-                              : 'bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#1C1C1C] hover:border-[#FF6B6B]'
+                              : 'bg-white dark:bg-card text-slate-700 dark:text-slate-200 border-slate-200 dark:border-border hover:border-[#FF6B6B]'
                           )}
                         >
                           <span className={cn(
@@ -252,7 +252,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                     size="sm"
                     disabled={quizStep === 0}
                     onClick={() => setQuizStep(quizStep - 1)}
-                    className="px-5 py-2.5 h-auto rounded-xl bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-slate-300 text-xs font-semibold disabled:opacity-40 border-slate-200 dark:border-[#1C1C1C]"
+                    className="px-5 py-2.5 h-auto rounded-xl bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-slate-300 text-xs font-semibold disabled:opacity-40 border-slate-200 dark:border-border"
                   >
                     Sebelumnya
                   </Button>

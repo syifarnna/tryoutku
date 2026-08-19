@@ -120,8 +120,8 @@ export const AdminUsersView: React.FC = () => {
         </Button>
       </div>
 
-      <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] shadow-sm overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-100 dark:border-[#141414] bg-slate-50/50 dark:bg-[#000000]/50 flex items-center">
+      <div className="bg-white dark:bg-card rounded-2xl border border-slate-200 dark:border-border shadow-sm overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card/50 flex items-center">
           <div className="relative w-full max-w-md">
             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input
@@ -141,7 +141,7 @@ export const AdminUsersView: React.FC = () => {
 
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 dark:bg-[#000000] hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-[#141414]">
+            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold">Nama Lengkap</TableHead>
               <TableHead className="px-6 py-4 font-semibold">Kontak</TableHead>
               <TableHead className="px-6 py-4 font-semibold">NISN</TableHead>
@@ -196,7 +196,7 @@ export const AdminUsersView: React.FC = () => {
                         <ShieldCheck className="w-3 h-3" /> Admin
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="gap-1 bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-[#777] border-slate-200 dark:border-[#1C1C1C] rounded-md h-auto py-1 px-2.5 text-xs font-bold">
+                      <Badge variant="outline" className="gap-1 bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-[#777] border-slate-200 dark:border-border rounded-md h-auto py-1 px-2.5 text-xs font-bold">
                         <UserIcon className="w-3 h-3" /> Peserta
                       </Badge>
                     )}
@@ -230,7 +230,7 @@ export const AdminUsersView: React.FC = () => {
         </Table>
 
         {totalPages > 1 && !search && (
-          <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-[#141414] bg-slate-50/50 dark:bg-[#000000]/50 text-sm">
+          <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card/50 text-sm">
             <span className="text-slate-500 dark:text-[#777] text-xs">
               Halaman {page + 1} dari {totalPages}
             </span>

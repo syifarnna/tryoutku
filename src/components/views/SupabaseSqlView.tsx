@@ -107,7 +107,7 @@ ON CONFLICT (id) DO NOTHING;
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
-          <Card className="rounded-2xl ring-0 bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] p-6 shadow-sm gap-4">
+          <Card className="rounded-2xl ring-0 bg-white dark:bg-card border border-slate-200 dark:border-border p-6 shadow-sm gap-4">
             <CardTitle className="font-bold text-slate-800 dark:text-white">Panduan Implementasi Supabase</CardTitle>
             <ol className="space-y-4 text-sm text-slate-600 dark:text-[#777] list-decimal pl-4">
               <li>Buka dashboard Supabase.com dan buat proyek baru</li>
@@ -135,7 +135,7 @@ ON CONFLICT (id) DO NOTHING;
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://xyzcompany.supabase.co"
-                    className="h-auto px-3 py-2 bg-white dark:bg-[#1a1b26] border-slate-200 dark:border-[#1C1C1C] rounded-lg text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                    className="h-auto px-3 py-2 bg-white dark:bg-[#1a1b26] border-slate-200 dark:border-border rounded-lg text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B]"
                   />
                 </div>
                 <div className="space-y-1">
@@ -145,7 +145,7 @@ ON CONFLICT (id) DO NOTHING;
                     value={anonKey}
                     onChange={(e) => setAnonKey(e.target.value)}
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp..."
-                    className="h-auto px-3 py-2 bg-white dark:bg-[#1a1b26] border-slate-200 dark:border-[#1C1C1C] rounded-lg text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                    className="h-auto px-3 py-2 bg-white dark:bg-[#1a1b26] border-slate-200 dark:border-border rounded-lg text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B]"
                   />
                 </div>
                 <Button
@@ -161,9 +161,9 @@ ON CONFLICT (id) DO NOTHING;
         </div>
 
         <div className="lg:col-span-2">
-          <Card className="rounded-2xl ring-0 bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#141414] overflow-hidden shadow-sm flex flex-col h-full gap-0">
+          <Card className="rounded-2xl ring-0 bg-white dark:bg-card border border-slate-200 dark:border-border overflow-hidden shadow-sm flex flex-col h-full gap-0">
             <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
-              <TabsList className="border-b border-slate-100 dark:border-[#141414] bg-slate-50 dark:bg-[#000000] rounded-none p-0 h-auto w-full justify-start">
+              <TabsList className="border-b border-slate-100 dark:border-border bg-slate-50 dark:bg-card rounded-none p-0 h-auto w-full justify-start">
                 <TabsTrigger value="ddl" className="px-6 py-4 text-sm font-bold whitespace-nowrap rounded-none data-active:border-b-2 data-active:border-[#FF6B6B] data-active:text-[#FF6B6B] data-active:bg-transparent gap-2">
                   <Terminal className="w-4 h-4" />
                   1. Table Schema & RLS

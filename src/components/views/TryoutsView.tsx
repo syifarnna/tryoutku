@@ -32,14 +32,14 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
       
       {/* Page Title & Header Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#141414] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-border pb-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">Modul Simulasi Ujian Tryout</h2>
           <p className="text-xs text-slate-400 mt-0.5">Kerjakan ujian simulasi 7 subtes resmi dan pantau rekap skor total Anda</p>
         </div>
 
         <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'list' | 'history')}>
-          <TabsList className="bg-slate-100 dark:bg-[#000000] p-1 rounded-2xl shrink-0 h-auto">
+          <TabsList className="bg-slate-100 dark:bg-card p-1 rounded-2xl shrink-0 h-auto">
             <TabsTrigger value="list" className="px-4 py-2 rounded-xl text-xs font-bold data-active:bg-white dark:data-active:bg-[#FF6B6B] data-active:text-[#FF6B6B] dark:data-active:text-white data-active:shadow-xs">
               📋 Daftar Tryout Tersedia ({state.tryouts.length})
             </TabsTrigger>
@@ -64,7 +64,7 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
                   "px-4 py-1.5 h-auto rounded-xl text-xs font-semibold",
                   filterType === ft.toLowerCase()
                     ? 'bg-[#FF6B6B] text-white border-[#FF6B6B] shadow-sm hover:bg-[#FF6B6B]'
-                    : 'bg-white dark:bg-[#000000] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C] hover:border-[#FF6B6B]'
+                    : 'bg-white dark:bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-border hover:border-[#FF6B6B]'
                 )}
               >
                 {ft}
@@ -75,7 +75,7 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
           {/* Tryout Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredTryouts.map((to) => (
-              <Card key={to.id} className="p-6 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex flex-col justify-between hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group gap-0">
+              <Card key={to.id} className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group gap-0">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="text-[10px] font-bold h-auto px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-[#FF6B6B] border-indigo-200 dark:border-indigo-800">
@@ -95,16 +95,16 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
                   </p>
 
                   <div className="pt-2 flex flex-wrap gap-3 text-[11px] text-slate-500 font-medium">
-                    <span className="flex items-center gap-1 bg-slate-100 dark:bg-[#000000] px-2.5 py-1 rounded-lg">
+                    <span className="flex items-center gap-1 bg-slate-100 dark:bg-card px-2.5 py-1 rounded-lg">
                       <Clock className="w-3.5 h-3.5 text-[#FF6B6B]" /> {to.duration_minutes} Menit
                     </span>
-                    <span className="flex items-center gap-1 bg-slate-100 dark:bg-[#000000] px-2.5 py-1 rounded-lg">
+                    <span className="flex items-center gap-1 bg-slate-100 dark:bg-card px-2.5 py-1 rounded-lg">
                       <BookOpen className="w-3.5 h-3.5 text-[#FF6B6B]" /> {to.question_count} Soal (7 Subtes)
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-slate-100 dark:border-[#141414]/80 mt-6 flex items-center justify-between">
+                <div className="pt-6 border-t border-slate-100 dark:border-border/80 mt-6 flex items-center justify-between">
                   <div>
                     <span className="text-[11px] text-slate-400 block">Status Sesi:</span>
                     <span className={cn("font-bold text-xs", isCompleted(to) ? 'text-emerald-500' : 'text-amber-500')}>
@@ -132,7 +132,7 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
       ) : (
         <div className="space-y-6">
           {/* Action Export Bar */}
-          <Card className="p-4 rounded-2xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-2xs flex flex-wrap items-center justify-between gap-4 gap-0">
+          <Card className="p-4 rounded-2xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xs flex flex-wrap items-center justify-between gap-4 gap-0">
             <div className="flex items-center gap-2">
               <Award className="w-5 h-5 text-[#FF6B6B]" />
               <span className="text-xs font-bold text-slate-800 dark:text-white">Rekapitulasi Seluruh Sesi Tryout</span>
@@ -161,10 +161,10 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
           </Card>
 
           {/* Table */}
-          <Card className="rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs overflow-hidden gap-0">
+          <Card className="rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs overflow-hidden gap-0">
             <Table>
-              <TableHeader className="bg-slate-50 dark:bg-[#000000]">
-                <TableRow className="border-b border-slate-100 dark:border-[#141414] hover:bg-transparent">
+              <TableHeader className="bg-slate-50 dark:bg-card">
+                <TableRow className="border-b border-slate-100 dark:border-border hover:bg-transparent">
                   <TableHead className="py-4 px-6 text-slate-400 font-bold uppercase tracking-wider text-xs">Simulasi Tryout</TableHead>
                   <TableHead className="py-4 px-6 text-slate-400 font-bold uppercase tracking-wider text-xs">Tanggal</TableHead>
                   <TableHead className="py-4 px-4 text-center text-slate-400 font-bold uppercase tracking-wider text-xs">Skor Total (IRT)</TableHead>

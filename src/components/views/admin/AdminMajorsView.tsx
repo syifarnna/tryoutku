@@ -140,7 +140,7 @@ export const AdminMajorsView: React.FC = () => {
       )}
 
       {isAdding && (
-        <Card className="bg-white dark:bg-[#000000] ring-0 border border-slate-200 dark:border-[#141414] shadow-sm">
+        <Card className="bg-white dark:bg-card ring-0 border border-slate-200 dark:border-border shadow-sm">
           <CardContent className="space-y-4 p-6">
             <h3 className="font-bold text-lg text-slate-800 dark:text-white">Tambah Program Studi Baru</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -213,10 +213,10 @@ export const AdminMajorsView: React.FC = () => {
         </Card>
       )}
 
-      <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 dark:bg-[#000000] hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-[#141414]">
+            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold">Prodi & Kampus</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Rumpun</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Passing Grade Total</TableHead>

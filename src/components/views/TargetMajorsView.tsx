@@ -98,7 +98,7 @@ export const TargetMajorsView: React.FC = () => {
   return (
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
       
-      <div className="border-b border-slate-100 dark:border-[#141414] pb-4">
+      <div className="border-b border-slate-100 dark:border-border pb-4">
         <h2 className="text-xl font-bold text-slate-800 dark:text-white">Target Institut & Jurusan Impian Saya</h2>
         <p className="text-xs text-slate-400 mt-0.5">Satu siswa dapat memiliki banyak pilihan PTN/Jurusan target untuk dikomparasi</p>
       </div>
@@ -147,7 +147,7 @@ export const TargetMajorsView: React.FC = () => {
             </Card>
           ))}
           {targetMajors.length === 0 && (
-            <div className="col-span-full p-8 border-2 border-dashed border-slate-200 dark:border-[#141414] rounded-3xl text-center">
+            <div className="col-span-full p-8 border-2 border-dashed border-slate-200 dark:border-border rounded-3xl text-center">
               <p className="text-slate-500 text-sm">Belum ada jurusan target yang dipilih. Silakan tambahkan di bawah.</p>
             </div>
           )}
@@ -155,7 +155,7 @@ export const TargetMajorsView: React.FC = () => {
       </div>
 
       {/* Add New Target Dropdowns Grid */}
-      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs gap-6">
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
         <div>
           <h3 className="font-bold text-base text-slate-800 dark:text-white">Tambah Target Institut Baru</h3>
           <p className="text-xs text-slate-400 mt-1">Pilih Kampus lalu Pilih Program Studi incaran Anda.</p>
@@ -170,7 +170,7 @@ export const TargetMajorsView: React.FC = () => {
                 setSelectedInstitutionId(e.target.value);
                 setSelectedMajorId('');
               }}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-sm focus:outline-none focus:border-[#FF6B6B] dark:text-white"
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-[#FF6B6B] dark:text-white"
             >
               <option value="">-- Pilih Kampus --</option>
               {state.institutions.map(inst => (
@@ -188,7 +188,7 @@ export const TargetMajorsView: React.FC = () => {
                 value={selectedMajorId}
                 onChange={(e) => setSelectedMajorId(e.target.value)}
                 disabled={!selectedInstitutionId || isLoadingMajors || fetchedMajors.length === 0}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] text-sm focus:outline-none focus:border-[#FF6B6B] dark:text-white disabled:opacity-50"
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-[#FF6B6B] dark:text-white disabled:opacity-50"
               >
                 <option value="">
                   {!selectedInstitutionId 
@@ -214,14 +214,14 @@ export const TargetMajorsView: React.FC = () => {
             <div>
               <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold mb-1">Informasi Prodi</p>
               <div className="flex items-center gap-3 flex-wrap">
-                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C]">
+                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
                   Rumpun: {selectedMajorInfo.cluster}
                 </Badge>
-                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C]">
+                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
                   Passing Grade: <span className="text-indigo-600 dark:text-indigo-400 ml-1">{selectedMajorInfo.passing_grade_total}</span>
                 </Badge>
                 {selectedMajorInfo.passing_grades && selectedMajorInfo.passing_grades.map((pg: any) => (
-                  <Badge key={pg.id} variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C]">
+                  <Badge key={pg.id} variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
                     {pg.competency_code}: <span className="text-indigo-600 dark:text-indigo-400 ml-1">{pg.min_score}</span>
                   </Badge>
                 ))}

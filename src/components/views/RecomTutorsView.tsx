@@ -47,10 +47,10 @@ export const RecomTutorsView: React.FC = () => {
             <Card 
               key={tutor.id} 
               className={cn(
-                "p-6 lg:p-8 rounded-3xl transition-all flex flex-col justify-between shadow-xs relative overflow-hidden gap-0 ring-0 bg-white dark:bg-[#000000]",
+                "p-6 lg:p-8 rounded-3xl transition-all flex flex-col justify-between shadow-xs relative overflow-hidden gap-0 ring-0 bg-white dark:bg-card",
                 isMatchedWeakest 
                   ? 'border-2 border-[#FF6B6B] ring-4 ring-[#FF6B6B]/10 shadow-lg' 
-                  : 'border border-slate-100 dark:border-[#141414] hover:border-slate-300'
+                  : 'border border-slate-100 dark:border-border hover:border-slate-300'
               )}
             >
               {isMatchedWeakest && (
@@ -78,7 +78,7 @@ export const RecomTutorsView: React.FC = () => {
                   {tutor.description}
                 </p>
 
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#000000] space-y-2 text-xs">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-card space-y-2 text-xs">
                   <div className="flex items-center justify-between text-slate-500">
                     <span>Estimasi Biaya:</span>
                     <strong className="text-slate-800 dark:text-white font-bold">{tutor.price}</strong>

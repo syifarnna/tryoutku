@@ -25,7 +25,7 @@ export const ReportsView: React.FC = () => {
   return (
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
       
-      <div className="border-b border-slate-100 dark:border-[#141414] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border-b border-slate-100 dark:border-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">Modul Laporan Eksekutif TryoutKu</h2>
           <p className="text-xs text-slate-400 mt-0.5">Unduh berkas resmi PDF & Excel untuk evaluasi orang tua atau guru sekolah</p>
@@ -34,7 +34,7 @@ export const ReportsView: React.FC = () => {
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-slate-400" />
           <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-            <SelectTrigger className="w-auto h-auto px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#000000] border-none text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-0">
+            <SelectTrigger className="w-auto h-auto px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-card border-none text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -49,7 +49,7 @@ export const ReportsView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Laporan Hasil Tryout */}
-        <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex flex-col justify-between gap-0">
+        <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between gap-0">
           <div className="space-y-2">
             <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950 flex items-center justify-center text-rose-500">
               <FileText className="w-5 h-5" />
@@ -66,7 +66,7 @@ export const ReportsView: React.FC = () => {
         </Card>
 
         {/* Laporan Analisis Passing Grade */}
-        <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex flex-col justify-between gap-0">
+        <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between gap-0">
           <div className="space-y-2">
             <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center text-[#FF6B6B]">
               <Printer className="w-5 h-5" />
@@ -84,7 +84,7 @@ export const ReportsView: React.FC = () => {
         </Card>
 
         {/* Laporan Perkembangan Excel */}
-        <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex flex-col justify-between gap-0">
+        <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between gap-0">
           <div className="space-y-2">
             <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center text-emerald-500">
               <FileSpreadsheet className="w-5 h-5" />

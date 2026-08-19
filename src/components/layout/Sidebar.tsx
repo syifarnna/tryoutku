@@ -130,11 +130,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside className={cn(
-        "fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-[#000000] border-r border-slate-100 dark:border-[#141414] flex flex-col transition-transform duration-300 ease-in-out shadow-xs",
+        "fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-card border-r border-slate-100 dark:border-border flex flex-col transition-transform duration-300 ease-in-out shadow-xs",
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}>
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-[#141414] gap-3">
+        <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-border gap-3">
           <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-xs">
             TK
           </div>
@@ -216,7 +216,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <Separator />
 
         {/* User Card & Logout */}
-        <div className="p-4 bg-slate-50/50 dark:bg-[#000000]">
+        <div className="p-4 bg-slate-50/50 dark:bg-card">
           <div className="flex items-center gap-3 mb-3 px-1">
             <Avatar size="lg" className="border-2 border-primary">
               <AvatarImage 

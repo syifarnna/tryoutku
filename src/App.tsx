@@ -172,7 +172,7 @@ export default function App() {
 
   return (
     <TooltipProvider>
-    <div className={`min-h-screen ${isDarkMode ? 'dark bg-[#000000] text-slate-200' : 'bg-[#FAFAFC] text-slate-700'} font-sans selection:bg-[#FF6B6B] selection:text-white flex transition-colors duration-200`}>
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-background text-foreground' : 'bg-[#FAFAFC] text-slate-700'} font-sans selection:bg-primary selection:text-primary-foreground flex transition-colors duration-200`}>
       
       {/* Sneat Admin Sidebar */}
       {isProfileComplete && !mustChangePassword && (

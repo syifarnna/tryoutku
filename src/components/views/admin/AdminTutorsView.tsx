@@ -61,7 +61,7 @@ export const AdminTutorsView: React.FC = () => {
       </div>
 
       {isAdding && (
-        <div className="bg-white dark:bg-[#000000] rounded-2xl p-6 border border-slate-200 dark:border-[#141414] shadow-sm space-y-4">
+        <div className="bg-white dark:bg-card rounded-2xl p-6 border border-slate-200 dark:border-border shadow-sm space-y-4">
           <h3 className="font-bold text-lg text-slate-800 dark:text-white">Tambah Rekomendasi Bimbel Baru</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
@@ -70,7 +70,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.name || newTutor.provider_name}
                 onChange={e => setNewTutor({...newTutor, name: e.target.value, provider_name: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
                 placeholder="e.g. Kelas Intensif UTBK"
               />
             </div>
@@ -79,7 +79,7 @@ export const AdminTutorsView: React.FC = () => {
               <select
                 value={newTutor.focus_competency_code}
                 onChange={e => setNewTutor({...newTutor, focus_competency_code: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
               >
                 {state.competencies.map(comp => (
                   <option key={comp.code} value={comp.code}>{comp.name} ({comp.code})</option>
@@ -92,7 +92,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.price}
                 onChange={e => setNewTutor({...newTutor, price: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
                 placeholder="e.g. Rp 350.000 / bulan"
               />
             </div>
@@ -102,7 +102,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.contact_info}
                 onChange={e => setNewTutor({...newTutor, contact_info: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
                 placeholder="e.g. WA: 0812..."
               />
             </div>
@@ -112,7 +112,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.link_url}
                 onChange={e => setNewTutor({...newTutor, link_url: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
                 placeholder="e.g. https://..."
               />
             </div>
@@ -122,7 +122,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.description}
                 onChange={e => setNewTutor({...newTutor, description: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
                 placeholder="Jelaskan keunggulan bimbel ini..."
               />
             </div>
@@ -144,11 +144,11 @@ export const AdminTutorsView: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-[#000000] border-b border-slate-200 dark:border-[#141414] text-xs uppercase tracking-wider text-slate-500 dark:text-[#777]">
+              <tr className="bg-slate-50 dark:bg-card border-b border-slate-200 dark:border-border text-xs uppercase tracking-wider text-slate-500 dark:text-[#777]">
                 <th className="px-6 py-4 font-semibold">Nama / Program</th>
                 <th className="px-6 py-4 font-semibold text-center">Fokus</th>
                 <th className="px-6 py-4 font-semibold text-center">Kontak & Info</th>
@@ -167,7 +167,7 @@ export const AdminTutorsView: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-[#141414] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1C1C1C]">
+                    <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-[#141414] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-border">
                       {t.focus_competency_code}
                     </span>
                   </td>

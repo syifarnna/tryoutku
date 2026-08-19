@@ -32,7 +32,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
 
   if (!summary) {
     return (
-      <div className="p-12 text-center bg-white dark:bg-[#000000] rounded-3xl border border-slate-100">
+      <div className="p-12 text-center bg-white dark:bg-card rounded-3xl border border-slate-100">
         <p className="text-sm text-slate-500">Belum ada hasil tryout yang tercatat. Silakan kerjakan tryout terlebih dahulu.</p>
         <Button 
           onClick={() => setActiveTab('tryouts')} 
@@ -50,7 +50,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
       
       {/* Top Target Selector & Export PDF Action */}
-      <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 gap-0">
+      <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 gap-0">
         <div className="space-y-2 flex-1 max-w-xl">
           <div className="flex items-center gap-2 text-xs font-bold text-[#FF6B6B] uppercase tracking-wider">
             <Target className="w-4 h-4" />
@@ -59,7 +59,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
           <select
             value={summary?.target_major?.id || ''}
             onChange={(e) => appStore.setActiveTargetMajor(parseInt(e.target.value))}
-            className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] font-bold text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B] shadow-2xs"
+            className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border font-bold text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B] shadow-2xs"
           >
             {targetMajorsList.map((m) => (
               <option key={m.id} value={m.id}>
@@ -154,9 +154,9 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
       </div>
 
       {/* Gap Analysis Table per 7 Subtes (Fitur Inti) */}
-      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-[#000000] border border-slate-100 dark:border-[#141414] shadow-xs gap-6">
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
         
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#141414] pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-border pb-4">
           <div>
             <h3 className="font-extrabold text-lg text-slate-800 dark:text-white flex items-center gap-2.5">
               <TrendingUp className="w-5 h-5 text-[#FF6B6B]" />
@@ -164,7 +164,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
             </h3>
             <p className="text-xs text-slate-400 mt-1">Identifikasi akurat komponen subtes mana yang menjadi titik lemah pembatal kelulusan Anda</p>
           </div>
-          <Badge variant="outline" className="text-xs font-semibold h-auto px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#000000] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#1C1C1C] self-start sm:self-auto">
+          <Badge variant="outline" className="text-xs font-semibold h-auto px-3 py-1 rounded-xl bg-slate-100 dark:bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-border self-start sm:self-auto">
             Tryout: {summary.latest_result.tryout_name.split(' - ')[0]}
           </Badge>
         </div>
@@ -176,7 +176,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
             const targetLinePercent = Math.min(100, Math.max(0, (gapItem.min_required / 900) * 100));
 
             return (
-              <div key={gapItem.competency_code} className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#000000] border border-slate-100 dark:border-[#141414]/80 transition-all hover:border-indigo-200">
+              <div key={gapItem.competency_code} className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-card border border-slate-100 dark:border-border/80 transition-all hover:border-indigo-200">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
                     <Badge 

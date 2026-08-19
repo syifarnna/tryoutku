@@ -60,7 +60,7 @@ export const AdminTryoutsView: React.FC = () => {
       </div>
 
       {isAdding && (
-        <div className="bg-white dark:bg-[#000000] rounded-2xl p-6 border border-slate-200 dark:border-[#141414] shadow-sm space-y-4">
+        <div className="bg-white dark:bg-card rounded-2xl p-6 border border-slate-200 dark:border-border shadow-sm space-y-4">
           <h3 className="font-bold text-lg text-slate-800 dark:text-white">Tambah Tryout Baru</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -69,7 +69,7 @@ export const AdminTryoutsView: React.FC = () => {
                 type="text" 
                 value={newTryout.name}
                 onChange={e => setNewTryout({...newTryout, name: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
                 placeholder="e.g. Tryout Akbar 2026"
               />
             </div>
@@ -78,7 +78,7 @@ export const AdminTryoutsView: React.FC = () => {
               <select
                 value={newTryout.type}
                 onChange={e => setNewTryout({...newTryout, type: e.target.value as any})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
               >
                 <option value="UTBK SNBT">UTBK SNBT</option>
                 <option value="Ujian Mandiri">Ujian Mandiri</option>
@@ -91,7 +91,7 @@ export const AdminTryoutsView: React.FC = () => {
                 type="date" 
                 value={newTryout.date}
                 onChange={e => setNewTryout({...newTryout, date: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
               />
             </div>
             <div className="flex gap-4">
@@ -101,7 +101,7 @@ export const AdminTryoutsView: React.FC = () => {
                   type="number" 
                   value={newTryout.duration_minutes}
                   onChange={e => setNewTryout({...newTryout, duration_minutes: Number(e.target.value)})}
-                  className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
+                  className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
                 />
               </div>
               <div className="flex-1">
@@ -110,7 +110,7 @@ export const AdminTryoutsView: React.FC = () => {
                   type="number" 
                   value={newTryout.question_count}
                   onChange={e => setNewTryout({...newTryout, question_count: Number(e.target.value)})}
-                  className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
+                  className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
                 />
               </div>
             </div>
@@ -120,7 +120,7 @@ export const AdminTryoutsView: React.FC = () => {
                 type="text" 
                 value={newTryout.description}
                 onChange={e => setNewTryout({...newTryout, description: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FF6B6B]"
                 placeholder="Deskripsi tryout..."
               />
             </div>
@@ -142,11 +142,11 @@ export const AdminTryoutsView: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-[#000000] rounded-2xl border border-slate-200 dark:border-[#141414] overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-[#000000] border-b border-slate-200 dark:border-[#141414] text-xs uppercase tracking-wider text-slate-500 dark:text-[#777]">
+              <tr className="bg-slate-50 dark:bg-card border-b border-slate-200 dark:border-border text-xs uppercase tracking-wider text-slate-500 dark:text-[#777]">
                 <th className="px-6 py-4 font-semibold">Nama Tryout</th>
                 <th className="px-6 py-4 font-semibold text-center">Tipe</th>
                 <th className="px-6 py-4 font-semibold text-center">Durasi & Soal</th>
