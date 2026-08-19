@@ -4,12 +4,6 @@ import { supabase } from '../../lib/supabaseClient';
 import { appStore } from '../../lib/store';
 import Swal from 'sweetalert2';
 import { getErrorMessage, cn } from '../../lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const AuthView: React.FC = () => {
   const [mode, setMode] = useState<'login' | 'register' | 'reset'>('login');
@@ -154,8 +148,7 @@ export const AuthView: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className="max-w-md w-full shadow-2xl rounded-3xl animate-in zoom-in-95 duration-200">
-        <CardContent className="p-8">
+      <div className="max-w-md w-full bg-card text-card-foreground rounded-xl border border-border p-8 shadow-lg animate-in zoom-in-95 duration-200">
           
           {/* Brand */}
           <div className="flex items-center justify-center gap-3 mb-8">
@@ -170,11 +163,11 @@ export const AuthView: React.FC = () => {
           {/* Title */}
           <div className="text-center mb-6 space-y-1">
             <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">
-              {mode === 'login' && 'Portal Masuk Siswa 🎓'}
-              {mode === 'register' && 'Daftar Tryout Simulasi 🚀'}
-              {mode === 'reset' && 'Atur Ulang Kata Sandi 🔒'}
+              {mode === 'login' && 'Portal Masuk Siswa'}
+              {mode === 'register' && 'Daftar Tryout Simulasi'}
+              {mode === 'reset' && 'Atur Ulang Kata Sandi'}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               {mode === 'login' && 'Silakan masuk menggunakan kredensial akun Supabase Anda'}
               {mode === 'register' && 'Hanya 1 role: Peserta Siswa Tryout PTN'}
               {mode === 'reset' && 'Kami akan mengirimkan tautan reset password ke email Anda'}
@@ -182,29 +175,29 @@ export const AuthView: React.FC = () => {
           </div>
 
           {/* --- SQL CONFIG BUTTON --- */}
-          <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-100 dark:border-indigo-800 flex flex-col gap-2">
-            <p className="text-xs text-indigo-800 dark:text-indigo-300">
+          <div className="mb-4 p-3 bg-secondary/10 dark:bg-secondary/20 rounded-xl border border-secondary/20 flex flex-col gap-2">
+            <p className="text-xs text-secondary-foreground">
               <strong>Info Admin / Kesalahan Login:</strong> Jika Anda belum menyalin blueprint SQL ke Supabase, atau tidak bisa login, klik tombol di bawah ini untuk melihat SQL Blueprint dan menjalankannya di Supabase.
             </p>
-            <Button
-              variant="secondary"
+            <button
+              type="button"
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('open-sql-modal'));
               }}
-              className="w-full bg-indigo-600 text-white hover:bg-indigo-700 text-xs font-bold"
+              className="w-full px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg text-xs font-bold transition-colors cursor-pointer"
             >
               Buka Konfigurasi SQL Supabase
-            </Button>
+            </button>
           </div>
 
           {resetSent && (
-            <div className="p-4 mb-6 rounded-2xl bg-emerald-50 text-emerald-700 text-xs text-center font-semibold">
-              ✓ Tautan pemulihan kata sandi telah dikirim ke {email}!
+            <div className="p-4 mb-6 rounded-xl bg-emerald-50 text-emerald-700 text-xs text-center font-semibold border border-emerald-200">
+              Tautan pemulihan kata sandi telah dikirim ke {email}!
             </div>
           )}
 
           {!isSupabaseConfigured && (
-            <div className="p-4 mb-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs text-center font-semibold flex flex-col items-center justify-center gap-2">
+            <div className="p-4 mb-6 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs text-center font-semibold flex flex-col items-center justify-center gap-2">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-amber-600" />
                 <span>Supabase Belum Dikonfigurasi</span>
@@ -217,57 +210,77 @@ export const AuthView: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'login' && (
-              <Tabs value={loginMethod} onValueChange={(v) => setLoginMethod(v as 'email' | 'nisn')}>
-                <TabsList className="w-full">
-                  <TabsTrigger value="email" className="flex-1">Gunakan Email</TabsTrigger>
-                  <TabsTrigger value="nisn" className="flex-1">Gunakan NISN</TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <div className="flex rounded-lg bg-muted p-1 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setLoginMethod('email')}
+                  className={cn(
+                    "flex-1 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer",
+                    loginMethod === 'email'
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Gunakan Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoginMethod('nisn')}
+                  className={cn(
+                    "flex-1 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer",
+                    loginMethod === 'nisn'
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Gunakan NISN
+                </button>
+              </div>
             )}
 
             {mode === 'register' && (
               <>
                 <div>
-                  <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap Siswa</Label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap Siswa</label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
+                    <input
                       type="text"
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Contoh: Budi Santoso"
-                      className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">NISN</Label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">NISN</label>
                   <div className="relative">
                     <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
+                    <input
                       type="text"
                       required
                       value={nisn}
                       onChange={(e) => setNisn(e.target.value)}
                       placeholder="Nomor Induk Siswa Nasional"
-                      className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs font-mono"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-input text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Asal Sekolah (SMA/MA/SMK)</Label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Asal Sekolah (SMA/MA/SMK)</label>
                   <div className="relative">
                     <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
+                    <input
                       type="text"
                       required
                       value={school}
                       onChange={(e) => setSchool(e.target.value)}
                       placeholder="Contoh: SMAN 3 Bandung"
-                      className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
@@ -276,31 +289,31 @@ export const AuthView: React.FC = () => {
 
             {loginMethod === 'email' || mode !== 'login' ? (
               <div>
-                <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Email Siswa</Label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Email Siswa</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
+                  <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="email@sekolah.sch.id"
-                    className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs"
+                    className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                   />
                 </div>
               </div>
             ) : (
               <div>
-                <Label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">NISN</Label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">NISN</label>
                 <div className="relative">
                   <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
+                  <input
                     type="text"
                     required
                     value={nisn}
                     onChange={(e) => setNisn(e.target.value)}
                     placeholder="Nomor Induk Siswa Nasional"
-                    className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs font-mono"
+                    className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-input text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                   />
                 </div>
               </div>
@@ -309,34 +322,33 @@ export const AuthView: React.FC = () => {
             {mode !== 'reset' && (
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Kata Sandi (Password)</Label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Kata Sandi (Password)</label>
                   {mode === 'login' && (
-                    <Button
+                    <button
                       type="button"
-                      variant="link"
                       onClick={() => switchMode('reset')}
-                      className="text-[11px] font-bold p-0 h-auto text-primary hover:underline cursor-pointer"
+                      className="text-[11px] font-bold p-0 h-auto text-primary hover:underline cursor-pointer bg-transparent border-none"
                     >
                       Lupa Password?
-                    </Button>
+                    </button>
                   )}
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
+                  <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-background text-xs"
+                    className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                   />
                 </div>
               </div>
             )}
 
             {mode === 'login' && (
-              <Label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600 dark:text-slate-300 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600 dark:text-slate-300 pt-1">
                 <input
                   type="checkbox"
                   checked={remember}
@@ -344,13 +356,13 @@ export const AuthView: React.FC = () => {
                   className="w-4 h-4 rounded text-primary focus:ring-primary"
                 />
                 <span>Remember Login (Ingat Sesi Saya)</span>
-              </Label>
+              </label>
             )}
 
-            <Button
+            <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl text-xs font-extrabold shadow-lg shadow-primary/30 transition-all gap-2 mt-2 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground text-xs font-extrabold shadow-lg shadow-primary/30 transition-all gap-2 mt-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 flex items-center justify-center"
             >
               <span>
                 {loading ? 'Memproses...' : (
@@ -360,31 +372,30 @@ export const AuthView: React.FC = () => {
                 )}
               </span>
               {!loading && <ArrowRight className="w-4 h-4" />}
-            </Button>
+            </button>
           </form>
 
           {/* Footer switcher */}
-          <div className="mt-8 text-center pt-6 text-xs text-slate-500">
-            <Separator className="mb-6" />
+          <div className="mt-8 text-center pt-6 text-xs text-muted-foreground">
+            <hr className="mb-6 border-border" />
             {mode === 'login' ? (
               <p>
                 Belum punya akun tryout?{' '}
-                <Button type="button" variant="link" onClick={() => switchMode('register')} className="font-bold p-0 h-auto text-primary cursor-pointer">
+                <button type="button" onClick={() => switchMode('register')} className="font-bold p-0 h-auto text-primary hover:underline cursor-pointer bg-transparent border-none">
                   Buat Akun Siswa
-                </Button>
+                </button>
               </p>
             ) : (
               <p>
                 Sudah memiliki akun?{' '}
-                <Button type="button" variant="link" onClick={() => switchMode('login')} className="font-bold p-0 h-auto text-primary cursor-pointer">
+                <button type="button" onClick={() => switchMode('login')} className="font-bold p-0 h-auto text-primary hover:underline cursor-pointer bg-transparent border-none">
                   Masuk (Login)
-                </Button>
+                </button>
               </p>
             )}
           </div>
 
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 };
