@@ -74,12 +74,12 @@ INSERT INTO tryouts (id, name, date, type, duration_minutes, question_count, sta
 (4, 'Simulasi SIMAK UI & Ujian Mandiri ITB 2026', '2026-06-28', 'Ujian Mandiri', 150, 120, 'Segera')
 ON CONFLICT (id) DO NOTHING;
 
--- 5. Insert Mitra Rekomendasi Bimbel
-INSERT INTO tutoring_centers (id, name, focus_competency_code, contact_info, link_url, description, rating, price) VALUES
-(501, 'Master Kuantitatif & Aljabar UTBK', 'PK', 'WhatsApp: 0811-2233-4455', 'https://wa.me/6281122334455', 'Bimbel intensif khusus mendongkrak skor Pengetahuan Kuantitatif dari <600 menjadi >720', 4.9, 'Rp 450.000 / bulan'),
-(502, 'Supercamp English Academic Literacy', 'LBE', 'WhatsApp: 0812-9988-7766', 'https://wa.me/6281299887766', 'Klinik bedah teks jurnal ilmiah & reading comprehension UTBK Bahasa Inggris', 4.8, 'Rp 380.000 / bulan'),
-(503, 'Penalaran Matematika & Konteks Nyata Camp', 'PM', 'Telegram: @pm_master_utbk', 'https://t.me/pm_master_utbk', 'Pemantapan soal HOTS penalaran matematika SNBT dengan tutor alumni medali olimpiade', 4.9, 'Rp 400.000 / bulan'),
-(504, 'Klinik Literasi Bahasa Indonesia & PBM', 'LBI', 'WhatsApp: 0813-4455-6677', 'https://wa.me/6281344556677', 'Strategi cepat membaca esai panjang 500 kata & akurasi penyimpulan paragraf', 4.7, 'Rp 320.000 / bulan')
+-- 5. Insert Master Tryouts Nasional
+INSERT INTO tryouts (id, name, date, type, duration_minutes, question_count, status) VALUES
+(1, 'Simulasi Akbar Nasional UTBK SNBT 2026 - Episode 1', '2026-05-10', 'UTBK SNBT', 195, 155, 'Selesai'),
+(2, 'Simulasi Akbar Nasional UTBK SNBT 2026 - Episode 2', '2026-06-15', 'UTBK SNBT', 195, 155, 'Selesai'),
+(3, 'Tryout Intensif Kedinasan STAN & STIS 2026', '2026-06-20', 'Ujian Kedinasan', 120, 100, 'Tersedia'),
+(4, 'Simulasi SIMAK UI & Ujian Mandiri ITB 2026', '2026-06-28', 'Ujian Mandiri', 150, 120, 'Segera')
 ON CONFLICT (id) DO NOTHING;
 `;
 

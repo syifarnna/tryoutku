@@ -341,7 +341,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
                 Rekomendasi Cerdas: Nilai Anda Masih -{Math.abs(parseFloat(gapValue))} Poin di Bawah Passing Grade!
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-                Berdasarkan hasil analisis tryout terakhir, kelemahan terbesar Anda berada pada kompetensi <strong>Literasi Bahasa Inggris (LBE)</strong> dan <strong>Pengetahuan Kuantitatif (PK)</strong>. Sistem telah merangkum prodi alternatif yang aman dan bimbel fokus defisit Anda.
+                Berdasarkan hasil analisis tryout terakhir, kelemahan terbesar Anda berada pada kompetensi <strong>Literasi Bahasa Inggris (LBE)</strong> dan <strong>Pengetahuan Kuantitatif (PK)</strong>. Sistem telah merangkum prodi alternatif yang aman untuk Anda.
               </p>
             </div>
           </div>
@@ -354,13 +354,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
             >
               <Compass className="w-4 h-4 text-primary" />
               <span>Lihat PTN Alternatif</span>
-            </Button>
-            <Button
-              onClick={() => setActiveTab('recom_tutors')}
-              className="flex-1 md:flex-none px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-md shadow-primary/20 transition-all justify-center gap-1.5 border-0"
-            >
-              <GraduationCap className="w-4 h-4" />
-              <span>Lihat Les/Bimbel Rekomendasi</span>
             </Button>
           </div>
         </Card>

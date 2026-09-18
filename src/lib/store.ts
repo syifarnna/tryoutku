@@ -8,8 +8,7 @@ import {
   Profile, 
   TargetInstitution, 
   Tryout, 
-  TryoutResult, 
-  TutoringCenter 
+  TryoutResult
 } from '../types';
 import { 
   INITIAL_COMPETENCIES, 
@@ -17,8 +16,7 @@ import {
   INITIAL_MAJORS, 
   EMPTY_PROFILE, 
   INITIAL_RESULTS, 
-  INITIAL_TRYOUTS, 
-  INITIAL_TUTORS 
+  INITIAL_TRYOUTS 
 } from './mockData';
 import { supabase } from './supabaseClient';
 
@@ -31,7 +29,6 @@ export interface AppState {
   competencies: Competency[];
   tryouts: Tryout[];
   results: TryoutResult[];
-  tutors: TutoringCenter[];
   targetMajorIds: number[]; 
   activeTargetMajorId: number; 
   useRealSupabase: boolean; // Keep for compatibility but it's always true now
@@ -46,7 +43,6 @@ const DEFAULT_STATE: AppState = {
   competencies: INITIAL_COMPETENCIES,
   tryouts: INITIAL_TRYOUTS,
   results: [],
-  tutors: INITIAL_TUTORS,
   targetMajorIds: [], 
   activeTargetMajorId: 1, 
   useRealSupabase: true
@@ -306,15 +302,6 @@ class AppStore {
       .slice(0, 6);
       
     console.log('Alternatives count:', alternatives.length, 'total majors:', this.state.majors.length, 'result score:', result.total_score);
-      
-    let recommendedTutors = this.state.tutors;
-    if (weakest) {
-      const match = this.state.tutors.filter(t => t.focus_competency_code === weakest.competency_code);
-      const others = this.state.tutors.filter(t => t.focus_competency_code !== weakest.competency_code);
-      recommendedTutors = [...match, ...others].slice(0, 4);
-    } else {
-      recommendedTutors = this.state.tutors.slice(0, 4);
-    }
 
     return {
       target_major: major,
@@ -323,8 +310,7 @@ class AppStore {
       total_gap: totalGap,
       gaps,
       weakest_competency: weakest,
-      alternative_majors: alternatives,
-      recommended_tutors: recommendedTutors
+      alternative_majors: alternatives
     };
   }
 
@@ -361,9 +347,6 @@ class AppStore {
         }));
       }
 
-      const { data: tutorsData } = await supabase.from('tutoring_centers').select('*').order('id', { ascending: false });
-      if (tutorsData && tutorsData.length > 0) this.state.tutors = tutorsData;
-      
       this.notify();
     } catch (err) {
       console.warn('Gagal memuat data master dari Supabase:', err);
@@ -451,18 +434,6 @@ class AppStore {
       this.state.majors = this.state.majors.filter(m => m.id !== id);
       this.notify();
     }
-  }
-
-  public async addTutor(tutor: TutoringCenter) {
-    this.state.tutors = [tutor, ...this.state.tutors];
-    this.notify();
-    try { await supabase.from('tutoring_centers').insert(tutor); } catch (e) {}
-  }
-
-  public async deleteTutor(id: number) {
-    this.state.tutors = this.state.tutors.filter(t => t.id !== id);
-    this.notify();
-    try { await supabase.from('tutoring_centers').delete().eq('id', id); } catch (e) {}
   }
 }
 

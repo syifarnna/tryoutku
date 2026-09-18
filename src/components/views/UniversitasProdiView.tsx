@@ -7,10 +7,31 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import type { ClusterType } from '../../types';
 
 type JenjangFilter = 'SEMUA' | 'S1' | 'D-III' | 'D-IV';
+type RumpunFilter = 'SEMUA' | ClusterType;
 
 const JENJANG_FILTERS: JenjangFilter[] = ['SEMUA', 'S1', 'D-III', 'D-IV'];
+const RUMPUN_FILTERS: RumpunFilter[] = ['SEMUA', 'Saintek', 'Soshum', 'Campuran'];
+
+const CLUSTER_STYLE: Record<ClusterType, { badge: string; row: string; dot: string }> = {
+  Saintek: {
+    badge: 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-400 border-sky-200 dark:border-sky-900',
+    row: 'hover:bg-sky-50/40 dark:hover:bg-sky-950/20',
+    dot: 'bg-sky-500',
+  },
+  Soshum: {
+    badge: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border-amber-200 dark:border-amber-900',
+    row: 'hover:bg-amber-50/40 dark:hover:bg-amber-950/20',
+    dot: 'bg-amber-500',
+  },
+  Campuran: {
+    badge: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-900',
+    row: 'hover:bg-violet-50/40 dark:hover:bg-violet-950/20',
+    dot: 'bg-violet-500',
+  },
+};
 
 const PAGE_SIZE = 50;
 
@@ -19,6 +40,7 @@ export const UniversitasProdiView: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [jenjang, setJenjang] = useState<JenjangFilter>('SEMUA');
+  const [rumpun, setRumpun] = useState<RumpunFilter>('SEMUA');
   const [sortBy, setSortBy] = useState<'name' | 'pg'>('pg');
   const [page, setPage] = useState(1);
 
@@ -30,6 +52,11 @@ export const UniversitasProdiView: React.FC = () => {
       s1: majors.filter(m => m.jenjang === 'S1').length,
       d3: majors.filter(m => m.jenjang === 'D-III').length,
       d4: majors.filter(m => m.jenjang === 'D-IV').length,
+      rumpun: {
+        Saintek: majors.filter(m => m.cluster === 'Saintek').length,
+        Soshum: majors.filter(m => m.cluster === 'Soshum').length,
+        Campuran: majors.filter(m => m.cluster === 'Campuran').length,
+      } as Record<ClusterType, number>,
     };
   }, [state.majors]);
 
@@ -39,6 +66,10 @@ export const UniversitasProdiView: React.FC = () => {
 
     if (jenjang !== 'SEMUA') {
       rows = rows.filter(m => m.jenjang === jenjang);
+    }
+
+    if (rumpun !== 'SEMUA') {
+      rows = rows.filter(m => m.cluster === rumpun);
     }
 
     if (q) {
@@ -56,7 +87,7 @@ export const UniversitasProdiView: React.FC = () => {
     }
 
     return rows;
-  }, [state.majors, search, jenjang, sortBy]);
+  }, [state.majors, search, jenjang, rumpun, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -141,6 +172,26 @@ export const UniversitasProdiView: React.FC = () => {
             {fmt(filtered.length)} hasil
           </span>
         </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Rumpun:</span>
+          {RUMPUN_FILTERS.map(f => (
+            <button
+              key={f}
+              onClick={() => { setRumpun(f); resetPage(); }}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer',
+                rumpun === f
+                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
+              )}
+            >
+              {f === 'SEMUA'
+                ? f
+                : `${f} ${fmt(stats.rumpun[f])}`}
+            </button>
+          ))}
+        </div>
       </Card>
 
       {/* Table */}
@@ -152,6 +203,7 @@ export const UniversitasProdiView: React.FC = () => {
                 <th className="px-4 py-3">Kode</th>
                 <th className="px-4 py-3">Kampus</th>
                 <th className="px-4 py-3">Program Studi</th>
+                <th className="px-4 py-3">Rumpun</th>
                 <th className="px-4 py-3">Jenjang</th>
                 <th className="px-4 py-3 text-right">Daya</th>
                 <th className="px-4 py-3 text-right">Peminat</th>
@@ -163,7 +215,7 @@ export const UniversitasProdiView: React.FC = () => {
             <tbody>
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-slate-400">
+                  <td colSpan={10} className="px-4 py-12 text-center text-slate-400">
                     <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
                     Tidak ada hasil untuk pencarian ini.
                   </td>
@@ -171,14 +223,21 @@ export const UniversitasProdiView: React.FC = () => {
               )}
               {pageRows.map((m) => {
                 const isTarget = state.targetMajorIds.includes(m.id);
+                const cs = CLUSTER_STYLE[m.cluster === 'Saintek' || m.cluster === 'Soshum' || m.cluster === 'Campuran' ? m.cluster : 'Campuran'];
                 return (
-                  <tr key={m.id} className="border-b border-slate-50 dark:border-border/50 hover:bg-muted/40 transition-colors">
+                  <tr key={m.id} className={cn('border-b border-slate-50 dark:border-border/50 transition-colors', cs.row)}>
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap">{m.code || '—'}</td>
                     <td className="px-4 py-3">
                       <div className="text-xs font-bold text-slate-800 dark:text-white whitespace-nowrap">{m.institution_name || '—'}</div>
                       <div className="text-[11px] text-slate-400">{m.institution_location || ''}</div>
                     </td>
                     <td className="px-4 py-3 text-xs font-medium text-slate-700 dark:text-slate-300">{m.name}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Badge variant="secondary" className={cn('text-[10px] font-bold gap-1.5 border', cs.badge)}>
+                        <span className={cn('w-1.5 h-1.5 rounded-full', cs.dot)} />
+                        {m.cluster || '—'}
+                      </Badge>
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <Badge variant="secondary" className="text-[10px] font-bold">{m.jenjang || '—'}</Badge>
                     </td>

@@ -4,7 +4,6 @@ import {
   BookOpen, 
   Compass, 
   FileText, 
-  GraduationCap, 
   LayoutDashboard, 
   LogOut, 
   Settings, 
@@ -58,7 +57,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'admin_users', label: 'Daftar Pengguna', icon: Users, badge: '' },
         { id: 'admin_majors', label: 'Kelola Prodi / Kampus', icon: Target, badge: '' },
-        { id: 'admin_tutors', label: 'Kelola Saran Bimbel', icon: BookOpen, badge: '' },
         { id: 'admin_results', label: 'Leaderboard Nasional', icon: Award, badge: '' }
       ]
     },
@@ -95,8 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'browse_universitas', label: 'Browser Kampus & Prodi 2025', icon: Compass, badge: `${state.majors.length}` },
         { id: 'target_majors', label: 'Target Institut Saya', icon: Target, badge: `${state.targetMajorIds.length}` },
-        { id: 'recom_alternatives', label: 'Rekomendasi Alternatif', icon: Compass, badge: 'Aman' },
-        { id: 'recom_tutors', label: 'Rekomendasi Les/Bimbel', icon: GraduationCap, badge: 'Solusi' }
+        { id: 'recom_alternatives', label: 'Rekomendasi Alternatif', icon: Compass, badge: 'Aman' }
       ]
     },
     {

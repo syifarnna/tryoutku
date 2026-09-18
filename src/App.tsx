@@ -19,7 +19,6 @@ import { AnalysisCompView } from './components/views/AnalysisCompView';
 import { TargetMajorsView } from './components/views/TargetMajorsView';
 import { UniversitasProdiView } from './components/views/UniversitasProdiView';
 import { RecomAlternativesView } from './components/views/RecomAlternativesView';
-import { RecomTutorsView } from './components/views/RecomTutorsView';
 import { ReportsView } from './components/views/ReportsView';
 import { ProfileView } from './components/views/ProfileView';
 import { SupabaseSqlView } from './components/views/SupabaseSqlView';
@@ -28,7 +27,6 @@ import { ChangePasswordView } from './components/views/ChangePasswordView';
 import { AdminDashboardView } from './components/views/admin/AdminDashboardView';
 import { AdminTryoutsView } from './components/views/admin/AdminTryoutsView';
 import { AdminMajorsView } from './components/views/admin/AdminMajorsView';
-import { AdminTutorsView } from './components/views/admin/AdminTutorsView';
 import { AdminResultsView } from './components/views/admin/AdminResultsView';
 import { AdminUsersView } from './components/views/admin/AdminUsersView';
 import { TooltipProvider } from './components/ui/tooltip';
@@ -112,8 +110,6 @@ export default function App() {
           return <AdminTryoutsView />;
         case 'admin_majors':
           return <AdminMajorsView />;
-        case 'admin_tutors':
-          return <AdminTutorsView />;
         case 'admin_results':
           return <AdminResultsView />;
         case 'admin_users':
@@ -144,8 +140,6 @@ export default function App() {
         return <UniversitasProdiView />;
       case 'recom_alternatives':
         return <RecomAlternativesView setActiveTab={setActiveTab} />;
-      case 'recom_tutors':
-        return <RecomTutorsView />;
       case 'reports':
         return <ReportsView />;
       case 'profile':

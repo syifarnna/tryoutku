@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppState } from '../../../lib/store';
 import { supabase } from '../../../lib/supabaseClient';
-import { Users, BookOpen, Target, Award, GraduationCap } from 'lucide-react';
+import { Users, BookOpen, Target, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -18,7 +18,6 @@ export const AdminDashboardView: React.FC<{ setActiveTab: (tab: string) => void 
   const stats = [
     { label: 'Total Tryout', value: state.tryouts.length, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10', tab: 'admin_tryouts' },
     { label: 'Total Prodi/Kampus', value: state.majors.length, icon: Target, color: 'text-secondary', bg: 'bg-secondary/10', tab: 'admin_majors' },
-    { label: 'Total Rekomendasi Bimbel', value: state.tutors.length, icon: GraduationCap, color: 'text-destructive', bg: 'bg-destructive/10', tab: 'admin_tutors' },
     { label: 'Total Pengerjaan', value: totalSubmissions, icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10', tab: 'admin_results' },
   ];
 
@@ -29,7 +28,7 @@ export const AdminDashboardView: React.FC<{ setActiveTab: (tab: string) => void 
         <p className="text-slate-500 dark:text-muted-foreground mt-1">Ringkasan sistem TryoutKu dan akses cepat ke panel manajemen.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (

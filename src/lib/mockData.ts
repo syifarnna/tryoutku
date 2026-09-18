@@ -1,4 +1,4 @@
-import { Competency, Institution, Major, Profile, Tryout, TryoutResult, TutoringCenter } from '../types';
+import { Competency, Institution, Major, Profile, Tryout, TryoutResult } from '../types';
 
 export const INITIAL_COMPETENCIES: Competency[] = [
   { id: 1, code: 'PU', name: 'Penalaran Umum', description: 'Kemampuan memecahkan masalah baru dengan logika rasional.', weight: 1 },
@@ -138,86 +138,6 @@ export const INITIAL_RESULTS: TryoutResult[] = [
       LBE: 630, // Improved but still below target (700)
       PM: 650  // Below target (740)
     }
-  }
-];
-
-export const INITIAL_TUTORS: TutoringCenter[] = [
-  {
-    id: 501,
-    name: 'Master Kuantitatif & Aljabar UTBK',
-    focus_competency_code: 'PK',
-    contact_info: 'WhatsApp: 0811-2233-4455',
-    link_url: 'https://wa.me/6281122334455?text=Halo%20saya%20mau%20daftar%20Master%20PK',
-    description: 'Bimbel intensif khusus mendongkrak skor Pengetahuan Kuantitatif dari <600 menjadi >720 dalam 4 minggu.',
-    rating: 4.9,
-    price: 'Rp 450.000 / bulan',
-    batch_start: 'Mulai Setiap Senin'
-  },
-  {
-    id: 502,
-    name: 'Supercamp English Academic Literacy',
-    focus_competency_code: 'LBE',
-    contact_info: 'WhatsApp: 0812-9988-7766',
-    link_url: 'https://wa.me/6281299887766?text=Daftar%20Supercamp%20LBE',
-    description: 'Klinik bedah teks jurnal ilmiah & reading comprehension UTBK Bahasa Inggris dengan metode pemindaian cepat.',
-    rating: 4.8,
-    price: 'Rp 380.000 / bulan',
-    batch_start: 'Batch 5: 1 Juli 2026'
-  },
-  {
-    id: 503,
-    name: 'Penalaran Matematika & Konteks Nyata Camp',
-    focus_competency_code: 'PM',
-    contact_info: 'Telegram: @pm_master_utbk',
-    link_url: 'https://t.me/pm_master_utbk',
-    description: 'Latihan soal literasi matematika kontekstual standar PISA/SNBT untuk menembus prodi favorit Saintek.',
-    rating: 4.9,
-    price: 'Rp 500.000 / paket',
-    batch_start: 'Segera Dibuka'
-  },
-  {
-    id: 504,
-    name: 'Logika & Penalaran Umum Ganesha',
-    focus_competency_code: 'PU',
-    contact_info: 'WhatsApp: 0813-4455-6677',
-    link_url: 'https://wa.me/6281344556677',
-    description: 'Bimbel penalaran silogisme, logika analitis, dan pemecahan masalah kritis dengan tentor alumni ITB.',
-    rating: 4.7,
-    price: 'Rp 350.000 / bulan',
-    batch_start: 'Tersedia Kelas Malam'
-  },
-  {
-    id: 505,
-    name: 'Bahasa Indonesia Kritis Academy',
-    focus_competency_code: 'PBM',
-    contact_info: 'Line: @pbm_kritis',
-    link_url: 'https://line.me/ti/p/@pbm_kritis',
-    description: 'Strategi anti-terjebak pilihan jawaban mirip pada subtes Kemampuan Memahami Bacaan & Menulis.',
-    rating: 4.8,
-    price: 'Rp 300.000 / bulan',
-    batch_start: 'Setiap Sabtu & Minggu'
-  },
-  {
-    id: 506,
-    name: 'Klinik Pemahaman Dasar PPU',
-    focus_competency_code: 'PPU',
-    contact_info: 'WhatsApp: 0815-6677-8899',
-    link_url: 'https://wa.me/6281566778899',
-    description: 'Bedah tuntas sinonim, antonim, majas, struktur kalimat efektif, dan ide pokok paragraf dengan mudah.',
-    rating: 4.6,
-    price: 'Rp 280.000 / bulan',
-    batch_start: 'Akses Rekaman Video 24 Jam'
-  },
-  {
-    id: 507,
-    name: 'Sanggar Literasi Bahasa Nusantara',
-    focus_competency_code: 'LBI',
-    contact_info: 'WhatsApp: 0819-8877-6655',
-    link_url: 'https://wa.me/6281988776655',
-    description: 'Pemantapan pemahaman bacaan literasi sastra dan informasi umum untuk meraih skor >750.',
-    rating: 4.8,
-    price: 'Rp 320.000 / bulan',
-    batch_start: 'Kelas Live Zoom'
   }
 ];
 

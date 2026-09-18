@@ -102,18 +102,6 @@ export interface TargetInstitution {
   priority: number; // 1, 2, 3...
 }
 
-export interface TutoringCenter {
-  id: number;
-  name: string;
-  focus_competency_code: string;
-  contact_info: string;
-  link_url: string;
-  description: string;
-  rating: number;
-  price: string;
-  batch_start?: string;
-}
-
 export interface GapAnalysisItem {
   competency_code: string;
   competency_name: string;
@@ -131,5 +119,4 @@ export interface AnalysisSummary {
   gaps: GapAnalysisItem[];
   weakest_competency: GapAnalysisItem | null;
   alternative_majors: Array<Major & { chance_percentage: number; gap_diff: number }>;
-  recommended_tutors: TutoringCenter[];
 }

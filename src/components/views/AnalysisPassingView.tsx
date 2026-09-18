@@ -6,7 +6,6 @@ import {
   Compass, 
   Download, 
   FileText, 
-  GraduationCap, 
   Target, 
   TrendingUp, 
   Info,
@@ -122,14 +121,6 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
                   <Compass className="w-4 h-4" />
                   <span>Lihat PTN Alternatif (Passing Grade ≤ {summary.latest_result.total_score})</span>
                 </Button>
-                <Button
-                  onClick={() => setActiveTab('recom_tutors')}
-                  variant="outline"
-                  className="px-5 py-2.5 h-auto rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold backdrop-blur-sm border-white/20 gap-2"
-                >
-                  <GraduationCap className="w-4 h-4" />
-                  <span>Solusi Bimbel Defisit</span>
-                </Button>
               </div>
             )}
           </div>
@@ -241,17 +232,17 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
           <div className="p-6 rounded-3xl bg-linear-to-r from-primary/10 to-secondary/10 border border-primary/20 dark:border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
             <div className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> Solusi Penutup Defisit Terbesar Anda
+                <Sparkles className="w-3.5 h-3.5" /> Fokus Perbaikan Terbesar Anda
               </span>
               <p className="text-xs sm:text-sm text-slate-800 dark:text-white font-semibold">
-                Anda mengalami defisit terbesar ({summary.weakest_competency.gap} pts) di subtes <strong className="text-primary">{summary.weakest_competency.competency_name}</strong>. Ambil langkah les bimbel intensif khusus kompetensi ini sekarang.
+                Anda mengalami defisit terbesar ({summary.weakest_competency.gap} pts) di subtes <strong className="text-primary">{summary.weakest_competency.competency_name}</strong>. Kuatkan kompetensi ini di tryout berikutnya, atau pilih prodi alternatif dengan passing grade yang sesuai.
               </p>
             </div>
             <Button
-              onClick={() => setActiveTab('recom_tutors')}
+              onClick={() => setActiveTab('recom_alternatives')}
               className="px-5 py-2.5 h-auto rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold shrink-0 shadow-md"
             >
-              Lihat Program Les Cocok →
+              Lihat PTN Alternatif →
             </Button>
           </div>
         )}
