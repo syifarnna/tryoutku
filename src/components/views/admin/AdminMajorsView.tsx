@@ -103,7 +103,7 @@ export const AdminMajorsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Manajemen Program Studi</h2>
-          <p className="text-slate-500 dark:text-[#777] mt-1">Kelola data program studi dan kampus yang tersedia.</p>
+          <p className="text-slate-500 dark:text-muted-foreground mt-1">Kelola data program studi dan kampus yang tersedia.</p>
         </div>
         
         <div className="flex gap-2">
@@ -216,7 +216,7 @@ export const AdminMajorsView: React.FC = () => {
       <div className="bg-white dark:bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-border">
+            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold">Prodi & Kampus</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Rumpun</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Passing Grade Total</TableHead>
@@ -227,10 +227,10 @@ export const AdminMajorsView: React.FC = () => {
             {state.majors.map((m) => {
               const inst = state.institutions.find(i => i.id === m.institution_id);
               return (
-                <TableRow key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-[#1C1C1C]/30">
+                <TableRow key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-muted/80">
                   <TableCell className="px-6 py-4">
                     <p className="font-bold text-slate-800 dark:text-white text-sm">{m.name}</p>
-                    <p className="text-xs text-slate-500 dark:text-[#777] mt-0.5">{inst?.name || 'Unknown'}</p>
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5">{inst?.name || 'Unknown'}</p>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
                     <Badge 

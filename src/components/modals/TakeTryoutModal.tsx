@@ -114,7 +114,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
         className="sm:max-w-2xl rounded-3xl p-0 gap-0 ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xl max-h-[90vh] overflow-hidden"
       >
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 dark:border-border flex items-center justify-between bg-[#FF6B6B] text-white">
+        <div className="p-6 border-b border-slate-100 dark:border-border flex items-center justify-between bg-primary text-white">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-2xl bg-white/20">
               <Sparkles className="w-6 h-6" />
@@ -137,10 +137,10 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
         {/* Tab Selection */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'quick' | 'quiz')}>
           <TabsList className="border-b border-slate-100 dark:border-border px-6 pt-3 bg-slate-50 dark:bg-card rounded-none p-0 h-auto w-full justify-start gap-0">
-            <TabsTrigger value="quick" className="pb-3 px-4 text-xs font-bold rounded-none data-active:text-[#FF6B6B] data-active:bg-transparent data-active:shadow-none after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#FF6B6B] after:rounded-t-full">
+            <TabsTrigger value="quick" className="pb-3 px-4 text-xs font-bold rounded-none data-active:text-primary data-active:bg-transparent data-active:shadow-none after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-t-full">
               <span>⚡ Input Cepat Skor Tryout</span>
             </TabsTrigger>
-            <TabsTrigger value="quiz" className="pb-3 px-4 text-xs font-bold rounded-none data-active:text-[#FF6B6B] data-active:bg-transparent data-active:shadow-none after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#FF6B6B] after:rounded-t-full">
+            <TabsTrigger value="quiz" className="pb-3 px-4 text-xs font-bold rounded-none data-active:text-primary data-active:bg-transparent data-active:shadow-none after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-t-full">
               <span>📝 Mini Ujian Interaktif (4 Soal)</span>
             </TabsTrigger>
           </TabsList>
@@ -150,7 +150,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
             
             <TabsContent value="quick" className="mt-0">
               <form onSubmit={handleSubmitResult} className="space-y-6">
-                <p className="text-xs text-slate-500 dark:text-[#777] leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground leading-relaxed">
                   Jika Anda sudah mengikuti tryout di lembaga lain (GO, NF, Brain Academy, Zenius, dll), ketikkan nilai skor IRT Anda di bawah ini agar sistem menghitung peluang lolos secara otomatis:
                 </p>
 
@@ -168,7 +168,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                           max="1000"
                           value={scores[comp.code] || 0}
                           onChange={(e) => handleScoreChange(comp.code, parseInt(e.target.value) || 0)}
-                          className="w-20 h-auto px-2.5 py-1.5 rounded-xl bg-white dark:bg-card border-slate-300 dark:border-border text-xs font-bold text-center text-[#FF6B6B] focus:border-[#FF6B6B] focus:ring-[#FF6B6B]"
+                          className="w-20 h-auto px-2.5 py-1.5 rounded-xl bg-white dark:bg-card border-slate-300 dark:border-border text-xs font-bold text-center text-primary focus:border-primary focus:ring-primary"
                         />
                         <span className="text-[10px] text-slate-400">/1000</span>
                       </div>
@@ -179,13 +179,13 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                 <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 flex items-center justify-between">
                   <div>
                     <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">Estimasi Rata-rata Skor Total:</span>
-                    <span className="text-xl font-extrabold text-[#FF6B6B]">
+                    <span className="text-xl font-extrabold text-primary">
                       {((Object.values(scores) as number[]).reduce((a, b) => a + b, 0) / 7).toFixed(1)}
                     </span>
                   </div>
                   <Button
                     type="submit"
-                    className="px-6 py-3 h-auto rounded-2xl bg-[#FF6B6B] text-white text-xs font-bold hover:bg-[#E85D5D] shadow-lg shadow-[#FF6B6B]/30 gap-2"
+                    className="px-6 py-3 h-auto rounded-2xl bg-primary text-white text-xs font-bold hover:bg-primary/90 shadow-lg shadow-primary/30 gap-2"
                   >
                     <Award className="w-4 h-4" />
                     <span>Simpan & Analisis Passing Grade</span>
@@ -199,13 +199,13 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                 {/* Quiz Progress */}
                 <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
                   <span>Soal {quizStep + 1} dari {sampleQuestions.length}</span>
-                  <Badge variant="outline" className="text-[#FF6B6B] h-auto px-2.5 py-1 rounded-full bg-[#FF6B6B]/10 border-[#FF6B6B]/20">
+                  <Badge variant="outline" className="text-primary h-auto px-2.5 py-1 rounded-full bg-primary/10 border-primary/20">
                     Subtes: {sampleQuestions[quizStep].compName}
                   </Badge>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-[#141414] overflow-hidden mb-6">
+                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-muted overflow-hidden mb-6">
                   <div 
-                    className="h-full bg-[#FF6B6B] transition-all duration-300"
+                    className="h-full bg-primary transition-all duration-300"
                     style={{ width: `${((quizStep + 1) / sampleQuestions.length) * 100}%` }}
                   />
                 </div>
@@ -227,13 +227,13 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                           className={cn(
                             "w-full p-4 rounded-xl text-left text-xs font-medium transition-all flex items-center gap-3 border",
                             isSelected 
-                              ? 'bg-[#FF6B6B] text-white border-[#FF6B6B] shadow-md shadow-[#FF6B6B]/20 font-bold' 
-                              : 'bg-white dark:bg-card text-slate-700 dark:text-slate-200 border-slate-200 dark:border-border hover:border-[#FF6B6B]'
+                              ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 font-bold' 
+                              : 'bg-white dark:bg-card text-slate-700 dark:text-slate-200 border-slate-200 dark:border-border hover:border-primary'
                           )}
                         >
                           <span className={cn(
                             "w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0",
-                            isSelected ? 'bg-white text-[#FF6B6B]' : 'bg-slate-100 dark:bg-[#141414] text-slate-500'
+                            isSelected ? 'bg-white text-primary' : 'bg-slate-100 dark:bg-muted text-slate-500'
                           )}>
                             {String.fromCharCode(65 + idx)}
                           </span>
@@ -252,7 +252,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                     size="sm"
                     disabled={quizStep === 0}
                     onClick={() => setQuizStep(quizStep - 1)}
-                    className="px-5 py-2.5 h-auto rounded-xl bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-slate-300 text-xs font-semibold disabled:opacity-40 border-slate-200 dark:border-border"
+                    className="px-5 py-2.5 h-auto rounded-xl bg-slate-100 dark:bg-muted text-slate-600 dark:text-slate-300 text-xs font-semibold disabled:opacity-40 border-slate-200 dark:border-border"
                   >
                     Sebelumnya
                   </Button>
@@ -261,7 +261,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                     <Button
                       type="button"
                       onClick={() => setQuizStep(quizStep + 1)}
-                      className="px-6 py-2.5 h-auto rounded-xl bg-[#FF6B6B] text-white text-xs font-bold hover:bg-[#E85D5D] shadow-sm gap-1.5"
+                      className="px-6 py-2.5 h-auto rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 shadow-sm gap-1.5"
                     >
                       <span>Selanjutnya</span>
                       <Play className="w-3.5 h-3.5 fill-current" />

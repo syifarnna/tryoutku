@@ -173,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <DropdownMenuItem
                     key={notif.id}
                     onClick={() => { setActiveTab('analysis_passing'); }}
-                    className="p-4 focus:bg-slate-50 dark:focus:bg-[#1C1C1C]/50 cursor-pointer"
+                    className="p-4 focus:bg-slate-50 dark:focus:bg-muted/50 cursor-pointer"
                   >
                     <div className="flex gap-3 w-full">
                       <div className={cn(
@@ -186,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-slate-800 dark:text-white mb-0.5">{notif.title}</p>
-                        <p className="text-[11px] text-slate-500 dark:text-[#777] leading-relaxed mb-1">{notif.desc}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-muted-foreground leading-relaxed mb-1">{notif.desc}</p>
                         <span className="text-[10px] text-slate-400">{notif.time}</span>
                       </div>
                     </div>
@@ -205,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               size="icon"
               className={cn("rounded-full p-1 h-auto hover:ring-2 hover:ring-primary/40 transition-all")}
             />}>
-              <Avatar size="lg" className="border-2 border-[#FFE0E0] dark:border-primary">
+              <Avatar size="lg" className="border-2 border-primary/10 dark:border-primary">
                 <AvatarImage
                   src={state.profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${state.profile.full_name || 'User'}`}
                   alt={state.profile.full_name || 'User'}
@@ -227,7 +227,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       "text-[10px] font-bold px-2 py-0.5 rounded uppercase h-auto",
                       state.profile.role === 'admin'
                         ? 'bg-primary/15 text-primary'
-                        : 'bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-slate-300'
+                        : 'bg-slate-100 dark:bg-muted text-slate-600 dark:text-slate-300'
                     )}
                   >
                     {state.profile.role === 'admin' ? '👑 Administrator' : '🎓 Peserta Siswa'}

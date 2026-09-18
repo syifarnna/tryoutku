@@ -40,10 +40,10 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
 
         <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'list' | 'history')}>
           <TabsList className="bg-slate-100 dark:bg-card p-1 rounded-2xl shrink-0 h-auto">
-            <TabsTrigger value="list" className="px-4 py-2 rounded-xl text-xs font-bold data-active:bg-white dark:data-active:bg-[#FF6B6B] data-active:text-[#FF6B6B] dark:data-active:text-white data-active:shadow-xs">
+            <TabsTrigger value="list" className="px-4 py-2 rounded-xl text-xs font-bold data-active:bg-white dark:data-active:bg-primary data-active:text-primary dark:data-active:text-white data-active:shadow-xs">
               📋 Daftar Tryout Tersedia ({state.tryouts.length})
             </TabsTrigger>
-            <TabsTrigger value="history" className="px-4 py-2 rounded-xl text-xs font-bold data-active:bg-white dark:data-active:bg-[#FF6B6B] data-active:text-[#FF6B6B] dark:data-active:text-white data-active:shadow-xs">
+            <TabsTrigger value="history" className="px-4 py-2 rounded-xl text-xs font-bold data-active:bg-white dark:data-active:bg-primary data-active:text-primary dark:data-active:text-white data-active:shadow-xs">
               🏆 Hasil Tryout Saya ({state.results.length})
             </TabsTrigger>
           </TabsList>
@@ -63,8 +63,8 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
                 className={cn(
                   "px-4 py-1.5 h-auto rounded-xl text-xs font-semibold",
                   filterType === ft.toLowerCase()
-                    ? 'bg-[#FF6B6B] text-white border-[#FF6B6B] shadow-sm hover:bg-[#FF6B6B]'
-                    : 'bg-white dark:bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-border hover:border-[#FF6B6B]'
+                    ? 'bg-primary text-white border-primary shadow-sm hover:bg-primary'
+                    : 'bg-white dark:bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-border hover:border-primary'
                 )}
               >
                 {ft}
@@ -78,7 +78,7 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
               <Card key={to.id} className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group gap-0">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-[10px] font-bold h-auto px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-[#FF6B6B] border-indigo-200 dark:border-indigo-800">
+                    <Badge variant="outline" className="text-[10px] font-bold h-auto px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-primary border-indigo-200 dark:border-indigo-800">
                       {to.type}
                     </Badge>
                     <span className="text-xs text-slate-400 font-medium">
@@ -86,20 +86,20 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-base text-slate-800 dark:text-white group-hover:text-[#FF6B6B] transition-colors">
+                  <h3 className="font-bold text-base text-slate-800 dark:text-white group-hover:text-primary transition-colors">
                     {to.name}
                   </h3>
 
-                  <p className="text-xs text-slate-500 dark:text-[#777] leading-relaxed">
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground leading-relaxed">
                     {to.description}
                   </p>
 
                   <div className="pt-2 flex flex-wrap gap-3 text-[11px] text-slate-500 font-medium">
                     <span className="flex items-center gap-1 bg-slate-100 dark:bg-card px-2.5 py-1 rounded-lg">
-                      <Clock className="w-3.5 h-3.5 text-[#FF6B6B]" /> {to.duration_minutes} Menit
+                      <Clock className="w-3.5 h-3.5 text-primary" /> {to.duration_minutes} Menit
                     </span>
                     <span className="flex items-center gap-1 bg-slate-100 dark:bg-card px-2.5 py-1 rounded-lg">
-                      <BookOpen className="w-3.5 h-3.5 text-[#FF6B6B]" /> {to.question_count} Soal (7 Subtes)
+                      <BookOpen className="w-3.5 h-3.5 text-primary" /> {to.question_count} Soal (7 Subtes)
                     </span>
                   </div>
                 </div>
@@ -117,8 +117,8 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
                     className={cn(
                       "px-6 py-2.5 h-auto rounded-xl text-xs font-bold shadow-md gap-2",
                       isCompleted(to)
-                        ? 'bg-slate-100 dark:bg-[#141414] text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                        : 'bg-[#FF6B6B] text-white hover:bg-[#E85D5D] shadow-[#FF6B6B]/30'
+                        ? 'bg-slate-100 dark:bg-muted text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                        : 'bg-primary text-white hover:bg-primary/90 shadow-primary/30'
                     )}
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
@@ -134,7 +134,7 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
           {/* Action Export Bar */}
           <Card className="p-4 rounded-2xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xs flex flex-wrap items-center justify-between gap-4 gap-0">
             <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-[#FF6B6B]" />
+              <Award className="w-5 h-5 text-primary" />
               <span className="text-xs font-bold text-slate-800 dark:text-white">Rekapitulasi Seluruh Sesi Tryout</span>
             </div>
 
@@ -178,13 +178,13 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
               </TableHeader>
               <TableBody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
                 {state.results.map((res) => (
-                  <TableRow key={res.id} className="hover:bg-slate-50/80 dark:hover:bg-[#1C1C1C]/40 transition-colors">
+                  <TableRow key={res.id} className="hover:bg-slate-50/80 dark:hover:bg-muted/80 transition-colors">
                     <TableCell className="py-4 px-6">
                       <span className="font-bold text-slate-800 dark:text-white block">{res.tryout_name}</span>
                       <span className="text-[10px] text-slate-400">{res.tryout_type}</span>
                     </TableCell>
                     <TableCell className="py-4 px-6 text-slate-500">{new Date(res.created_at).toLocaleDateString('id-ID')}</TableCell>
-                    <TableCell className="py-4 px-4 text-center font-extrabold text-[#FF6B6B] text-sm">{res.total_score}</TableCell>
+                    <TableCell className="py-4 px-4 text-center font-extrabold text-primary text-sm">{res.total_score}</TableCell>
                     <TableCell className="py-4 px-4 text-center">
                       <Badge 
                         variant="outline"
@@ -210,7 +210,7 @@ export const TryoutsView: React.FC<TryoutsViewProps> = ({ onTakeTryout, defaultS
                           const to = state.tryouts.find(t => t.id === res.tryout_id) || state.tryouts[0];
                           onTakeTryout(to);
                         }}
-                        className="text-xs font-bold text-[#FF6B6B] h-auto p-0"
+                        className="text-xs font-bold text-primary h-auto p-0"
                       >
                         Bedah Nilai →
                       </Button>

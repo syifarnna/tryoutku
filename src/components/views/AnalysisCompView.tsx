@@ -60,14 +60,14 @@ export const AnalysisCompView: React.FC = () => {
             <Card key={comp.code} className="p-5 rounded-2xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xs flex items-start gap-4 gap-0">
               <Badge 
                 variant="outline" 
-                className="w-12 h-12 rounded-2xl bg-[#FF6B6B]/10 text-[#FF6B6B] font-black text-sm flex items-center justify-center shrink-0 mt-0.5 border-[#FF6B6B]/20 px-0"
+                className="w-12 h-12 rounded-2xl bg-primary/10 text-primary font-black text-sm flex items-center justify-center shrink-0 mt-0.5 border-primary/20 px-0"
               >
                 {comp.code}
               </Badge>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-sm text-slate-800 dark:text-white truncate">{comp.name}</h4>
-                  <span className="font-extrabold text-base text-[#FF6B6B]">{skor}</span>
+                  <span className="font-extrabold text-base text-primary">{skor}</span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">{comp.description}</p>
               </div>

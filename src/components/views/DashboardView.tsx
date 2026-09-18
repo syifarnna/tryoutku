@@ -82,7 +82,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
       
       {/* Hero Welcome & Motivation Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#FF6B6B] to-[#4D5DFB] p-6 lg:p-8 text-white shadow-xl shadow-[#FF6B6B]/20">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-primary to-secondary p-6 lg:p-8 text-white shadow-xl shadow-primary/20">
         <div className="relative z-10 max-w-2xl space-y-3">
           <Badge className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-bold backdrop-blur-xs border-0 text-white hover:bg-white/20">
             <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
@@ -97,7 +97,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
           <div className="pt-2 flex flex-wrap items-center gap-3">
             <Button
               onClick={() => setActiveTab('analysis_passing')}
-              className="px-5 py-2.5 rounded-xl bg-white text-[#FF6B6B] text-xs font-bold hover:bg-indigo-50 shadow-md transition-all cursor-pointer border-0"
+              className="px-5 py-2.5 rounded-xl bg-white text-primary text-xs font-bold hover:bg-indigo-50 shadow-md transition-all cursor-pointer border-0"
             >
               <TrendingUp className="w-4 h-4" />
               <span>Lihat Analisis Passing Grade</span>
@@ -114,7 +114,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
             {availableTryouts[0] && (
               <Button
                 onClick={() => onTakeTryout(availableTryouts[0])}
-                className="px-5 py-2.5 rounded-xl bg-[#000000]/80 text-white text-xs font-semibold hover:bg-[#000000] transition-all border border-white/20"
+                className="px-5 py-2.5 rounded-xl bg-black/80 text-white text-xs font-semibold hover:bg-black transition-all border border-white/20"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
                 <span>Kerjakan {availableTryouts[0].name.split(' - ')[0]}</span>
@@ -154,7 +154,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
               </p>
             </div>
           </CardContent>
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-[#FF6B6B] shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-primary shrink-0">
             <BookOpen className="w-6 h-6" />
           </div>
         </Card>
@@ -167,11 +167,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
           <CardContent className="px-0">
             <div className="space-y-1">
               <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Rata-rata Keseluruhan</span>
-              <p className="text-2xl font-extrabold text-[#FF6B6B]">{avgScore}</p>
+              <p className="text-2xl font-extrabold text-primary">{avgScore}</p>
               <p className="text-[11px] text-slate-400 truncate">IRT Standar Nasional</p>
             </div>
           </CardContent>
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-[#FF6B6B] shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-primary shrink-0">
             <Award className="w-6 h-6" />
           </div>
         </Card>
@@ -210,7 +210,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
                   <span className="text-rose-500">Belum Memenuhi</span>
                 )}
               </p>
-              <p className="text-[11px] font-semibold text-slate-500 dark:text-[#777]">
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-muted-foreground">
                 Gap: <span className={parseFloat(gapValue) >= 0 ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>{parseFloat(gapValue) >= 0 ? '+' : ''}{gapValue}</span> pts
               </p>
             </div>
@@ -228,11 +228,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
       {/* Supabase SQL Blueprint Quick Access Card (Khusus Admin) */}
       {state.profile.role === 'admin' && (
         <Card className={cn(
-          "bg-linear-to-r from-[#1A0F2E] to-[#000000] text-white border border-[#FF6B6B]/30 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4",
+          "bg-linear-to-r from-primary/20 to-background text-white border border-primary/30 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4",
           "ring-0 gap-4 py-6"
         )}>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#FF6B6B] flex items-center justify-center text-white shrink-0 shadow-lg shadow-[#FF6B6B]/40">
+            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white shrink-0 shadow-lg shadow-primary/40">
               <Database className="w-6 h-6" />
             </div>
             <div className="space-y-1">
@@ -250,7 +250,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
           <Button
             onClick={() => setActiveTab('supabase_cfg')}
-            className="px-5 py-3 rounded-xl bg-[#FF6B6B] hover:bg-[#E85D5D] text-white text-xs font-bold transition-all shadow-md shrink-0 w-full sm:w-auto justify-center cursor-pointer border-0"
+            className="px-5 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold transition-all shadow-md shrink-0 w-full sm:w-auto justify-center cursor-pointer border-0"
           >
             <span>Buka SQL Editor Blueprint</span>
             <ArrowUpRight className="w-4 h-4" />
@@ -275,7 +275,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
                 Komparasi skor capaian siswa terhadap garis merah Passing Grade target
               </CardDescription>
             </div>
-            <Badge variant="secondary" className="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-[#FF6B6B] hover:bg-indigo-50 dark:hover:bg-indigo-950">
+            <Badge variant="secondary" className="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-primary hover:bg-indigo-50 dark:hover:bg-indigo-950">
               Target: {targetMajor.passing_grade_total}
             </Badge>
           </CardHeader>
@@ -283,14 +283,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
           <CardContent className="px-0 flex-1 w-full h-72 pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={progressChartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5} />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                <YAxis domain={[500, 800]} stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} />
+                <YAxis domain={[500, 800]} stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#111111', borderRadius: '12px', border: 'none', color: '#fff', fontSize: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}
+                  contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '12px', border: 'none', color: 'var(--card-foreground)', fontSize: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}
                 />
-                <Line type="monotone" dataKey="target" stroke="#F43F5E" strokeDasharray="5 5" strokeWidth={2} name="Passing Grade Target" dot={false} />
-                <Line type="monotone" dataKey="skor" stroke="#FF6B6B" strokeWidth={4} name="Skor Capaian Saya" dot={{ r: 6, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="target" stroke="var(--destructive)" strokeDasharray="5 5" strokeWidth={2} name="Passing Grade Target" dot={false} />
+                <Line type="monotone" dataKey="skor" stroke="var(--primary)" strokeWidth={4} name="Skor Capaian Saya" dot={{ r: 6, strokeWidth: 2, fill: 'var(--card)' }} activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -313,12 +313,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
           <CardContent className="px-0 flex-1 w-full h-72">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart outerRadius="75%" data={competencyRadarData}>
-                <PolarGrid stroke="#cbd5e1" opacity={0.4} />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 'bold' }} />
-                <PolarRadiusAxis angle={30} domain={[0, 1000]} stroke="#cbd5e1" fontSize={9} />
-                <Radar name="Passing Grade Syarat" dataKey="passingGrade" stroke="#FBBF24" fill="#FBBF24" fillOpacity={0.15} />
-                <Radar name="Skor Siswa" dataKey="siswa" stroke="#FF6B6B" fill="#FF6B6B" fillOpacity={0.45} />
-                <Tooltip contentStyle={{ backgroundColor: '#111111', borderRadius: '12px', border: 'none', color: '#fff', fontSize: '11px' }} />
+                <PolarGrid stroke="var(--border)" opacity={0.4} />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--muted-foreground)', fontSize: 11, fontWeight: 'bold' }} />
+                <PolarRadiusAxis angle={30} domain={[0, 1000]} stroke="var(--border)" fontSize={9} />
+                <Radar name="Passing Grade Syarat" dataKey="passingGrade" stroke="var(--chart-5)" fill="var(--chart-5)" fillOpacity={0.15} />
+                <Radar name="Skor Siswa" dataKey="siswa" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.45} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '12px', border: 'none', color: 'var(--card-foreground)', fontSize: '11px' }} />
               </RadarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -350,14 +350,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
             <Button
               variant="outline"
               onClick={() => setActiveTab('recom_alternatives')}
-              className="flex-1 md:flex-none px-4 py-2.5 rounded-xl border border-slate-200 dark:border-border hover:border-[#FF6B6B] text-xs font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs justify-center gap-1.5 bg-white dark:bg-card"
+              className="flex-1 md:flex-none px-4 py-2.5 rounded-xl border border-slate-200 dark:border-border hover:border-primary text-xs font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs justify-center gap-1.5 bg-white dark:bg-card"
             >
-              <Compass className="w-4 h-4 text-[#FF6B6B]" />
+              <Compass className="w-4 h-4 text-primary" />
               <span>Lihat PTN Alternatif</span>
             </Button>
             <Button
               onClick={() => setActiveTab('recom_tutors')}
-              className="flex-1 md:flex-none px-5 py-2.5 rounded-xl bg-[#FF6B6B] hover:bg-[#E85D5D] text-white text-xs font-bold shadow-md shadow-[#FF6B6B]/20 transition-all justify-center gap-1.5 border-0"
+              className="flex-1 md:flex-none px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-md shadow-primary/20 transition-all justify-center gap-1.5 border-0"
             >
               <GraduationCap className="w-4 h-4" />
               <span>Lihat Les/Bimbel Rekomendasi</span>
@@ -376,10 +376,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
         )}>
           <CardHeader className="flex flex-row items-center justify-between px-0">
             <CardTitle className="font-bold text-base text-slate-800 dark:text-white flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-[#FF6B6B]" />
+              <BookOpen className="w-5 h-5 text-primary" />
               <span>Tryout Tersedia untuk Anda</span>
             </CardTitle>
-            <Button variant="ghost" onClick={() => setActiveTab('tryouts')} className="text-xs font-bold text-[#FF6B6B] hover:bg-transparent hover:text-[#FF6B6B]/80 h-auto p-0">
+            <Button variant="ghost" onClick={() => setActiveTab('tryouts')} className="text-xs font-bold text-primary hover:bg-transparent hover:text-primary/80 h-auto p-0">
               Lihat Semua →
             </Button>
           </CardHeader>
@@ -410,7 +410,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
                     "px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border-0",
                     completedTryoutIds.has(to.id)
                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950'
-                      : 'bg-[#FF6B6B] text-white hover:bg-[#E85D5D] shadow-sm'
+                      : 'bg-primary text-white hover:bg-primary/90 shadow-sm'
                   )}
                 >
                   {completedTryoutIds.has(to.id) ? '✓ Sudah Selesai' : 'Kerjakan Ujian'}
@@ -440,7 +440,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
                   <p className="text-[11px] text-slate-400 mt-0.5">Selesai pada {new Date(res.created_at).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-extrabold text-[#FF6B6B] block">{res.total_score}</span>
+                  <span className="text-lg font-extrabold text-primary block">{res.total_score}</span>
                   <Badge
                     variant="secondary"
                     className={cn(

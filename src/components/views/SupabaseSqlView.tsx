@@ -98,10 +98,10 @@ ON CONFLICT (id) DO NOTHING;
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <Database className="w-6 h-6 text-[#FF6B6B]" />
+            <Database className="w-6 h-6 text-primary" />
             Database Setup & Konfigurasi
           </h2>
-          <p className="text-slate-500 dark:text-[#777] mt-1">Salin SQL Editor Blueprint ini ke proyek Supabase Anda.</p>
+          <p className="text-slate-500 dark:text-muted-foreground mt-1">Salin SQL Editor Blueprint ini ke proyek Supabase Anda.</p>
         </div>
       </div>
 
@@ -109,7 +109,7 @@ ON CONFLICT (id) DO NOTHING;
         <div className="lg:col-span-1 space-y-6">
           <Card className="rounded-2xl ring-0 bg-white dark:bg-card border border-slate-200 dark:border-border p-6 shadow-sm gap-4">
             <CardTitle className="font-bold text-slate-800 dark:text-white">Panduan Implementasi Supabase</CardTitle>
-            <ol className="space-y-4 text-sm text-slate-600 dark:text-[#777] list-decimal pl-4">
+            <ol className="space-y-4 text-sm text-slate-600 dark:text-muted-foreground list-decimal pl-4">
               <li>Buka dashboard Supabase.com dan buat proyek baru</li>
               <li>Buka menu <strong className="text-slate-800 dark:text-slate-200">SQL Editor</strong> di sidebar kiri</li>
               <li>Salin kode DDL Table Schema & RLS, lalu jalankan.</li>
@@ -135,7 +135,7 @@ ON CONFLICT (id) DO NOTHING;
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://xyzcompany.supabase.co"
-                    className="h-auto px-3 py-2 bg-white dark:bg-[#1a1b26] border-slate-200 dark:border-border rounded-lg text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                    className="h-auto px-3 py-2 bg-white dark:bg-muted border-slate-200 dark:border-border rounded-lg text-sm text-slate-800 dark:text-white focus:border-primary"
                   />
                 </div>
                 <div className="space-y-1">
@@ -145,12 +145,12 @@ ON CONFLICT (id) DO NOTHING;
                     value={anonKey}
                     onChange={(e) => setAnonKey(e.target.value)}
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp..."
-                    className="h-auto px-3 py-2 bg-white dark:bg-[#1a1b26] border-slate-200 dark:border-border rounded-lg text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                    className="h-auto px-3 py-2 bg-white dark:bg-muted border-slate-200 dark:border-border rounded-lg text-sm text-slate-800 dark:text-white focus:border-primary"
                   />
                 </div>
                 <Button
                   onClick={handleSaveCredentials}
-                  className="w-full py-2 h-auto bg-[#FF6B6B] hover:bg-[#5f61e6] text-white rounded-lg text-sm font-bold gap-2"
+                  className="w-full py-2 h-auto bg-primary hover:bg-secondary/90 text-white rounded-lg text-sm font-bold gap-2"
                 >
                   <Save className="w-4 h-4" />
                   Simpan Kredensial
@@ -164,11 +164,11 @@ ON CONFLICT (id) DO NOTHING;
           <Card className="rounded-2xl ring-0 bg-white dark:bg-card border border-slate-200 dark:border-border overflow-hidden shadow-sm flex flex-col h-full gap-0">
             <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
               <TabsList className="border-b border-slate-100 dark:border-border bg-slate-50 dark:bg-card rounded-none p-0 h-auto w-full justify-start">
-                <TabsTrigger value="ddl" className="px-6 py-4 text-sm font-bold whitespace-nowrap rounded-none data-active:border-b-2 data-active:border-[#FF6B6B] data-active:text-[#FF6B6B] data-active:bg-transparent gap-2">
+                <TabsTrigger value="ddl" className="px-6 py-4 text-sm font-bold whitespace-nowrap rounded-none data-active:border-b-2 data-active:border-primary data-active:text-primary data-active:bg-transparent gap-2">
                   <Terminal className="w-4 h-4" />
                   1. Table Schema & RLS
                 </TabsTrigger>
-                <TabsTrigger value="seed" className="px-6 py-4 text-sm font-bold whitespace-nowrap rounded-none data-active:border-b-2 data-active:border-[#FF6B6B] data-active:text-[#FF6B6B] data-active:bg-transparent gap-2">
+                <TabsTrigger value="seed" className="px-6 py-4 text-sm font-bold whitespace-nowrap rounded-none data-active:border-b-2 data-active:border-primary data-active:text-primary data-active:bg-transparent gap-2">
                   <Database className="w-4 h-4" />
                   2. Master Seed Data
                 </TabsTrigger>

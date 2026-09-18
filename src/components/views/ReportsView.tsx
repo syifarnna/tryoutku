@@ -68,7 +68,7 @@ export const ReportsView: React.FC = () => {
         {/* Laporan Analisis Passing Grade */}
         <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between gap-0">
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center text-[#FF6B6B]">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary">
               <Printer className="w-5 h-5" />
             </div>
             <h4 className="font-bold text-base text-slate-800 dark:text-white">Laporan Analisis Target (PDF)</h4>
@@ -77,7 +77,7 @@ export const ReportsView: React.FC = () => {
           <Button
             onClick={() => summary && exportAnalysisPDF(summary, state.profile.full_name)}
             disabled={!summary}
-            className="mt-6 w-full py-2.5 h-auto rounded-xl text-white text-xs font-bold shadow-xs gap-2 bg-[#FF6B6B] hover:bg-[#E85D5D] disabled:opacity-50"
+            className="mt-6 w-full py-2.5 h-auto rounded-xl text-white text-xs font-bold shadow-xs gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50"
           >
             <Download className="w-4 h-4" /> Unduh Analisis PDF
           </Button>

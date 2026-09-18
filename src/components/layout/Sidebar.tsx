@@ -190,8 +190,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                   className={cn(
                                     "text-[11px] px-2 py-0.5 rounded-md font-semibold uppercase",
                                     isActive && 'bg-primary/15 text-primary',
-                                    !isActive && item.badge === 'Kritis' && 'bg-rose-100 text-[#F43F5E] dark:bg-rose-950 dark:text-rose-400',
-                                    !isActive && item.badge === 'Solusi' && 'bg-[#D1FAE5] text-secondary dark:bg-emerald-950 dark:text-emerald-400',
+                                    !isActive && item.badge === 'Kritis' && 'bg-rose-100 text-destructive dark:bg-rose-950 dark:text-rose-400',
+                                    !isActive && item.badge === 'Solusi' && 'bg-emerald-100 text-secondary dark:bg-emerald-950 dark:text-emerald-400',
                                     !isActive && item.badge !== 'Kritis' && item.badge !== 'Solusi' && 'bg-muted text-muted-foreground'
                                   )}
                                 >

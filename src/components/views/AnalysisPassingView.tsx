@@ -36,7 +36,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
         <p className="text-sm text-slate-500">Belum ada hasil tryout yang tercatat. Silakan kerjakan tryout terlebih dahulu.</p>
         <Button 
           onClick={() => setActiveTab('tryouts')} 
-          className="mt-4 px-5 py-2 h-auto rounded-xl bg-[#FF6B6B] text-white text-xs font-bold"
+          className="mt-4 px-5 py-2 h-auto rounded-xl bg-primary text-white text-xs font-bold"
         >
           Mulai Tryout
         </Button>
@@ -52,14 +52,14 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
       {/* Top Target Selector & Export PDF Action */}
       <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 gap-0">
         <div className="space-y-2 flex-1 max-w-xl">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#FF6B6B] uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <Target className="w-4 h-4" />
             <span>Pilih Program Studi Target Analisis</span>
           </div>
           <select
             value={summary?.target_major?.id || ''}
             onChange={(e) => appStore.setActiveTargetMajor(parseInt(e.target.value))}
-            className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border font-bold text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#FF6B6B] shadow-2xs"
+            className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border font-bold text-sm text-slate-800 dark:text-white focus:outline-none focus:border-primary shadow-2xs"
           >
             {targetMajorsList.map((m) => (
               <option key={m.id} value={m.id}>
@@ -69,7 +69,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
           </select>
           <button 
             onClick={() => setActiveTab('target_majors')}
-            className="text-[11px] font-bold text-[#FF6B6B] hover:underline block pt-1"
+            className="text-[11px] font-bold text-primary hover:underline block pt-1"
           >
             + Kelola Daftar Target Jurusan Impian Lainnya
           </button>
@@ -79,7 +79,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
           <Button
             variant="outline"
             onClick={() => exportAnalysisPDF(summary, state.profile.full_name)}
-            className="px-5 py-3 h-auto rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-[#FF6B6B] hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-xs font-bold gap-2 border border-indigo-200 dark:border-indigo-800"
+            className="px-5 py-3 h-auto rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-primary hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-xs font-bold gap-2 border border-indigo-200 dark:border-indigo-800"
           >
             <FileText className="w-4 h-4" />
             <span>Unduh PDF Analisis Lulus</span>
@@ -92,7 +92,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
         "relative overflow-hidden rounded-3xl p-8 shadow-xl transition-all border",
         summary.is_passed_total 
           ? 'bg-linear-to-br from-emerald-500 to-teal-600 text-white border-emerald-400 shadow-emerald-500/20' 
-          : 'bg-linear-to-br from-[#111111] to-[#0A0A0A] text-white border-slate-700 shadow-slate-900/40'
+          : 'bg-linear-to-br from-background to-background text-white border-slate-700 shadow-slate-900/40'
       )}>
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           
@@ -117,7 +117,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
               <div className="pt-2 flex flex-wrap gap-3">
                 <Button
                   onClick={() => setActiveTab('recom_alternatives')}
-                  className="px-5 py-2.5 h-auto rounded-xl bg-[#FF6B6B] text-white text-xs font-bold hover:bg-[#E85D5D] shadow-lg gap-2"
+                  className="px-5 py-2.5 h-auto rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 shadow-lg gap-2"
                 >
                   <Compass className="w-4 h-4" />
                   <span>Lihat PTN Alternatif (Passing Grade ≤ {summary.latest_result.total_score})</span>
@@ -159,7 +159,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-border pb-4">
           <div>
             <h3 className="font-extrabold text-lg text-slate-800 dark:text-white flex items-center gap-2.5">
-              <TrendingUp className="w-5 h-5 text-[#FF6B6B]" />
+              <TrendingUp className="w-5 h-5 text-primary" />
               <span>Gap Analysis per Kompetensi Subtes (UTBK SNBT)</span>
             </h3>
             <p className="text-xs text-slate-400 mt-1">Identifikasi akurat komponen subtes mana yang menjadi titik lemah pembatal kelulusan Anda</p>
@@ -238,18 +238,18 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
 
         {/* Weakest Competency Solution Banner */}
         {summary.weakest_competency && (
-          <div className="p-6 rounded-3xl bg-linear-to-r from-[#FF6B6B]/10 to-[#4D5DFB]/10 border border-[#FF6B6B]/20 dark:border-[#FF6B6B]/30 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
+          <div className="p-6 rounded-3xl bg-linear-to-r from-primary/10 to-secondary/10 border border-primary/20 dark:border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
             <div className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" /> Solusi Penutup Defisit Terbesar Anda
               </span>
               <p className="text-xs sm:text-sm text-slate-800 dark:text-white font-semibold">
-                Anda mengalami defisit terbesar ({summary.weakest_competency.gap} pts) di subtes <strong className="text-[#FF6B6B]">{summary.weakest_competency.competency_name}</strong>. Ambil langkah les bimbel intensif khusus kompetensi ini sekarang.
+                Anda mengalami defisit terbesar ({summary.weakest_competency.gap} pts) di subtes <strong className="text-primary">{summary.weakest_competency.competency_name}</strong>. Ambil langkah les bimbel intensif khusus kompetensi ini sekarang.
               </p>
             </div>
             <Button
               onClick={() => setActiveTab('recom_tutors')}
-              className="px-5 py-2.5 h-auto rounded-xl bg-[#FF6B6B] hover:bg-[#E85D5D] text-white text-xs font-bold shrink-0 shadow-md"
+              className="px-5 py-2.5 h-auto rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold shrink-0 shadow-md"
             >
               Lihat Program Les Cocok →
             </Button>

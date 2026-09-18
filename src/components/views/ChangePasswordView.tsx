@@ -71,7 +71,7 @@ export const ChangePasswordView: React.FC = () => {
             <ShieldCheck className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">Berhasil!</h2>
-          <p className="text-sm text-slate-500 dark:text-[#777]">
+          <p className="text-sm text-slate-500 dark:text-muted-foreground">
             Password Anda telah berhasil diperbarui. Mengalihkan Anda ke Dashboard...
           </p>
         </Card>
@@ -105,7 +105,7 @@ export const ChangePasswordView: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => appStore.logout()}
-            className="gap-2 text-slate-500 hover:text-slate-700 dark:text-[#777] dark:hover:text-slate-200"
+            className="gap-2 text-slate-500 hover:text-slate-700 dark:text-muted-foreground dark:hover:text-slate-200"
           >
             <LogOut className="w-4 h-4" />
             Logout
@@ -121,7 +121,7 @@ export const ChangePasswordView: React.FC = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Minimal 8 karakter"
-              className="h-10 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B] focus:ring-[#FF6B6B]/20"
+              className="h-10 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-sm text-slate-800 dark:text-white focus:border-primary focus:ring-primary/20"
             />
           </div>
 
@@ -133,7 +133,7 @@ export const ChangePasswordView: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Ulangi password baru"
-              className="h-10 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-sm text-slate-800 dark:text-white focus:border-[#FF6B6B] focus:ring-[#FF6B6B]/20"
+              className="h-10 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-sm text-slate-800 dark:text-white focus:border-primary focus:ring-primary/20"
             />
           </div>
 
@@ -141,8 +141,8 @@ export const ChangePasswordView: React.FC = () => {
             type="submit"
             disabled={loading}
             className={cn(
-              "w-full py-3.5 h-auto rounded-2xl text-sm font-bold shadow-lg shadow-[#FF6B6B]/30 mt-4 cursor-pointer",
-              "bg-[#FF6B6B] hover:bg-[#E85D5D] text-white disabled:opacity-70"
+              "w-full py-3.5 h-auto rounded-2xl text-sm font-bold shadow-lg shadow-primary/30 mt-4 cursor-pointer",
+              "bg-primary hover:bg-primary/90 text-white disabled:opacity-70"
             )}
           >
             <span>{loading ? 'Menyimpan...' : 'Simpan & Lanjutkan'}</span>

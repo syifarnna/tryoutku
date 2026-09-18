@@ -49,11 +49,11 @@ export const AdminTutorsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Kelola Saran Bimbel</h2>
-          <p className="text-slate-500 dark:text-[#777] mt-1">Kelola data mitra bimbingan belajar yang direkomendasikan ke siswa.</p>
+          <p className="text-slate-500 dark:text-muted-foreground mt-1">Kelola data mitra bimbingan belajar yang direkomendasikan ke siswa.</p>
         </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
-          className="px-4 py-2 bg-[#F43F5E] text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-[#e6381a] transition-all shadow-md"
+          className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md"
         >
           <Plus className="w-4 h-4" />
           Tambah Mitra Bimbel
@@ -70,7 +70,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.name || newTutor.provider_name}
                 onChange={e => setNewTutor({...newTutor, name: e.target.value, provider_name: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary"
                 placeholder="e.g. Kelas Intensif UTBK"
               />
             </div>
@@ -79,7 +79,7 @@ export const AdminTutorsView: React.FC = () => {
               <select
                 value={newTutor.focus_competency_code}
                 onChange={e => setNewTutor({...newTutor, focus_competency_code: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary"
               >
                 {state.competencies.map(comp => (
                   <option key={comp.code} value={comp.code}>{comp.name} ({comp.code})</option>
@@ -92,7 +92,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.price}
                 onChange={e => setNewTutor({...newTutor, price: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary"
                 placeholder="e.g. Rp 350.000 / bulan"
               />
             </div>
@@ -102,7 +102,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.contact_info}
                 onChange={e => setNewTutor({...newTutor, contact_info: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary"
                 placeholder="e.g. WA: 0812..."
               />
             </div>
@@ -112,7 +112,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.link_url}
                 onChange={e => setNewTutor({...newTutor, link_url: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary"
                 placeholder="e.g. https://..."
               />
             </div>
@@ -122,7 +122,7 @@ export const AdminTutorsView: React.FC = () => {
                 type="text" 
                 value={newTutor.description}
                 onChange={e => setNewTutor({...newTutor, description: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#F43F5E]"
+                className="w-full bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary"
                 placeholder="Jelaskan keunggulan bimbel ini..."
               />
             </div>
@@ -130,13 +130,13 @@ export const AdminTutorsView: React.FC = () => {
           <div className="flex justify-end gap-3 mt-4">
             <button 
               onClick={() => setIsAdding(false)}
-              className="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-[#1C1C1C] rounded-xl text-sm font-bold transition-all"
+              className="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-muted rounded-xl text-sm font-bold transition-all"
             >
               Batal
             </button>
             <button 
               onClick={handleAdd}
-              className="px-4 py-2 bg-[#F43F5E] text-white rounded-xl text-sm font-bold hover:bg-[#e6381a] transition-all shadow-md"
+              className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-md"
             >
               Simpan Bimbel
             </button>
@@ -148,7 +148,7 @@ export const AdminTutorsView: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-card border-b border-slate-200 dark:border-border text-xs uppercase tracking-wider text-slate-500 dark:text-[#777]">
+              <tr className="bg-slate-50 dark:bg-card border-b border-slate-200 dark:border-border text-xs uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                 <th className="px-6 py-4 font-semibold">Nama / Program</th>
                 <th className="px-6 py-4 font-semibold text-center">Fokus</th>
                 <th className="px-6 py-4 font-semibold text-center">Kontak & Info</th>
@@ -158,7 +158,7 @@ export const AdminTutorsView: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {state.tutors.map((t) => (
-                <tr key={t.id} className="hover:bg-slate-50/50 dark:hover:bg-[#1C1C1C]/30 transition-colors">
+                <tr key={t.id} className="hover:bg-slate-50/50 dark:hover:bg-muted/30 transition-colors">
                   <td className="px-6 py-4">
                     <p className="font-bold text-slate-800 dark:text-white text-sm">{t.provider_name || t.name}</p>
                     <div className="flex items-center gap-1 mt-1 text-amber-500 text-xs">
@@ -167,12 +167,12 @@ export const AdminTutorsView: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-[#141414] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-border">
+                    <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-muted text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-border">
                       {t.focus_competency_code}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <p className="text-xs text-slate-600 dark:text-[#777]">{t.contact_info}</p>
+                    <p className="text-xs text-slate-600 dark:text-muted-foreground">{t.contact_info}</p>
                     {t.link_url && (
                       <a href={t.link_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-600 mt-1">
                         <LinkIcon className="w-3 h-3" />
@@ -181,7 +181,7 @@ export const AdminTutorsView: React.FC = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <p className="text-sm font-semibold text-[#F43F5E]">{t.price}</p>
+                    <p className="text-sm font-semibold text-primary">{t.price}</p>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button onClick={() => handleDelete(t.id)} className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors">
@@ -192,7 +192,7 @@ export const AdminTutorsView: React.FC = () => {
               ))}
               {state.tutors.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500 dark:text-[#777]">
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500 dark:text-muted-foreground">
                     Belum ada rekomendasi bimbel.
                   </td>
                 </tr>

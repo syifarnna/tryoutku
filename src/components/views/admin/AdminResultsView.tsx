@@ -13,9 +13,9 @@ const TRYOUT_TYPES = ['Semua', 'UTBK SNBT', 'Ujian Mandiri', 'Ujian Kedinasan'] 
 
 const TYPE_COLORS: Record<string, string> = {
   'Semua': 'bg-primary',
-  'UTBK SNBT': 'bg-[#06b6d4]',
-  'Ujian Mandiri': 'bg-[#f97316]',
-  'Ujian Kedinasan': 'bg-[#2DD4BF]',
+  'UTBK SNBT': 'bg-cyan-500',
+  'Ujian Mandiri': 'bg-orange-500',
+  'Ujian Kedinasan': 'bg-emerald-500',
 };
 
 export const AdminResultsView: React.FC = () => {
@@ -119,7 +119,7 @@ export const AdminResultsView: React.FC = () => {
             <Award className="w-6 h-6 text-primary" />
             Leaderboard Nasional
           </h2>
-          <p className="text-slate-500 dark:text-[#777] mt-1">
+          <p className="text-slate-500 dark:text-muted-foreground mt-1">
             Peringkat peserta berdasarkan nilai tryout{selectedType !== 'Semua' ? ` ${selectedType}` : ''} terbaik.
             {!loading && <span className="ml-2">({entries.length} peserta)</span>}
           </p>
@@ -160,13 +160,13 @@ export const AdminResultsView: React.FC = () => {
         </Card>
         <Card className="bg-white dark:bg-card ring-0 border border-slate-200 dark:border-border shadow-sm">
           <CardContent className="p-6">
-            <p className="text-slate-500 dark:text-[#777] text-sm font-semibold mb-1">Nilai Tertinggi</p>
+            <p className="text-slate-500 dark:text-muted-foreground text-sm font-semibold mb-1">Nilai Tertinggi</p>
             <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{topScore.toFixed(1)}</h3>
           </CardContent>
         </Card>
         <Card className="bg-white dark:bg-card ring-0 border border-slate-200 dark:border-border shadow-sm">
           <CardContent className="p-6">
-            <p className="text-slate-500 dark:text-[#777] text-sm font-semibold mb-1">Rata-rata Nasional</p>
+            <p className="text-slate-500 dark:text-muted-foreground text-sm font-semibold mb-1">Rata-rata Nasional</p>
             <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{avgScore.toFixed(1)}</h3>
           </CardContent>
         </Card>
@@ -181,7 +181,7 @@ export const AdminResultsView: React.FC = () => {
         </div>
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-border">
+            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold text-center w-16">Rank</TableHead>
               <TableHead className="px-6 py-4 font-semibold">Nama Peserta</TableHead>
               <TableHead className="px-6 py-4 font-semibold">Sekolah</TableHead>
@@ -202,12 +202,12 @@ export const AdminResultsView: React.FC = () => {
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={6} className="px-6 py-16 text-center">
                   <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                  <p className="text-slate-500 dark:text-[#777]">Belum ada hasil tryout dari peserta.</p>
+                  <p className="text-slate-500 dark:text-muted-foreground">Belum ada hasil tryout dari peserta.</p>
                 </TableCell>
               </TableRow>
             ) : (
               entries.map((e, i) => (
-                <TableRow key={e.user_id} className="hover:bg-slate-50/50 dark:hover:bg-[#232435]/50">
+                <TableRow key={e.user_id} className="hover:bg-slate-50/50 dark:hover:bg-muted/80">
                   <TableCell className="px-6 py-4 text-center">{getRankDisplay(i)}</TableCell>
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">

@@ -7,8 +7,8 @@ export const Footer: React.FC = () => {
         © 2026 <span className="font-semibold text-slate-600 dark:text-slate-300">TryoutKu</span> • Platform Simulasi Ujian & Analisis Passing Grade PTN
       </div>
       <div className="hidden sm:flex gap-4">
-        <a href="#dashboard" className="hover:text-[#FF6B6B] transition-colors">Sneat Admin Bootstrap</a>
-        <a href="#analysis_passing" className="hover:text-[#FF6B6B] transition-colors">Gap Analysis Engine</a>
+        <a href="#dashboard" className="hover:text-primary transition-colors">Sneat Admin Bootstrap</a>
+        <a href="#analysis_passing" className="hover:text-primary transition-colors">Gap Analysis Engine</a>
       </div>
     </footer>
   );

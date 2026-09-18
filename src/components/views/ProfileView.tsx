@@ -65,7 +65,7 @@ export const ProfileView: React.FC = () => {
                 type="url"
                 value={avatar}
                 onChange={(e) => setAvatar(e.target.value)}
-                className="h-auto px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs focus:border-[#FF6B6B]"
+                className="h-auto px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs focus:border-primary"
               />
               <p className="text-[10px] text-slate-400">Gunakan tautan gambar JPG/PNG langsung</p>
             </div>
@@ -80,7 +80,7 @@ export const ProfileView: React.FC = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white font-semibold focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white font-semibold focus:border-primary"
               />
             </div>
 
@@ -90,7 +90,7 @@ export const ProfileView: React.FC = () => {
                 type="text"
                 value={nisn}
                 onChange={(e) => setNisn(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white font-mono focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white font-mono focus:border-primary"
               />
             </div>
 
@@ -101,7 +101,7 @@ export const ProfileView: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-primary"
               />
             </div>
 
@@ -111,7 +111,7 @@ export const ProfileView: React.FC = () => {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-primary"
               />
             </div>
 
@@ -121,14 +121,14 @@ export const ProfileView: React.FC = () => {
                 type="text"
                 value={school}
                 onChange={(e) => setSchool(e.target.value)}
-                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+                className="h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-primary"
               />
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Rumpun Minat Jurusan</Label>
               <Select value={interest} onValueChange={(v) => setInterest(v as ClusterType)}>
-                <SelectTrigger className="w-full h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs font-bold text-[#FF6B6B] focus:border-[#FF6B6B]">
+                <SelectTrigger className="w-full h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs font-bold text-primary focus:border-primary">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -151,7 +151,7 @@ export const ProfileView: React.FC = () => {
               placeholder="Ketik password baru jika ingin mengubah..."
               value={pwd}
               onChange={(e) => setPwd(e.target.value)}
-              className="max-w-md w-full h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-[#FF6B6B]"
+              className="max-w-md w-full h-auto px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-primary"
             />
           </div>
 
@@ -160,8 +160,8 @@ export const ProfileView: React.FC = () => {
             <Button
               type="submit"
               className={cn(
-                "px-8 py-3 h-auto rounded-2xl text-xs font-bold shadow-lg shadow-[#FF6B6B]/30 gap-2",
-                "bg-[#FF6B6B] text-white hover:bg-[#E85D5D]"
+                "px-8 py-3 h-auto rounded-2xl text-xs font-bold shadow-lg shadow-primary/30 gap-2",
+                "bg-primary text-white hover:bg-primary/90"
               )}
             >
               <Save className="w-4 h-4" />

@@ -62,7 +62,7 @@ export const AdminUsersView: React.FC = () => {
       showCancelButton: true,
       confirmButtonText: `Ya, jadikan ${label}`,
       cancelButtonText: 'Batal',
-      confirmButtonColor: '#FF6B6B',
+      confirmButtonColor: 'var(--primary)',
     });
 
     if (!confirmed.isConfirmed) return;
@@ -104,7 +104,7 @@ export const AdminUsersView: React.FC = () => {
             <Users className="w-6 h-6 text-primary" />
             Daftar Pengguna
           </h2>
-          <p className="text-sm text-slate-500 dark:text-[#777] mt-1">
+          <p className="text-sm text-slate-500 dark:text-muted-foreground mt-1">
             Kelola data peserta dan admin yang terdaftar.
             {!loading && <span className="ml-2 text-slate-400">({totalCount} total)</span>}
           </p>
@@ -141,7 +141,7 @@ export const AdminUsersView: React.FC = () => {
 
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-[#000000] border-b border-slate-200 dark:border-border">
+            <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold">Nama Lengkap</TableHead>
               <TableHead className="px-6 py-4 font-semibold">Kontak</TableHead>
               <TableHead className="px-6 py-4 font-semibold">NISN</TableHead>
@@ -162,14 +162,14 @@ export const AdminUsersView: React.FC = () => {
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={6} className="px-6 py-16 text-center">
                   <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                  <p className="text-slate-500 dark:text-[#777]">
+                  <p className="text-slate-500 dark:text-muted-foreground">
                     {search ? 'Tidak ada pengguna yang cocok dengan pencarian.' : 'Belum ada pengguna terdaftar.'}
                   </p>
                 </TableCell>
               </TableRow>
             ) : (
               filteredUsers.map((user) => (
-                <TableRow key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-[#232435]/50">
+                <TableRow key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-muted/50">
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-indigo-900/30 flex items-center justify-center text-primary font-bold shrink-0">
@@ -196,7 +196,7 @@ export const AdminUsersView: React.FC = () => {
                         <ShieldCheck className="w-3 h-3" /> Admin
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="gap-1 bg-slate-100 dark:bg-[#141414] text-slate-600 dark:text-[#777] border-slate-200 dark:border-border rounded-md h-auto py-1 px-2.5 text-xs font-bold">
+                      <Badge variant="outline" className="gap-1 bg-slate-100 dark:bg-muted text-slate-600 dark:text-muted-foreground border-slate-200 dark:border-border rounded-md h-auto py-1 px-2.5 text-xs font-bold">
                         <UserIcon className="w-3 h-3" /> Peserta
                       </Badge>
                     )}
@@ -231,7 +231,7 @@ export const AdminUsersView: React.FC = () => {
 
         {totalPages > 1 && !search && (
           <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card/50 text-sm">
-            <span className="text-slate-500 dark:text-[#777] text-xs">
+            <span className="text-slate-500 dark:text-muted-foreground text-xs">
               Halaman {page + 1} dari {totalPages}
             </span>
             <div className="flex items-center gap-2">

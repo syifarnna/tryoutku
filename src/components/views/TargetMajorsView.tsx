@@ -112,13 +112,13 @@ export const TargetMajorsView: React.FC = () => {
             <Card key={major.id} className="p-5 rounded-3xl ring-0 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 flex flex-col justify-between relative group gap-0">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Badge className="text-[10px] font-black h-auto px-2.5 py-0.5 rounded-full bg-[#FF6B6B] text-white border-[#FF6B6B]">
+                  <Badge className="text-[10px] font-black h-auto px-2.5 py-0.5 rounded-full bg-primary text-white border-primary">
                     Pilihan #{idx + 1}
                   </Badge>
                   <span className="text-xs font-bold text-slate-500">PG: {major.passing_grade_total}</span>
                 </div>
                 <h4 className="font-bold text-sm text-slate-800 dark:text-white leading-snug pt-1">{major.name}</h4>
-                <p className="text-xs font-semibold text-[#FF6B6B]">{major.institution_name}</p>
+                <p className="text-xs font-semibold text-primary">{major.institution_name}</p>
               </div>
 
               <div className="pt-4 mt-4 border-t border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
@@ -128,7 +128,7 @@ export const TargetMajorsView: React.FC = () => {
                   onClick={() => appStore.setActiveTargetMajor(major.id)}
                   className={cn(
                     "text-xs font-bold h-auto p-1",
-                    state.activeTargetMajorId === major.id ? 'text-emerald-600 underline' : 'text-slate-500 hover:text-[#FF6B6B]'
+                    state.activeTargetMajorId === major.id ? 'text-emerald-600 underline' : 'text-slate-500 hover:text-primary'
                   )}
                 >
                   {state.activeTargetMajorId === major.id ? '✓ Analisis Aktif' : 'Set Jadi Analisis'}
@@ -170,7 +170,7 @@ export const TargetMajorsView: React.FC = () => {
                 setSelectedInstitutionId(e.target.value);
                 setSelectedMajorId('');
               }}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-[#FF6B6B] dark:text-white"
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-primary dark:text-white"
             >
               <option value="">-- Pilih Kampus --</option>
               {state.institutions.map(inst => (
@@ -188,7 +188,7 @@ export const TargetMajorsView: React.FC = () => {
                 value={selectedMajorId}
                 onChange={(e) => setSelectedMajorId(e.target.value)}
                 disabled={!selectedInstitutionId || isLoadingMajors || fetchedMajors.length === 0}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-[#FF6B6B] dark:text-white disabled:opacity-50"
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-primary dark:text-white disabled:opacity-50"
               >
                 <option value="">
                   {!selectedInstitutionId 
@@ -231,7 +231,7 @@ export const TargetMajorsView: React.FC = () => {
             <Button
               onClick={handleAddTarget}
               disabled={!selectedMajorId}
-              className="px-5 py-2.5 h-auto rounded-xl bg-[#FF6B6B] text-white hover:bg-[#E85D5D] text-sm font-bold shrink-0 shadow-md gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 h-auto rounded-xl bg-primary text-white hover:bg-primary/90 text-sm font-bold shrink-0 shadow-md gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah ke Target</span>

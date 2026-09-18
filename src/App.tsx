@@ -155,7 +155,7 @@ export default function App() {
                 🔒
               </div>
               <h3 className="font-bold text-lg text-slate-800 dark:text-white">Akses Khusus Administrator</h3>
-              <p className="text-xs text-slate-500 dark:text-[#777] leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-muted-foreground leading-relaxed">
                 Akun Anda bertindak sebagai <span className="font-bold text-indigo-600 dark:text-indigo-400">Peserta Tryout</span>. Hak pengubahan skema SQL, eksekusi DDL, maupun konfigurasi koneksi Live Supabase dibatasi hanya untuk Administrator.
               </p>
               <button onClick={() => setActiveTab('dashboard')} className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-md hover:bg-primary/90 transition-all cursor-pointer">
@@ -172,7 +172,7 @@ export default function App() {
 
   return (
     <TooltipProvider>
-    <div className={`min-h-screen ${isDarkMode ? 'dark bg-background text-foreground' : 'bg-[#FAFAFC] text-slate-700'} font-sans selection:bg-primary selection:text-primary-foreground flex transition-colors duration-200`}>
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-background text-foreground' : 'bg-background text-foreground'} font-sans selection:bg-primary selection:text-primary-foreground flex transition-colors duration-200`}>
       
       {/* Sneat Admin Sidebar */}
       {isProfileComplete && !mustChangePassword && (

@@ -17,7 +17,7 @@ export const RecomTutorsView: React.FC = () => {
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
       
       {/* Header Info */}
-      <div className="p-8 rounded-3xl bg-linear-to-r from-[#1D1A3E] to-[#1A0F2E] text-white shadow-xl relative overflow-hidden">
+      <div className="p-8 rounded-3xl bg-linear-to-r from-primary to-secondary text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 max-w-3xl space-y-3">
           <Badge className="bg-white/20 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
             <GraduationCap className="w-3.5 h-3.5 text-amber-300" />
@@ -49,19 +49,19 @@ export const RecomTutorsView: React.FC = () => {
               className={cn(
                 "p-6 lg:p-8 rounded-3xl transition-all flex flex-col justify-between shadow-xs relative overflow-hidden gap-0 ring-0 bg-white dark:bg-card",
                 isMatchedWeakest 
-                  ? 'border-2 border-[#FF6B6B] ring-4 ring-[#FF6B6B]/10 shadow-lg' 
+                  ? 'border-2 border-primary ring-4 ring-primary/10 shadow-lg' 
                   : 'border border-slate-100 dark:border-border hover:border-slate-300'
               )}
             >
               {isMatchedWeakest && (
-                <div className="absolute top-0 right-0 bg-[#FF6B6B] text-white text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider shadow-sm flex items-center gap-1">
+                <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider shadow-sm flex items-center gap-1">
                   <Sparkles className="w-3 h-3" /> Rekomendasi Utama Gap Anda
                 </div>
               )}
 
               <div className="space-y-4 pt-2">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="h-auto px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-[#FF6B6B] border-indigo-200 dark:border-indigo-800 font-black text-xs">
+                  <Badge variant="outline" className="h-auto px-2.5 py-1 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary border-primary/30 font-black text-xs">
                     {tutor.focus_competency_code}
                   </Badge>
                   <div className="flex items-center gap-1 text-amber-500 font-bold text-xs bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg">
@@ -105,8 +105,8 @@ export const RecomTutorsView: React.FC = () => {
                   rel="noopener noreferrer"
                   className={cn(
                     buttonVariants({ variant: "default" }),
-                    "px-5 py-3 h-auto rounded-2xl text-xs font-bold shadow-md shadow-[#FF6B6B]/30 gap-2 shrink-0",
-                    "bg-[#FF6B6B] hover:bg-[#E85D5D] text-white"
+                    "px-5 py-3 h-auto rounded-2xl text-xs font-bold shadow-md shadow-primary/30 gap-2 shrink-0",
+                    "bg-primary hover:bg-primary/90 text-white"
                   )}
                 >
                   <MessageCircle className="w-4 h-4" />

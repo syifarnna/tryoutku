@@ -28,7 +28,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
       
       {/* Header Info */}
-      <div className="p-8 rounded-3xl bg-linear-to-r from-[#1A0F2E] to-[#1D1A3E] text-white shadow-xl relative overflow-hidden">
+      <div className="p-8 rounded-3xl bg-linear-to-r from-primary to-secondary text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 max-w-3xl space-y-3">
           <Badge className="bg-white/20 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
             <Compass className="w-3.5 h-3.5 text-amber-300" />
@@ -49,7 +49,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
       {/* Alternatives Grid */}
       {summary.alternative_majors.length === 0 ? (
         <Card className="p-8 text-center ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-sm gap-0">
-          <p className="text-slate-500 dark:text-[#777]">Belum ada alternatif prodi dengan passing grade di bawah skor Anda saat ini ({summary.latest_result.total_score}). Terus tingkatkan skor tryout Anda!</p>
+          <p className="text-slate-500 dark:text-muted-foreground">Belum ada alternatif prodi dengan passing grade di bawah skor Anda saat ini ({summary.latest_result.total_score}). Terus tingkatkan skor tryout Anda!</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -80,8 +80,8 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
                   </div>
 
                   <div>
-                    <span className="text-xs font-semibold text-[#FF6B6B] block">{altMajor.institution_name}</span>
-                    <h3 className="font-bold text-base text-slate-800 dark:text-white mt-0.5 group-hover:text-[#FF6B6B] transition-colors leading-snug">
+                    <span className="text-xs font-semibold text-primary block">{altMajor.institution_name}</span>
+                    <h3 className="font-bold text-base text-slate-800 dark:text-white mt-0.5 group-hover:text-primary transition-colors leading-snug">
                       {altMajor.name}
                     </h3>
                   </div>
@@ -108,7 +108,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
                       "w-full py-3 px-4 h-auto rounded-2xl text-xs font-bold gap-2",
                       (isAlreadyTarget || isRecentlyAdded)
                         ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 hover:bg-emerald-50'
-                        : 'bg-[#FF6B6B] text-white hover:bg-[#E85D5D] shadow-sm'
+                        : 'bg-primary text-white hover:bg-primary/90 shadow-sm'
                     )}
                   >
                     {isAlreadyTarget || isRecentlyAdded ? (
