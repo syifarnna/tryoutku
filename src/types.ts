@@ -30,9 +30,15 @@ export interface Major {
   institution_name?: string;
   institution_location?: string;
   institution_type?: InstitutionType;
+  code?: string;
   name: string;
   cluster: ClusterType;
+  jenjang?: 'S1' | 'D-III' | 'D-IV';
+  daya_tampung?: number;
+  peminat?: number;
   passing_grade_total: number; // e.g. 685.5
+  passing_grade_percentage?: number; // e.g. 68.55
+  year?: number;
   requirements?: Record<string, number>; // min score per competency code e.g. { PU: 650, PK: 700 }
 }
 

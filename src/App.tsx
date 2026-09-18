@@ -17,6 +17,7 @@ import { TryoutsView } from './components/views/TryoutsView';
 import { AnalysisPassingView } from './components/views/AnalysisPassingView';
 import { AnalysisCompView } from './components/views/AnalysisCompView';
 import { TargetMajorsView } from './components/views/TargetMajorsView';
+import { UniversitasProdiView } from './components/views/UniversitasProdiView';
 import { RecomAlternativesView } from './components/views/RecomAlternativesView';
 import { RecomTutorsView } from './components/views/RecomTutorsView';
 import { ReportsView } from './components/views/ReportsView';
@@ -139,6 +140,8 @@ export default function App() {
         return <AnalysisCompView />;
       case 'target_majors':
         return <TargetMajorsView />;
+      case 'browse_universitas':
+        return <UniversitasProdiView />;
       case 'recom_alternatives':
         return <RecomAlternativesView setActiveTab={setActiveTab} />;
       case 'recom_tutors':

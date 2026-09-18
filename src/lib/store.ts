@@ -344,7 +344,7 @@ class AppStore {
       const { data: instData } = await supabase.from('institutions').select('*').order('name', { ascending: true }).limit(5000);
       if (instData && instData.length > 0) this.state.institutions = instData;
 
-      const { data: majorsData, error: majorsErr } = await supabase.from('majors').select('*, institutions(name)').order('id', { ascending: false }).limit(10000);
+      const { data: majorsData, error: majorsErr } = await supabase.from('majors').select('*, institutions(name, location, type)').order('id', { ascending: false }).limit(10000);
       if (majorsErr) {
         console.warn('Error fetching majors master:', majorsErr);
         // Fallback to simple select without join
@@ -355,7 +355,9 @@ class AppStore {
       } else if (majorsData && majorsData.length > 0) {
         this.state.majors = majorsData.map((m: any) => ({
           ...m,
-          institution_name: m.institutions?.name
+          institution_name: m.institutions?.name,
+          institution_location: m.institutions?.location,
+          institution_type: m.institutions?.type
         }));
       }
 
