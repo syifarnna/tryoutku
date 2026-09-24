@@ -48,7 +48,7 @@ export const ProfileView: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card className="p-8 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs gap-8">
+        <Card className="p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-8">
           
           {/* Avatar Section */}
           <div className="flex items-center gap-6 pb-6 border-b border-slate-100 dark:border-border">

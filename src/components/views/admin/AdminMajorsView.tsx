@@ -13,17 +13,31 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+const JENJANG_OPTIONS = ['S1', 'D-III', 'D-IV'] as const;
+type JenjangOption = typeof JENJANG_OPTIONS[number];
+
+const inferJenjang = (name?: string): string => {
+  const n = (name || '').toUpperCase();
+  if (/D\s*[-]?\s*3/.test(n)) return 'D-III';
+  if (/D\s*[-]?\s*4/.test(n)) return 'D-IV';
+  return 'S1';
+};
+
+const getJenjang = (m: Major): string => m.jenjang || inferJenjang(m.name);
+
 export const AdminMajorsView: React.FC = () => {
   const state = useAppState();
   const [isAdding, setIsAdding] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState('');
+  const [jenjangFilter, setJenjangFilter] = useState<'SEMUA' | JenjangOption>('SEMUA');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [newMajor, setNewMajor] = useState<Partial<Major>>({
     name: '',
-    institution_id: 101, 
+    institution_id: 101,
     cluster: 'Saintek',
+    jenjang: 'S1',
     passing_grade_total: 650
   });
 
@@ -40,6 +54,7 @@ export const AdminMajorsView: React.FC = () => {
       name: '',
       institution_id: 1,
       cluster: 'Saintek',
+      jenjang: 'S1',
       passing_grade_total: 650
     });
   };
@@ -82,6 +97,7 @@ export const AdminMajorsView: React.FC = () => {
         institution_id: Number(row.institution_id || row.id_kampus) || defaultInstitution,
         name: row.name || row.nama_prodi,
         cluster: row.cluster || row.rumpun || 'Campuran',
+        jenjang: row.jenjang || inferJenjang(row.name || row.nama_prodi),
         passing_grade_total: parseFloat(row.passing_grade_total || row.passing_grade) || 600
       }));
 
@@ -97,6 +113,11 @@ export const AdminMajorsView: React.FC = () => {
       setImportLoading(false);
     }
   };
+
+  const displayedMajors = state.majors.filter(m => {
+    if (jenjangFilter === 'SEMUA') return true;
+    return getJenjang(m) === jenjangFilter;
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -140,7 +161,7 @@ export const AdminMajorsView: React.FC = () => {
       )}
 
       {isAdding && (
-        <Card className="bg-white dark:bg-card ring-0 border border-slate-200 dark:border-border shadow-sm">
+        <Card className="bg-card ring-0 border border-slate-200 dark:border-border shadow-sm">
           <CardContent className="space-y-4 p-6">
             <h3 className="font-bold text-lg text-slate-800 dark:text-white">Tambah Program Studi Baru</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -187,6 +208,22 @@ export const AdminMajorsView: React.FC = () => {
                 </Select>
               </div>
               <div>
+                <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Jenjang</Label>
+                <Select 
+                  value={String(newMajor.jenjang || 'S1')} 
+                  onValueChange={(val) => setNewMajor({...newMajor, jenjang: val as any})}
+                >
+                  <SelectTrigger className="w-full h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JENJANG_OPTIONS.map(j => (
+                      <SelectItem key={j} value={j}>{j}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Passing Grade Total</Label>
                 <Input 
                   type="number" 
@@ -213,18 +250,46 @@ export const AdminMajorsView: React.FC = () => {
         </Card>
       )}
 
-      <div className="bg-white dark:bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
+      <div className="flex flex-wrap items-center gap-2 bg-card rounded-2xl border border-slate-200 dark:border-border p-3 shadow-sm">
+        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Filter Jenjang:</span>
+        {(['SEMUA', ...JENJANG_OPTIONS] as const).map(f => {
+          const count = f === 'SEMUA'
+            ? state.majors.length
+            : state.majors.filter(m => getJenjang(m) === f).length;
+          return (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setJenjangFilter(f)}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer',
+                jenjangFilter === f
+                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
+              )}
+            >
+              {f === 'SEMUA' ? 'Semua' : f} ({count})
+            </button>
+          );
+        })}
+        <span className="ml-auto text-xs font-semibold text-slate-400">
+          {displayedMajors.length} tampil
+        </span>
+      </div>
+
+      <div className="bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold">Prodi & Kampus</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-center">Jenjang</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Rumpun</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Passing Grade Total</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {state.majors.map((m) => {
+            {displayedMajors.map((m) => {
               const inst = state.institutions.find(i => i.id === m.institution_id);
               return (
                 <TableRow key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-muted/80">
@@ -233,13 +298,30 @@ export const AdminMajorsView: React.FC = () => {
                     <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5">{inst?.name || 'Unknown'}</p>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'rounded-md text-[11px] font-bold h-auto py-1',
+                        getJenjang(m) === 'D-III'
+                          ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-100 dark:border-amber-800'
+                          : getJenjang(m) === 'D-IV'
+                            ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-100 dark:border-rose-800'
+                            : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'
+                      )}
+                    >
+                      {getJenjang(m)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
                     <Badge 
                       variant="outline" 
                       className={cn(
                         'rounded-md text-[11px] font-bold h-auto py-1',
                         m.cluster === 'Saintek' 
                           ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-100 dark:border-blue-800' 
-                          : 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 border-orange-100 dark:border-orange-800'
+                          : m.cluster === 'Soshum'
+                            ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 border-orange-100 dark:border-orange-800'
+                            : 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400 border-violet-100 dark:border-violet-800'
                       )}
                     >
                       {m.cluster}

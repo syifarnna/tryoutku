@@ -133,7 +133,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
         
         {/* Card 1 */}
         <Card className={cn(
-          "p-5 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
+          "p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
           "ring-0 gap-0 py-0 overflow-visible"
         )}>
           <CardContent className="px-0">
@@ -161,7 +161,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Card 2 */}
         <Card className={cn(
-          "p-5 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
+          "p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
           "ring-0 gap-0 py-0 overflow-visible"
         )}>
           <CardContent className="px-0">
@@ -178,7 +178,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Card 3 */}
         <Card className={cn(
-          "p-5 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
+          "p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
           "ring-0 gap-0 py-0 overflow-visible"
         )}>
           <CardContent className="px-0">
@@ -197,7 +197,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Card 4 */}
         <Card className={cn(
-          "p-5 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
+          "p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex items-center justify-between",
           "ring-0 gap-0 py-0 overflow-visible"
         )}>
           <CardContent className="px-0">
@@ -228,7 +228,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
       {/* Supabase SQL Blueprint Quick Access Card (Khusus Admin) */}
       {state.profile.role === 'admin' && (
         <Card className={cn(
-          "bg-linear-to-r from-primary/20 to-background text-white border border-primary/30 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4",
+          "bg-linear-to-r from-primary/20 to-background border border-primary/30 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4",
           "ring-0 gap-4 py-6"
         )}>
           <div className="flex items-center gap-4">
@@ -239,10 +239,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
               <Badge className="inline-flex items-center gap-2 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-emerald-400 text-slate-950 border-0 hover:bg-emerald-400">
                 ✓ Database Ready
               </Badge>
-              <h3 className="text-base sm:text-lg font-bold text-white">
+              <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white">
                 Supabase SQL Blueprint & Skema Database PTN SNBT
               </h3>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-slate-500 dark:text-slate-300">
                 Kumpulan skema tabel DDL PostgreSql, seed data passing grade 2026, dan RLS security policies siap pakai.
               </p>
             </div>
@@ -263,7 +263,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
         
         {/* Line Chart: Perkembangan Skor Tryout */}
         <Card className={cn(
-          "lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs space-y-4 flex flex-col",
+          "lg:col-span-2 p-6 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs space-y-4 flex flex-col",
           "ring-0 gap-4 py-6"
         )}>
           <CardHeader className="flex items-center justify-between px-0">
@@ -298,7 +298,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Radar Chart: Pemetaan 7 Subtes */}
         <Card className={cn(
-          "p-6 rounded-3xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs space-y-4 flex flex-col",
+          "p-6 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs space-y-4 flex flex-col",
           "ring-0 gap-4 py-6"
         )}>
           <CardHeader className="px-0">
@@ -350,7 +350,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
             <Button
               variant="outline"
               onClick={() => setActiveTab('recom_alternatives')}
-              className="flex-1 md:flex-none px-4 py-2.5 rounded-xl border border-slate-200 dark:border-border hover:border-primary text-xs font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs justify-center gap-1.5 bg-white dark:bg-card"
+              className="flex-1 md:flex-none px-4 py-2.5 rounded-xl border border-slate-200 dark:border-border hover:border-primary text-xs font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs justify-center gap-1.5 bg-card"
             >
               <Compass className="w-4 h-4 text-primary" />
               <span>Lihat PTN Alternatif</span>
@@ -364,7 +364,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
         
         {/* Tryout Tersedia */}
         <Card className={cn(
-          "p-6 rounded-3xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs space-y-4",
+          "p-6 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs space-y-4",
           "ring-0 gap-4 py-6"
         )}>
           <CardHeader className="flex flex-row items-center justify-between px-0">
@@ -415,7 +415,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onTakeTryout, setA
 
         {/* Aktivitas Terakhir */}
         <Card className={cn(
-          "p-6 rounded-3xl bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs space-y-4",
+          "p-6 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs space-y-4",
           "ring-0 gap-4 py-6"
         )}>
           <CardHeader className="px-0">

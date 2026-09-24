@@ -22,6 +22,44 @@ export interface Institution {
   type: InstitutionType;
   location: string;
   logo?: string;
+  grade?: number;      // Grade Campus: batas nilai/nilai minimum masuk kampus
+  range_min?: number;  // Range Nilai bawah (nilai tryout terendah prodi di kampus)
+  range_max?: number;  // Range Nilai atas
+}
+
+export interface PenjurusanQuestion {
+  id: number;
+  question: string;
+  option_a: string;
+  cluster_a: ClusterType;
+  option_b: string;
+  cluster_b: ClusterType;
+  option_c: string;
+  cluster_c: ClusterType;
+  option_d: string;
+  cluster_d: ClusterType;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export interface TutoringCenter {
+  id: number;
+  name: string;
+  focus_competency_code?: string;
+  contact_info?: string;
+  link_url?: string;
+  description?: string;
+  rating?: number;
+  price?: string;
+}
+
+export interface PenjurusanResult {
+  dominantCluster: ClusterType;
+  totalSaintek: number;
+  totalSoshum: number;
+  totalCampuran: number;
+  answeredAt: string;
+  recommendedMajorIds: number[];
 }
 
 export interface Major {

@@ -43,7 +43,7 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent 
         showCloseButton={false}
-        className="sm:max-w-4xl max-h-[90vh] flex flex-col rounded-3xl p-0 gap-0 ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xl overflow-hidden"
+        className="sm:max-w-4xl max-h-[90vh] flex flex-col rounded-3xl p-0 gap-0 ring-0 bg-card border border-slate-100 dark:border-border shadow-2xl overflow-hidden"
       >
         {/* Header */}
         <div className="p-6 border-b border-slate-100 dark:border-border flex items-center justify-between bg-slate-50/50 dark:bg-card shrink-0">
@@ -97,7 +97,7 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
                     placeholder="https://xyzxyz.supabase.co" 
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    className="h-auto px-3.5 py-2.5 rounded-xl bg-white dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-primary"
+                    className="h-auto px-3.5 py-2.5 rounded-xl bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-primary"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -109,7 +109,7 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." 
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
-                    className="h-auto px-3.5 py-2.5 rounded-xl bg-white dark:bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-primary"
+                    className="h-auto px-3.5 py-2.5 rounded-xl bg-card border-slate-200 dark:border-border text-xs text-slate-800 dark:text-white focus:border-primary"
                   />
                 </div>
               </div>

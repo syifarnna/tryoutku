@@ -2,6 +2,7 @@ import React from 'react';
 import { 
   BarChart3, 
   BookOpen, 
+  Brain,
   Compass, 
   FileText, 
   LayoutDashboard, 
@@ -11,7 +12,8 @@ import {
   TrendingUp, 
   Award,
   Database,
-  Users
+  Users,
+  Zap
 } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
 import { cn } from '@/lib/utils';
@@ -20,7 +22,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 interface SidebarProps {
   activeTab: string;
@@ -56,7 +57,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'MANAJEMEN DATA',
       items: [
         { id: 'admin_users', label: 'Daftar Pengguna', icon: Users, badge: '' },
-        { id: 'admin_majors', label: 'Kelola Prodi / Kampus', icon: Target, badge: '' },
+        { id: 'admin_campuses', label: 'Kelola Kampus & Grade', icon: Database, badge: '' },
+        { id: 'admin_majors', label: 'Kelola Prodi', icon: Target, badge: `` },
+        { id: 'admin_questions', label: 'Bank Soal Penjurusan', icon: Brain, badge: `${state.questions.length}` },
         { id: 'admin_results', label: 'Leaderboard Nasional', icon: Award, badge: '' }
       ]
     },
@@ -72,6 +75,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'MENU UTAMA',
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: '' }
+      ]
+    },
+    {
+      title: 'PILIHAN JALUR',
+      items: [
+        { id: 'mantap', label: 'Jalur 1 — Saya Mantep', icon: Zap, badge: 'Nilai' },
+        { id: 'bingung', label: 'Jalur 2 — Tes Penjurusan', icon: Brain, badge: `${state.questions.length} soal` }
       ]
     },
     {
@@ -118,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <TooltipProvider>
+    <>
       {/* Mobile overlay */}
       {isOpen && (
         <div 
@@ -128,7 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside className={cn(
-        "fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-card border-r border-slate-100 dark:border-border flex flex-col transition-transform duration-300 ease-in-out shadow-xs",
+        "fixed top-0 bottom-0 left-0 z-50 w-64 bg-card dark:bg-card border-r border-slate-100 dark:border-border flex flex-col transition-transform duration-300 ease-in-out shadow-xs",
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}>
         {/* Brand Header */}
@@ -161,47 +171,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     return (
                       <li key={item.id}>
-                        <Tooltip>
-                          <TooltipTrigger render={
-                            <Button
-                              variant="ghost"
-                              onClick={() => handleNavClick(item)}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => handleNavClick(item)}
+                          aria-current={isActive ? 'page' : undefined}
+                          className={cn(
+                            "group w-full justify-between px-4 py-2.5 h-auto rounded-md text-sm font-medium cursor-pointer",
+                            isActive && 'bg-primary/10 text-primary font-semibold hover:bg-primary/15',
+                            item.isSpecial && 'border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 hover:bg-amber-100/60',
+                            !isActive && !item.isSpecial && 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          )}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Icon className={cn(
+                              "w-5 h-5 transition-transform group-hover:scale-105 opacity-80 shrink-0",
+                              isActive && 'text-primary opacity-100',
+                              item.isSpecial && 'text-amber-600 dark:text-amber-400',
+                              !isActive && !item.isSpecial && 'text-muted-foreground group-hover:text-foreground'
+                            )} />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {item.badge && (
+                            <Badge
+                              variant={isActive ? 'default' : 'secondary'}
                               className={cn(
-                                "w-full justify-between px-4 py-2.5 h-auto rounded-md text-sm font-medium",
-                                isActive && 'bg-primary/10 text-primary font-semibold hover:bg-primary/15',
-                                item.isSpecial && 'border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 hover:bg-amber-100/60',
-                                !isActive && !item.isSpecial && 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                "text-[11px] px-2 py-0.5 rounded-md font-semibold uppercase ml-2 shrink-0",
+                                isActive && 'bg-primary/15 text-primary',
+                                !isActive && item.badge === 'Kritis' && 'bg-rose-100 text-destructive dark:bg-rose-950 dark:text-rose-400',
+                                !isActive && item.badge === 'Solusi' && 'bg-emerald-100 text-secondary dark:bg-emerald-950 dark:text-emerald-400',
+                                !isActive && item.badge !== 'Kritis' && item.badge !== 'Solusi' && 'bg-muted text-muted-foreground'
                               )}
                             >
-                              <div className="flex items-center gap-3">
-                                <Icon className={cn(
-                                  "w-5 h-5 transition-transform group-hover:scale-105 opacity-80",
-                                  isActive && 'text-primary opacity-100',
-                                  item.isSpecial && 'text-amber-600 dark:text-amber-400',
-                                  !isActive && !item.isSpecial && 'text-muted-foreground group-hover:text-foreground'
-                                )} />
-                                <span className="truncate">{item.label}</span>
-                              </div>
-                              {item.badge && (
-                                <Badge
-                                  variant={isActive ? 'default' : 'secondary'}
-                                  className={cn(
-                                    "text-[11px] px-2 py-0.5 rounded-md font-semibold uppercase",
-                                    isActive && 'bg-primary/15 text-primary',
-                                    !isActive && item.badge === 'Kritis' && 'bg-rose-100 text-destructive dark:bg-rose-950 dark:text-rose-400',
-                                    !isActive && item.badge === 'Solusi' && 'bg-emerald-100 text-secondary dark:bg-emerald-950 dark:text-emerald-400',
-                                    !isActive && item.badge !== 'Kritis' && item.badge !== 'Solusi' && 'bg-muted text-muted-foreground'
-                                  )}
-                                >
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </Button>
-                          } />
-                          <TooltipContent side="right">
-                            {item.label}
-                          </TooltipContent>
-                        </Tooltip>
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </Button>
                       </li>
                     );
                   })}
@@ -214,7 +219,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <Separator />
 
         {/* User Card & Logout */}
-        <div className="p-4 bg-slate-50/50 dark:bg-card">
+        <div className="p-4 bg-muted/50 dark:bg-card">
           <div className="flex items-center gap-3 mb-3 px-1">
             <Avatar size="lg" className="border-2 border-primary">
               <AvatarImage 
@@ -237,13 +242,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Button
             variant="destructive"
             onClick={() => appStore.logout()}
-            className="w-full justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold"
+            className="w-full justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             Keluar (Logout)
           </Button>
         </div>
       </aside>
-    </TooltipProvider>
+    </>
   );
 };

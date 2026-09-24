@@ -31,7 +31,7 @@ export const AnalysisCompView: React.FC = () => {
       </div>
 
       {/* Bar Chart */}
-      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
         <CardTitle className="text-base font-bold text-slate-800 dark:text-white">Skor Subtes Terakhir vs Rata-rata Nasional</CardTitle>
         
         <div className="w-full h-80 pt-4">
@@ -57,7 +57,7 @@ export const AnalysisCompView: React.FC = () => {
         {state.competencies.map(comp => {
           const skor = latestResult?.scores[comp.code] || 0;
           return (
-            <Card key={comp.code} className="p-5 rounded-2xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xs flex items-start gap-4 gap-0">
+            <Card key={comp.code} className="p-5 rounded-2xl ring-0 bg-card border border-slate-100 dark:border-border shadow-2xs flex items-start gap-4 gap-0">
               <Badge 
                 variant="outline" 
                 className="w-12 h-12 rounded-2xl bg-primary/10 text-primary font-black text-sm flex items-center justify-center shrink-0 mt-0.5 border-primary/20 px-0"

@@ -35,6 +35,15 @@ const CLUSTER_STYLE: Record<ClusterType, { badge: string; row: string; dot: stri
 
 const PAGE_SIZE = 50;
 
+type NormJenjang = 'S1' | 'D-III' | 'D-IV';
+
+const normJenjang = (j?: string | null): NormJenjang => {
+  const s = (j || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (s === 'DIII' || s === 'D3') return 'D-III';
+  if (s === 'DIV' || s === 'D4') return 'D-IV';
+  return 'S1';
+};
+
 export const UniversitasProdiView: React.FC = () => {
   const state = useAppState();
 
@@ -46,12 +55,18 @@ export const UniversitasProdiView: React.FC = () => {
 
   const stats = useMemo(() => {
     const majors = state.majors;
+    const countJenjang = (j: NormJenjang) => majors.filter(m => normJenjang(m.jenjang) === j).length;
     return {
       universitas: new Set(majors.map(m => m.institution_id)).size,
       prodi: majors.length,
-      s1: majors.filter(m => m.jenjang === 'S1').length,
-      d3: majors.filter(m => m.jenjang === 'D-III').length,
-      d4: majors.filter(m => m.jenjang === 'D-IV').length,
+      s1: countJenjang('S1'),
+      d3: countJenjang('D-III'),
+      d4: countJenjang('D-IV'),
+      jenjang: {
+        'S1': countJenjang('S1'),
+        'D-III': countJenjang('D-III'),
+        'D-IV': countJenjang('D-IV'),
+      } as Record<NormJenjang, number>,
       rumpun: {
         Saintek: majors.filter(m => m.cluster === 'Saintek').length,
         Soshum: majors.filter(m => m.cluster === 'Soshum').length,
@@ -65,7 +80,7 @@ export const UniversitasProdiView: React.FC = () => {
     let rows = state.majors;
 
     if (jenjang !== 'SEMUA') {
-      rows = rows.filter(m => m.jenjang === jenjang);
+      rows = rows.filter(m => normJenjang(m.jenjang) === jenjang);
     }
 
     if (rumpun !== 'SEMUA') {
@@ -165,7 +180,9 @@ export const UniversitasProdiView: React.FC = () => {
                   : 'bg-background text-muted-foreground border-border hover:bg-muted'
               )}
             >
-              {f}
+              {f === 'SEMUA'
+                ? f
+                : `${f}: ${fmt(stats.jenjang[f as NormJenjang])}`}
             </button>
           ))}
           <span className="ml-auto text-xs font-semibold text-slate-400">
@@ -239,7 +256,7 @@ export const UniversitasProdiView: React.FC = () => {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Badge variant="secondary" className="text-[10px] font-bold">{m.jenjang || '—'}</Badge>
+                      <Badge variant="secondary" className="text-[10px] font-bold">{normJenjang(m.jenjang) || '—'}</Badge>
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmt(m.daya_tampung)}</td>
                     <td className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmt(m.peminat)}</td>

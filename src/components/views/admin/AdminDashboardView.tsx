@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppState } from '../../../lib/store';
 import { supabase } from '../../../lib/supabaseClient';
-import { Users, BookOpen, Target, Award } from 'lucide-react';
+import { BookOpen, Target, Award, Building2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -15,9 +15,12 @@ export const AdminDashboardView: React.FC<{ setActiveTab: (tab: string) => void 
     });
   }, []);
 
+  const campusWithGrade = state.institutions.filter(i => i.grade != null).length;
+
   const stats = [
+    { label: 'Total Kampus', value: state.institutions.length, icon: Building2, color: 'text-sky-500', bg: 'bg-sky-500/10', tab: 'admin_campuses' },
+    { label: 'Total Prodi', value: state.majors.length, icon: Target, color: 'text-secondary', bg: 'bg-secondary/10', tab: 'admin_majors' },
     { label: 'Total Tryout', value: state.tryouts.length, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10', tab: 'admin_tryouts' },
-    { label: 'Total Prodi/Kampus', value: state.majors.length, icon: Target, color: 'text-secondary', bg: 'bg-secondary/10', tab: 'admin_majors' },
     { label: 'Total Pengerjaan', value: totalSubmissions, icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10', tab: 'admin_results' },
   ];
 
@@ -25,17 +28,19 @@ export const AdminDashboardView: React.FC<{ setActiveTab: (tab: string) => void 
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
         <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Dashboard Administrator</h2>
-        <p className="text-slate-500 dark:text-muted-foreground mt-1">Ringkasan sistem TryoutKu dan akses cepat ke panel manajemen.</p>
+        <p className="text-slate-500 dark:text-muted-foreground mt-1">
+          Ringkasan sistem TryoutKu dan akses cepat ke panel manajemen. Data disinkronkan langsung dari database Supabase ({state.institutions.length} kampus, {campusWithGrade} dengan Grade Campus, {state.questions.length} soal penjurusan, {state.tutoringCenters.length} bimbel terdaftar).
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <Card
               key={i}
               onClick={() => setActiveTab(stat.tab)}
-              className="cursor-pointer hover:shadow-md transition-all group ring-0 border border-slate-100 dark:border-border shadow-sm bg-white dark:bg-card"
+              className="cursor-pointer hover:shadow-md transition-all group ring-0 border border-slate-100 dark:border-border shadow-sm bg-card"
             >
               <CardContent className="flex items-center gap-4 p-5">
                 <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform', stat.bg, stat.color)}>

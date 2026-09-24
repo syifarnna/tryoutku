@@ -155,7 +155,7 @@ export const TargetMajorsView: React.FC = () => {
       </div>
 
       {/* Add New Target Dropdowns Grid */}
-      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
         <div>
           <h3 className="font-bold text-base text-slate-800 dark:text-white">Tambah Target Institut Baru</h3>
           <p className="text-xs text-slate-400 mt-1">Pilih Kampus lalu Pilih Program Studi incaran Anda.</p>
@@ -214,14 +214,14 @@ export const TargetMajorsView: React.FC = () => {
             <div>
               <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold mb-1">Informasi Prodi</p>
               <div className="flex items-center gap-3 flex-wrap">
-                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
+                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
                   Rumpun: {selectedMajorInfo.cluster}
                 </Badge>
-                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
+                <Badge variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
                   Passing Grade: <span className="text-indigo-600 dark:text-indigo-400 ml-1">{selectedMajorInfo.passing_grade_total}</span>
                 </Badge>
                 {selectedMajorInfo.passing_grades && selectedMajorInfo.passing_grades.map((pg: any) => (
-                  <Badge key={pg.id} variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-white dark:bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
+                  <Badge key={pg.id} variant="outline" className="text-[10px] font-bold h-auto px-2 py-0.5 rounded-md bg-card text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border">
                     {pg.competency_code}: <span className="text-indigo-600 dark:text-indigo-400 ml-1">{pg.min_score}</span>
                   </Badge>
                 ))}

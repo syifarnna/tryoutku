@@ -88,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <TooltipProvider>
-      <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 lg:px-8 bg-white/80 dark:bg-card/80 backdrop-blur-md border-b border-slate-100 dark:border-border shadow-2xs">
+      <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 lg:px-8 bg-card/80 dark:bg-card/80 backdrop-blur-md border-b border-slate-100 dark:border-border shadow-2xs">
         {/* Left section: Mobile menu & Search */}
         <div className="flex items-center gap-4 flex-1 max-w-md">
           <Button

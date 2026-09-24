@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   AlertTriangle, 
   CheckCircle2, 
@@ -12,7 +12,6 @@ import {
   Sparkles
 } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
-import { exportAnalysisPDF } from '../../lib/exportUtils';
 import { cn } from '../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -25,13 +24,14 @@ interface AnalysisPassingViewProps {
 
 export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setActiveTab }) => {
   const state = useAppState();
+  const [handlingExport, setHandlingExport] = useState(false);
 
   const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0] || 1;
   const summary = appStore.getAnalysis(activeTargetMajorId);
 
   if (!summary) {
     return (
-      <div className="p-12 text-center bg-white dark:bg-card rounded-3xl border border-slate-100">
+      <div className="p-12 text-center bg-card rounded-3xl border border-slate-100">
         <p className="text-sm text-slate-500">Belum ada hasil tryout yang tercatat. Silakan kerjakan tryout terlebih dahulu.</p>
         <Button 
           onClick={() => setActiveTab('tryouts')} 
@@ -49,7 +49,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
       
       {/* Top Target Selector & Export PDF Action */}
-      <Card className="p-6 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 gap-0">
+      <Card className="p-6 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 gap-0">
         <div className="space-y-2 flex-1 max-w-xl">
           <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <Target className="w-4 h-4" />
@@ -77,11 +77,23 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
           <Button
             variant="outline"
-            onClick={() => exportAnalysisPDF(summary, state.profile.full_name)}
-            className="px-5 py-3 h-auto rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-primary hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-xs font-bold gap-2 border border-indigo-200 dark:border-indigo-800"
+            onClick={async () => {
+              if (handlingExport) return;
+              setHandlingExport(true);
+              try {
+                const { exportAnalysisPDF } = await import('../../lib/exportUtils');
+                await exportAnalysisPDF(summary, state.profile.full_name);
+              } catch (e) {
+                console.warn('Gagal export PDF analisis:', e);
+              } finally {
+                setHandlingExport(false);
+              }
+            }}
+            disabled={handlingExport}
+            className="px-5 py-3 h-auto rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-primary hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-xs font-bold gap-2 border border-indigo-200 dark:border-indigo-800 disabled:opacity-60"
           >
             <FileText className="w-4 h-4" />
-            <span>Unduh PDF Analisis Lulus</span>
+            <span>{handlingExport ? 'Membuat...' : 'Unduh PDF Analisis Lulus'}</span>
           </Button>
         </div>
       </Card>
@@ -91,7 +103,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
         "relative overflow-hidden rounded-3xl p-8 shadow-xl transition-all border",
         summary.is_passed_total 
           ? 'bg-linear-to-br from-emerald-500 to-teal-600 text-white border-emerald-400 shadow-emerald-500/20' 
-          : 'bg-linear-to-br from-background to-background text-white border-slate-700 shadow-slate-900/40'
+          : 'bg-linear-to-br from-slate-700 to-slate-900 text-white border-slate-600 shadow-slate-900/40'
       )}>
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           
@@ -145,7 +157,7 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
       </div>
 
       {/* Gap Analysis Table per 7 Subtes (Fitur Inti) */}
-      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-border pb-4">
           <div>

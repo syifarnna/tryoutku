@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useAppState } from './lib/store';
 import { Tryout } from './types';
 import { Sidebar } from './components/layout/Sidebar';
@@ -12,24 +12,38 @@ import { Footer } from './components/layout/Footer';
 import { SupabaseSqlModal } from './components/modals/SupabaseSqlModal';
 import { TakeTryoutModal } from './components/modals/TakeTryoutModal';
 import { AuthView } from './components/views/AuthView';
-import { DashboardView } from './components/views/DashboardView';
-import { TryoutsView } from './components/views/TryoutsView';
-import { AnalysisPassingView } from './components/views/AnalysisPassingView';
-import { AnalysisCompView } from './components/views/AnalysisCompView';
-import { TargetMajorsView } from './components/views/TargetMajorsView';
-import { UniversitasProdiView } from './components/views/UniversitasProdiView';
-import { RecomAlternativesView } from './components/views/RecomAlternativesView';
-import { ReportsView } from './components/views/ReportsView';
-import { ProfileView } from './components/views/ProfileView';
-import { SupabaseSqlView } from './components/views/SupabaseSqlView';
-import { ChangePasswordView } from './components/views/ChangePasswordView';
-
-import { AdminDashboardView } from './components/views/admin/AdminDashboardView';
-import { AdminTryoutsView } from './components/views/admin/AdminTryoutsView';
-import { AdminMajorsView } from './components/views/admin/AdminMajorsView';
-import { AdminResultsView } from './components/views/admin/AdminResultsView';
-import { AdminUsersView } from './components/views/admin/AdminUsersView';
 import { TooltipProvider } from './components/ui/tooltip';
+
+type ViewModule = Record<string, React.ComponentType<any>>;
+
+function lazyView<N extends keyof ViewModule>(
+  importFn: () => Promise<Record<string, React.ComponentType<any>>>,
+  name: N
+) {
+  return lazy(() => importFn().then((m) => ({ default: m[name] as React.ComponentType<any> })));
+}
+
+const DashboardView = lazyView(() => import('./components/views/DashboardView'), 'DashboardView');
+const TryoutsView = lazyView(() => import('./components/views/TryoutsView'), 'TryoutsView');
+const AnalysisPassingView = lazyView(() => import('./components/views/AnalysisPassingView'), 'AnalysisPassingView');
+const AnalysisCompView = lazyView(() => import('./components/views/AnalysisCompView'), 'AnalysisCompView');
+const TargetMajorsView = lazyView(() => import('./components/views/TargetMajorsView'), 'TargetMajorsView');
+const UniversitasProdiView = lazyView(() => import('./components/views/UniversitasProdiView'), 'UniversitasProdiView');
+const RecomAlternativesView = lazyView(() => import('./components/views/RecomAlternativesView'), 'RecomAlternativesView');
+const ReportsView = lazyView(() => import('./components/views/ReportsView'), 'ReportsView');
+const ProfileView = lazyView(() => import('./components/views/ProfileView'), 'ProfileView');
+const SupabaseSqlView = lazyView(() => import('./components/views/SupabaseSqlView'), 'SupabaseSqlView');
+const ChangePasswordView = lazyView(() => import('./components/views/ChangePasswordView'), 'ChangePasswordView');
+
+const AdminDashboardView = lazyView(() => import('./components/views/admin/AdminDashboardView'), 'AdminDashboardView');
+const AdminTryoutsView = lazyView(() => import('./components/views/admin/AdminTryoutsView'), 'AdminTryoutsView');
+const AdminMajorsView = lazyView(() => import('./components/views/admin/AdminMajorsView'), 'AdminMajorsView');
+const AdminCampusesView = lazyView(() => import('./components/views/admin/AdminCampusesView'), 'AdminCampusesView');
+const AdminQuestionsView = lazyView(() => import('./components/views/admin/AdminQuestionsView'), 'AdminQuestionsView');
+const AdminResultsView = lazyView(() => import('./components/views/admin/AdminResultsView'), 'AdminResultsView');
+const AdminUsersView = lazyView(() => import('./components/views/admin/AdminUsersView'), 'AdminUsersView');
+const MantepView = lazyView(() => import('./components/views/MantepView'), 'MantepView');
+const BingungView = lazyView(() => import('./components/views/BingungView'), 'BingungView');
 
 export default function App() {
   const state = useAppState();
@@ -110,6 +124,10 @@ export default function App() {
           return <AdminTryoutsView />;
         case 'admin_majors':
           return <AdminMajorsView />;
+        case 'admin_campuses':
+          return <AdminCampusesView />;
+        case 'admin_questions':
+          return <AdminQuestionsView />;
         case 'admin_results':
           return <AdminResultsView />;
         case 'admin_users':
@@ -126,10 +144,14 @@ export default function App() {
     switch (activeTab) {
       case 'dashboard':
         return <DashboardView onTakeTryout={handleTakeTryout} setActiveTab={setActiveTab} />;
+      case 'mantap':
+        return <MantepView />;
+      case 'bingung':
+        return <BingungView />;
       case 'tryouts':
-        return <TryoutsView onTakeTryout={handleTakeTryout} defaultSubTab="list" />;
+        return <TryoutsView key="tryouts" onTakeTryout={handleTakeTryout} defaultSubTab="list" />;
       case 'results':
-        return <TryoutsView onTakeTryout={handleTakeTryout} defaultSubTab="history" />;
+        return <TryoutsView key="results" onTakeTryout={handleTakeTryout} defaultSubTab="history" />;
       case 'analysis_passing':
         return <AnalysisPassingView setActiveTab={setActiveTab} />;
       case 'analysis_comp':
@@ -197,7 +219,13 @@ export default function App() {
 
         {/* Dynamic Content Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {renderActiveView()}
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-32">
+              <div className="w-10 h-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            </div>
+          }>
+            {renderActiveView()}
+          </Suspense>
         </main>
 
         {/* Minimalist Footer */}

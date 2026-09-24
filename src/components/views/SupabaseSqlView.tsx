@@ -107,7 +107,7 @@ ON CONFLICT (id) DO NOTHING;
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
-          <Card className="rounded-2xl ring-0 bg-white dark:bg-card border border-slate-200 dark:border-border p-6 shadow-sm gap-4">
+          <Card className="rounded-2xl ring-0 bg-card border border-slate-200 dark:border-border p-6 shadow-sm gap-4">
             <CardTitle className="font-bold text-slate-800 dark:text-white">Panduan Implementasi Supabase</CardTitle>
             <ol className="space-y-4 text-sm text-slate-600 dark:text-muted-foreground list-decimal pl-4">
               <li>Buka dashboard Supabase.com dan buat proyek baru</li>
@@ -161,7 +161,7 @@ ON CONFLICT (id) DO NOTHING;
         </div>
 
         <div className="lg:col-span-2">
-          <Card className="rounded-2xl ring-0 bg-white dark:bg-card border border-slate-200 dark:border-border overflow-hidden shadow-sm flex flex-col h-full gap-0">
+          <Card className="rounded-2xl ring-0 bg-card border border-slate-200 dark:border-border overflow-hidden shadow-sm flex flex-col h-full gap-0">
             <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
               <TabsList className="border-b border-slate-100 dark:border-border bg-slate-50 dark:bg-card rounded-none p-0 h-auto w-full justify-start">
                 <TabsTrigger value="ddl" className="px-6 py-4 text-sm font-bold whitespace-nowrap rounded-none data-active:border-b-2 data-active:border-primary data-active:text-primary data-active:bg-transparent gap-2">

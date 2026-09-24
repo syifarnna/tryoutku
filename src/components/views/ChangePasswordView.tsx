@@ -66,7 +66,7 @@ export const ChangePasswordView: React.FC = () => {
   if (success) {
     return (
       <div className="pt-8 animate-in fade-in zoom-in-95 duration-500 max-w-xl mx-auto px-4">
-        <Card className="rounded-3xl p-8 shadow-xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border text-center gap-0">
+        <Card className="rounded-3xl p-8 shadow-xl ring-0 bg-card border border-slate-100 dark:border-border text-center gap-0">
           <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
             <ShieldCheck className="w-8 h-8" />
           </div>
@@ -93,7 +93,7 @@ export const ChangePasswordView: React.FC = () => {
         </div>
       </div>
 
-      <Card className="rounded-3xl p-8 shadow-xl ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border gap-0">
+      <Card className="rounded-3xl p-8 shadow-xl ring-0 bg-card border border-slate-100 dark:border-border gap-0">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">

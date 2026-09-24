@@ -60,7 +60,7 @@ export const AdminTryoutsView: React.FC = () => {
       </div>
 
       {isAdding && (
-        <div className="bg-white dark:bg-card rounded-2xl p-6 border border-slate-200 dark:border-border shadow-sm space-y-4">
+        <div className="bg-card rounded-2xl p-6 border border-slate-200 dark:border-border shadow-sm space-y-4">
           <h3 className="font-bold text-lg text-slate-800 dark:text-white">Tambah Tryout Baru</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -142,7 +142,7 @@ export const AdminTryoutsView: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
+      <div className="bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

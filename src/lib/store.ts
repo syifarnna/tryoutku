@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { 
+import {
   AnalysisSummary, 
+  ClusterType,
   Competency, 
   GapAnalysisItem, 
   Institution, 
   Major, 
+  PenjurusanQuestion,
   Profile, 
   TargetInstitution, 
   Tryout, 
-  TryoutResult
+  TryoutResult,
+  TutoringCenter
 } from '../types';
 import { 
   INITIAL_COMPETENCIES, 
@@ -32,6 +35,8 @@ export interface AppState {
   targetMajorIds: number[]; 
   activeTargetMajorId: number; 
   useRealSupabase: boolean; // Keep for compatibility but it's always true now
+  questions: PenjurusanQuestion[];
+  tutoringCenters: TutoringCenter[];
 }
 
 const DEFAULT_STATE: AppState = {
@@ -45,7 +50,9 @@ const DEFAULT_STATE: AppState = {
   results: [],
   targetMajorIds: [], 
   activeTargetMajorId: 1, 
-  useRealSupabase: true
+  useRealSupabase: true,
+  questions: [],
+  tutoringCenters: []
 };
 
 class AppStore {
@@ -54,7 +61,51 @@ class AppStore {
 
   constructor() {
     this.state = { ...DEFAULT_STATE };
+    this.hydrateTargetsFromStorage();
     this.initAuth();
+  }
+
+  private persistTargetsSnapshot() {
+    try {
+      const snapshot = {
+        version: 1,
+        targetMajorIds: this.state.targetMajorIds,
+        activeTargetMajorId: this.state.activeTargetMajorId || null,
+        majors: this.getTargetMajors().map((m) => ({
+          id: m.id,
+          institution_id: m.institution_id,
+          institution_name: m.institution_name,
+          name: m.name,
+          cluster: m.cluster,
+          passing_grade_total: m.passing_grade_total,
+        })),
+      };
+      localStorage.setItem('tryoutku_targets_v1', JSON.stringify(snapshot));
+    } catch (e) {
+      console.warn('Gagal menyimpan target prodi ke localStorage:', e);
+    }
+  }
+
+  private hydrateTargetsFromStorage() {
+    try {
+      const raw = localStorage.getItem('tryoutku_targets_v1');
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      if (!snap || snap.version !== 1 || !Array.isArray(snap.targetMajorIds)) return;
+      this.state.targetMajorIds = snap.targetMajorIds;
+      if (snap.activeTargetMajorId != null) {
+        this.state.activeTargetMajorId = snap.activeTargetMajorId;
+      }
+      if (Array.isArray(snap.majors)) {
+        snap.majors.forEach((m: Major) => {
+          if (!this.state.majors.find((x) => x.id === m.id)) {
+            this.state.majors = [...this.state.majors, m];
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Gagal memuat target prodi dari localStorage:', e);
+    }
   }
 
   private async initAuth() {
@@ -71,6 +122,7 @@ class AppStore {
         this.state.profile = { ...EMPTY_PROFILE };
         this.state.results = [];
         this.state.targetMajorIds = [];
+        try { localStorage.removeItem('tryoutku_targets_v1'); } catch (e) {}
         this.notify();
       }
     });
@@ -145,6 +197,7 @@ class AppStore {
         this.state.activeTargetMajorId = majorId;
       }
       this.notify();
+      this.persistTargetsSnapshot();
       
       try {
         await supabase.from('target_institutions').insert({
@@ -163,6 +216,7 @@ class AppStore {
       this.state.activeTargetMajorId = this.state.targetMajorIds[0] || INITIAL_MAJORS[0].id;
     }
     this.notify();
+    this.persistTargetsSnapshot();
 
     try {
       await supabase.from('target_institutions')
@@ -174,6 +228,17 @@ class AppStore {
   public setActiveTargetMajor(majorId: number) {
     this.state.activeTargetMajorId = majorId;
     this.notify();
+    this.persistTargetsSnapshot();
+  }
+
+  public async saveInterest(cluster: ClusterType) {
+    this.state.profile = { ...this.state.profile, major_interest: cluster };
+    this.notify();
+    try {
+      await supabase.from('profiles').update({ major_interest: cluster }).eq('id', this.state.profile.id);
+    } catch (e) {
+      console.warn('Gagal simpan minat ke Supabase:', e);
+    }
   }
 
   // Tryout Results
@@ -347,6 +412,16 @@ class AppStore {
         }));
       }
 
+      const { data: questionsData } = await supabase.from('penjurusan_questions').select('*').order('id', { ascending: true });
+      if (questionsData && questionsData.length > 0) {
+        this.state.questions = questionsData;
+      }
+
+      const { data: tutoringData } = await supabase.from('tutoring_centers').select('*').order('id', { ascending: true });
+      if (tutoringData && tutoringData.length > 0) {
+        this.state.tutoringCenters = tutoringData;
+      }
+
       this.notify();
     } catch (err) {
       console.warn('Gagal memuat data master dari Supabase:', err);
@@ -393,6 +468,7 @@ class AppStore {
           this.state.activeTargetMajorId = this.state.targetMajorIds[0];
         }
       }
+      this.persistTargetsSnapshot();
 
       this.notify();
     } catch (err) {
@@ -434,6 +510,78 @@ class AppStore {
       this.state.majors = this.state.majors.filter(m => m.id !== id);
       this.notify();
     }
+  }
+
+  // Admin: Kelola Kampus & Grade Campus / Range Nilai
+  public async addInstitution(inst: Omit<Institution, 'id'> & { id?: number }) {
+    const { id: _ignored, ...payload } = inst as any;
+    const { data, error } = await supabase.from('institutions').insert(payload).select().single();
+    if (!error && data) {
+      this.state.institutions = [...this.state.institutions, data];
+      this.notify();
+      return data;
+    }
+    if (error) console.warn('Gagal tambah kampus:', error.message);
+    return null;
+  }
+
+  public async updateInstitution(inst: Institution) {
+    const { data, error } = await supabase.from('institutions')
+      .update({
+        name: inst.name,
+        type: inst.type,
+        location: inst.location,
+        grade: inst.grade ?? null,
+        range_min: inst.range_min ?? null,
+        range_max: inst.range_max ?? null,
+      })
+      .eq('id', inst.id)
+      .select()
+      .single();
+    if (!error && data) {
+      this.state.institutions = this.state.institutions.map(i => i.id === data.id ? data : i);
+      this.notify();
+    }
+    if (error) console.warn('Gagal update kampus:', error.message);
+  }
+
+  public async deleteInstitution(id: number) {
+    const { error } = await supabase.from('institutions').delete().eq('id', id);
+    if (!error) {
+      this.state.institutions = this.state.institutions.filter(i => i.id !== id);
+      this.notify();
+    }
+    if (error) console.warn('Gagal hapus kampus:', error.message);
+  }
+
+  // Admin: Bank Soal Penjurusan
+  public async addQuestion(q: Omit<PenjurusanQuestion, 'id' | 'created_at'> & { id?: number }) {
+    const { id: _ignored, created_at: __ignored, ...payload } = q as any;
+    const { data, error } = await supabase.from('penjurusan_questions').insert(payload).select().single();
+    if (!error && data) {
+      this.state.questions = [...this.state.questions, data];
+      this.notify();
+      return data;
+    }
+    if (error) console.warn('Gagal tambah soal:', error.message);
+    return null;
+  }
+
+  public async toggleQuestionActive(id: number, isActive: boolean) {
+    const { error } = await supabase.from('penjurusan_questions').update({ is_active: isActive }).eq('id', id);
+    if (!error) {
+      this.state.questions = this.state.questions.map(q => q.id === id ? { ...q, is_active: isActive } : q);
+      this.notify();
+    }
+  }
+
+  public async deleteQuestion(id: number) {
+    const { error } = await supabase.from('penjurusan_questions').delete().eq('id', id);
+    if (!error) {
+      this.state.questions = this.state.questions.filter(q => q.id !== id);
+      this.notify();
+    }
+    if (error) console.warn('Gagal hapus soal:', error.message);
   }
 }
 

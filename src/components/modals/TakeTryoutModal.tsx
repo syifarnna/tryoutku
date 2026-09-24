@@ -111,7 +111,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent 
         showCloseButton={false}
-        className="sm:max-w-2xl rounded-3xl p-0 gap-0 ring-0 bg-white dark:bg-card border border-slate-100 dark:border-border shadow-2xl max-h-[90vh] overflow-hidden"
+        className="sm:max-w-2xl rounded-3xl p-0 gap-0 ring-0 bg-card border border-slate-100 dark:border-border shadow-2xl max-h-[90vh] overflow-hidden"
       >
         {/* Header */}
         <div className="p-6 border-b border-slate-100 dark:border-border flex items-center justify-between bg-primary text-white">
@@ -168,7 +168,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                           max="1000"
                           value={scores[comp.code] || 0}
                           onChange={(e) => handleScoreChange(comp.code, parseInt(e.target.value) || 0)}
-                          className="w-20 h-auto px-2.5 py-1.5 rounded-xl bg-white dark:bg-card border-slate-300 dark:border-border text-xs font-bold text-center text-primary focus:border-primary focus:ring-primary"
+                          className="w-20 h-auto px-2.5 py-1.5 rounded-xl bg-card border-slate-300 dark:border-border text-xs font-bold text-center text-primary focus:border-primary focus:ring-primary"
                         />
                         <span className="text-[10px] text-slate-400">/1000</span>
                       </div>
@@ -228,7 +228,7 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
                             "w-full p-4 rounded-xl text-left text-xs font-medium transition-all flex items-center gap-3 border",
                             isSelected 
                               ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 font-bold' 
-                              : 'bg-white dark:bg-card text-slate-700 dark:text-slate-200 border-slate-200 dark:border-border hover:border-primary'
+                              : 'bg-card text-slate-700 dark:text-slate-200 border-slate-200 dark:border-border hover:border-primary'
                           )}
                         >
                           <span className={cn(
