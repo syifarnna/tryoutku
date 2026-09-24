@@ -58,6 +58,7 @@ const DEFAULT_STATE: AppState = {
 class AppStore {
   private state: AppState;
   private listeners: Set<() => void> = new Set();
+  private _masterDataAuthed = false;
 
   constructor() {
     this.state = { ...DEFAULT_STATE };
@@ -117,11 +118,18 @@ class AppStore {
         this.state.isLoggedIn = true;
         this.state.profile.email = session.user.email || '';
         this.syncFromSupabase(session.user.id);
+        // Re-fetch master data dengan sesi yang sudah ter-authenticated.
+        // Login pertama kadang fetch awal (anon) difilter RLS hingga prodi kosong.
+        if (!this._masterDataAuthed) {
+          this._masterDataAuthed = true;
+          this.fetchMasterData();
+        }
       } else {
         this.state.isLoggedIn = false;
         this.state.profile = { ...EMPTY_PROFILE };
         this.state.results = [];
         this.state.targetMajorIds = [];
+        this._masterDataAuthed = false;
         try { localStorage.removeItem('tryoutku_targets_v1'); } catch (e) {}
         this.notify();
       }
@@ -509,6 +517,41 @@ class AppStore {
     if (!error) {
       this.state.majors = this.state.majors.filter(m => m.id !== id);
       this.notify();
+    }
+  }
+
+  // Load prodi untuk satu kampus (dipanggil saat kampus tujuan dipilih di Jalur 1).
+  // Mengembalikan daftar prodi lengkap kampus tsb & menggabungkannya ke state global (dedup).
+  public async loadMajorsForInstitution(institutionId: number): Promise<Major[]> {
+    try {
+      const { data, error } = await supabase
+        .from('majors')
+        .select('*, institutions(name, location, type)')
+        .eq('institution_id', institutionId)
+        .order('passing_grade_total', { ascending: true, nullsFirst: true })
+        .limit(2000);
+      if (error) {
+        console.warn('Gagal memuat prodi kampus:', error.message);
+        return this.state.majors.filter(m => m.institution_id === institutionId);
+      }
+      const existing = this.state.majors.filter(m => m.institution_id === institutionId);
+      if (!data || data.length === 0) return existing;
+      const mapped: Major[] = data.map((m: any) => ({
+        ...m,
+        institution_name: m.institutions?.name,
+        institution_location: m.institutions?.location,
+        institution_type: m.institutions?.type,
+      }));
+      const known = new Set(this.state.majors.map(x => x.id));
+      const merged = mapped.filter(x => !known.has(x.id));
+      if (merged.length > 0) {
+        this.state.majors = [...this.state.majors, ...merged];
+        this.notify();
+      }
+      return mapped;
+    } catch (err) {
+      console.warn('Gagal memuat prodi kampus:', err);
+      return this.state.majors.filter(m => m.institution_id === institutionId);
     }
   }
 

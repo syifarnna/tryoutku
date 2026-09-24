@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
-import { Building2, CheckCircle2, GraduationCap, ShieldCheck, Sparkles, Target, TrendingUp, XCircle, Zap } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Building2, CheckCircle2, GraduationCap, Loader2, ShieldCheck, Sparkles, Target, TrendingUp, XCircle, Zap } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
+import { Major } from '../../types';
 import { cn } from '../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,11 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
   const [selectedMajorId, setSelectedMajorId] = useState<number | null>(null);
   const [insist, setInsist] = useState(false);
 
+  // State per-kampus: data prodi diambil on-demand dari database saat kampus dipilih
+  const [campusMajors, setCampusMajors] = useState<Major[]>([]);
+  const [majorsLoading, setMajorsLoading] = useState(false);
+  const [majorsLoaded, setMajorsLoaded] = useState(false);
+
   const latestResult = state.results[0];
   const autoScore = latestResult?.total_score ?? null;
 
@@ -24,26 +30,45 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
     [state.institutions]
   );
 
-  const campusGradeOf = (id: number): number | null => {
-    const inst = state.institutions.find(i => i.id === id);
-    if (inst?.grade != null) return inst.grade;
-    const pgs = state.majors.filter(m => m.institution_id === id && m.passing_grade_total != null).map(m => m.passing_grade_total as number);
-    if (pgs.length === 0) return null;
-    pgs.sort((a, b) => a - b);
-    return pgs[Math.floor(pgs.length / 2)];
-  };
-
   const selectedCampus = useMemo(
     () => state.institutions.find(i => i.id === Number(selectedCampusId)) || null,
     [state.institutions, selectedCampusId]
   );
 
-  const campusMajors = useMemo(() => {
-    if (!selectedCampus) return [];
-    return state.majors
-      .filter(m => m.institution_id === selectedCampus.id)
-      .sort((a, b) => (a.passing_grade_total || 0) - (b.passing_grade_total || 0));
-  }, [state.majors, selectedCampus]);
+  // Trigger fetch prodi database begitu kampus tujuan dipilih
+  useEffect(() => {
+    let cancelled = false;
+    if (!selectedCampus) {
+      setCampusMajors([]);
+      setMajorsLoading(false);
+      setMajorsLoaded(false);
+      setSelectedMajorId(null);
+      return;
+    }
+    setMajorsLoading(true);
+    setMajorsLoaded(false);
+    setSelectedMajorId(null);
+    appStore.loadMajorsForInstitution(selectedCampus.id).then((list) => {
+      if (cancelled) return;
+      setCampusMajors(list);
+      setMajorsLoading(false);
+      setMajorsLoaded(true);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCampusId]);
+
+  const campusGradeOf = (id: number): number | null => {
+    const inst = state.institutions.find(i => i.id === id);
+    if (inst?.grade != null) return inst.grade;
+    const source = id === selectedCampus?.id ? campusMajors : state.majors;
+    const pgs = source
+      .filter(m => m.institution_id === id && m.passing_grade_total != null)
+      .map(m => m.passing_grade_total as number);
+    if (pgs.length === 0) return null;
+    pgs.sort((a, b) => a - b);
+    return pgs[Math.floor(pgs.length / 2)];
+  };
 
   const campusGrade = selectedCampus ? campusGradeOf(selectedCampus.id) : null;
 
@@ -70,7 +95,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
       .map(i => ({ inst: i, grade: campusGradeOf(i.id) as number }))
       .sort((a, b) => b.grade - a.grade)
       .slice(0, DEFAULT_ALTERNATIVE_LIMIT);
-  }, [state.institutions, autoScore]);
+  }, [state.institutions, autoScore, campusMajors, campusGrade]);
 
   const altMajorsOf = (instId: number) =>
     state.majors
@@ -112,6 +137,9 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
     );
   }
 
+  const showProdiList = majorsLoaded && campusMajors.length > 0;
+  const canEvaluate = selectedCampus != null && majorsLoaded && campusMajors.length > 0;
+
   return (
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
       {/* Header */}
@@ -122,7 +150,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
           </Badge>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Analisis Kelayakan Nilai terhadap Kampus Tujuan</h2>
           <p className="text-xs sm:text-sm text-sky-100 leading-relaxed">
-            Nilai Anda diambil otomatis dari hasil tryout terbaru, lalu dikomparasikan dengan <strong>Grade Campus</strong> &amp; passing grade prodi. Tentukan kampus tujuan untuk memulai.
+            Nilai Anda diambil otomatis dari hasil tryout terbaru, lalu dikomparasikan dengan <strong>Grade Campus</strong> &amp; passing grade prodi. Pilih kampus tujuan untuk memuat daftar prodi-nya.
           </p>
         </div>
         <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
@@ -157,105 +185,144 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-primary dark:text-white h-12"
           >
             <option value="">-- Pilih Kampus Tujuan --</option>
-            {campuses.map(c => {
-              const g = campusGradeOf(c.id);
-              return (
+            {campuses.map(c => (
                 <option key={c.id} value={c.id}>
-                  {c.name}{g != null ? ` (Grade Campus ${g})` : ' (grade belum diatur)'}
+                  {c.name}
                 </option>
-              );
-            })}
+              ))}
           </select>
         </div>
 
         {selectedCampus && (
           <>
-            <div className="mt-6 flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-border rounded-2xl p-3">
-              <Building2 className="w-4 h-4 text-primary shrink-0" />
-              <p className="text-xs text-slate-600 dark:text-slate-300">
-                <strong className="text-slate-800 dark:text-white">{selectedCampus.name}</strong> • Grade Campus{' '}
-                <strong className={campusGrade != null && autoScore >= campusGrade ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}>
-                  {fmt(campusGrade)}
-                </strong>{' '}
-                • Range nilai {fmt(selectedCampus.range_min)} – {fmt(selectedCampus.range_max)}
-              </p>
-              <Badge className={cn(
-                'ml-auto rounded-full text-[10px] font-bold h-auto px-2.5 py-1',
-                campusGrade != null && autoScore >= campusGrade
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-rose-500 text-white'
-              )}>
-                {campusGrade != null && autoScore >= campusGrade ? '✓ Grade Terpenuhi' : '✕ Grade Belum Terpenuhi'}
-              </Badge>
-            </div>
+            {/* LOADING: indikator memuat saat prodi diambil dari database */}
+            {majorsLoading && (
+              <div className="mt-6 rounded-2xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-slate-900/40 p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
+                  <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                    Memuat data prodi untuk <strong>{selectedCampus.name}</strong> dari database...
+                  </p>
+                </div>
+                <div className="space-y-2.5">
+                  {[0, 1, 2, 3].map(i => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="h-6 w-6 rounded-md bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3.5 w-3/5 bg-slate-200 dark:bg-slate-700 animate-pulse rounded" />
+                        <div className="h-2.5 w-2/5 bg-slate-200 dark:bg-slate-700 animate-pulse rounded" />
+                      </div>
+                      <div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 animate-pulse rounded-md" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            <div className="mt-6 space-y-2">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                2. Pilih Program Studi (kriteria Passing Grade ditampilkan otomatis — status Lolos mengikuti nilai otomatis Anda)
-              </Label>
-              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                <button
-                  type="button"
-                  onClick={() => setSelectedMajorId(null)}
-                  className={cn(
-                    'w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3',
-                    selectedMajorId == null
-                      ? 'bg-primary/5 border-primary ring-1 ring-primary/40'
-                      : 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-border hover:border-primary/40'
-                  )}
-                >
-                  <div>
-                    <p className="font-bold text-sm text-slate-800 dark:text-white">Semua Prodi di {selectedCampus.name}</p>
-                    <p className="text-[11px] text-slate-400">Tampilkan seluruh daftar prodi sesuai Grade</p>
-                  </div>
-                  <span className="w-5 h-5 rounded-full border-2 border-primary/40 flex items-center justify-center shrink-0">
-                    {selectedMajorId == null && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                  </span>
-                </button>
-                {campusMajors.map(m => {
-                  const pass = m.passing_grade_total != null && autoScore >= m.passing_grade_total;
-                  const isSel = selectedMajorId === m.id;
-                  return (
+            {/* EMPTY: data prodi memang kosong di database */}
+            {!majorsLoading && majorsLoaded && campusMajors.length === 0 && (
+              <div className="mt-6 rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/60 dark:bg-amber-950/20 p-6 text-center">
+                <XCircle className="w-8 h-8 mx-auto text-amber-500 mb-2" />
+                <p className="text-sm font-bold text-amber-700 dark:text-amber-400">
+                  Data prodi untuk kampus ini belum tersedia
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Admin belum menginput daftar program studi pada kampus <strong>{selectedCampus.name}</strong>. Silakan pilih kampus lain atau hubungi admin.
+                </p>
+              </div>
+            )}
+
+            {/* LOADED: grade campus + daftar prodi */}
+            {showProdiList && (
+              <>
+                <div className="mt-6 flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-border rounded-2xl p-3">
+                  <Building2 className="w-4 h-4 text-primary shrink-0" />
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    <strong className="text-slate-800 dark:text-white">{selectedCampus.name}</strong> • Grade Campus{' '}
+                    <strong className={campusGrade != null && autoScore >= campusGrade ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}>
+                      {fmt(campusGrade)}
+                    </strong>{' '}
+                    • Range nilai {fmt(selectedCampus.range_min)} – {fmt(selectedCampus.range_max)}
+                  </p>
+                  <Badge className={cn(
+                    'ml-auto rounded-full text-[10px] font-bold h-auto px-2.5 py-1',
+                    campusGrade != null && autoScore >= campusGrade
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-rose-500 text-white'
+                  )}>
+                    {campusGrade != null && autoScore >= campusGrade ? '✓ Grade Terpenuhi' : '✕ Grade Belum Terpenuhi'}
+                  </Badge>
+                </div>
+
+                <div className="mt-6 space-y-2">
+                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    2. Pilih Program Studi (kriteria Passing Grade ditampilkan otomatis — status Lolos mengikuti nilai otomatis Anda)
+                  </Label>
+                  <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
                     <button
-                      key={m.id}
                       type="button"
-                      onClick={() => setSelectedMajorId(m.id)}
+                      onClick={() => setSelectedMajorId(null)}
                       className={cn(
-                        'w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer',
-                        isSel
+                        'w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3',
+                        selectedMajorId == null
                           ? 'bg-primary/5 border-primary ring-1 ring-primary/40'
                           : 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-border hover:border-primary/40'
                       )}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{m.name}</p>
-                        <span className="w-5 h-5 rounded-full border-2 border-primary/40 flex items-center justify-center shrink-0">
-                          {isSel && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                        </span>
+                      <div>
+                        <p className="font-bold text-sm text-slate-800 dark:text-white">Semua Prodi di {selectedCampus.name}</p>
+                        <p className="text-[11px] text-slate-400">Tampilkan seluruh daftar prodi sesuai Grade</p>
                       </div>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <Badge variant="outline" className="rounded-md text-[10px] font-bold h-auto px-1.5 py-0.5">
-                          PG {fmt(m.passing_grade_total)}
-                        </Badge>
-                        <Badge className={cn(
-                          'rounded-md text-[9px] font-bold h-auto px-1.5 py-0.5',
-                          pass ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
-                        )}>
-                          {pass ? '✓ Lolos' : '✕ Belum Lolos'}
-                        </Badge>
-                        <span className="text-[10px] text-slate-400">{m.jenjang} • {m.cluster}</span>
-                      </div>
+                      <span className="w-5 h-5 rounded-full border-2 border-primary/40 flex items-center justify-center shrink-0">
+                        {selectedMajorId == null && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                      </span>
                     </button>
-                  );
-                })}
-              </div>
-            </div>
+                    {campusMajors.map(m => {
+                      const pass = m.passing_grade_total != null && autoScore >= m.passing_grade_total;
+                      const isSel = selectedMajorId === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setSelectedMajorId(m.id)}
+                          className={cn(
+                            'w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer',
+                            isSel
+                              ? 'bg-primary/5 border-primary ring-1 ring-primary/40'
+                              : 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-border hover:border-primary/40'
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{m.name}</p>
+                            <span className="w-5 h-5 rounded-full border-2 border-primary/40 flex items-center justify-center shrink-0">
+                              {isSel && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <Badge variant="outline" className="rounded-md text-[10px] font-bold h-auto px-1.5 py-0.5">
+                              PG {fmt(m.passing_grade_total)}
+                            </Badge>
+                            <Badge className={cn(
+                              'rounded-md text-[9px] font-bold h-auto px-1.5 py-0.5',
+                              pass ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+                            )}>
+                              {pass ? '✓ Lolos' : '✕ Belum Lolos'}
+                            </Badge>
+                            <span className="text-[10px] text-slate-400">{m.jenjang} • {m.cluster}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
       </Card>
 
-      {/* Hasil evaluasi otomatis */}
-      {selectedCampus && (() => {
+      {/* Hasil evaluasi — hanya dijalankan setelah prodi selesai dimuat */}
+      {canEvaluate && (() => {
         const overallMet = selectedProdi
           ? Boolean(campusMet || (campusGrade == null && prodiMet)) && Boolean(prodiMet)
           : Boolean(campusMet);
