@@ -274,7 +274,7 @@ export const AuthView: React.FC = () => {
                   <p className="text-[10px] text-muted-foreground mt-1">
                     {role === 'admin'
                       ? 'Akun Admin mendapat akses penuh: Kelola Kampus & Grade, Bank Soal Penjurusan, Tryout, dan Pengguna.'
-                      : 'Akun Siswa dapat mengerjakan tryout, tes penjurusan, dan memilih jalur Mantap/Bingung.'}
+                      : 'Akun Siswa dapat mengerjakan tryout, tes minat dan bakat, serta analisis kelayakan nilai terhadap kampus tujuan.'}
                   </p>
                 </div>
 

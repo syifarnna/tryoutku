@@ -199,11 +199,11 @@ export const BingungView: React.FC = () => {
       <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-violet-600 to-fuchsia-700 text-white shadow-xl">
         <div className="relative z-10 max-w-3xl space-y-3">
           <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
-            <Brain className="w-3.5 h-3.5 text-fuchsia-300" /> Jalur 2 — Masih Bingung
+            <Brain className="w-3.5 h-3.5 text-fuchsia-300" /> Jalur 2 — Tes Minat dan Bakat
           </Badge>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Temukan Jurusan Dengan Tes Penjurusan</h2>
           <p className="text-xs sm:text-sm text-violet-100 leading-relaxed">
-            Masih bingung pilih jurusan? Kerjakan <strong>{total} pertanyaan minat</strong> singkat — sistem akan menghitung kecenderungan rumpun Anda lalu merekomendasikan jurusan &amp; kampus yang paling sesuai.
+            Belum menentukan arah studi? Kerjakan <strong>{total} pertanyaan minat &amp; bakat</strong> singkat — sistem akan menghitung kecenderungan rumpun Anda lalu merekomendasikan jurusan &amp; kampus yang paling sesuai.
           </p>
         </div>
         <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">

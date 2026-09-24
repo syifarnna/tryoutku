@@ -144,9 +144,9 @@ export default function App() {
     switch (activeTab) {
       case 'dashboard':
         return <DashboardView onTakeTryout={handleTakeTryout} setActiveTab={setActiveTab} />;
-      case 'mantap':
-        return <MantepView />;
-      case 'bingung':
+      case 'analisis_tryout':
+        return <MantepView setActiveTab={setActiveTab} />;
+      case 'tes_minat':
         return <BingungView />;
       case 'tryouts':
         return <TryoutsView key="tryouts" onTakeTryout={handleTakeTryout} defaultSubTab="list" />;

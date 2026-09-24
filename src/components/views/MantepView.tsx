@@ -1,38 +1,23 @@
 import React, { useMemo, useState } from 'react';
-import { Building2, CheckCircle2, GraduationCap, Plus, ShieldCheck, Sparkles, Target, TrendingUp, Zap } from 'lucide-react';
+import { Building2, CheckCircle2, GraduationCap, ShieldCheck, Sparkles, Target, TrendingUp, XCircle, Zap } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
-import { Major } from '../../types';
 import { cn } from '../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 
-interface EvaluatedResult {
-  campusId: number;
-  campusGrade: number | null;
-  met: boolean;
-  delta: number;
-}
-
 const DEFAULT_ALTERNATIVE_LIMIT = 3;
 
-export const MantepView: React.FC = () => {
+export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({ setActiveTab }) => {
   const state = useAppState();
 
-  const [score, setScore] = useState<string>(() => {
-    try { return localStorage.getItem('tryoutku_mantep_v1') ? JSON.parse(localStorage.getItem('tryoutku_mantep_v1')!).score : ''; } catch { return ''; }
-  });
-  const [selectedCampusId, setSelectedCampusId] = useState<string>(() => {
-    try {
-      const raw = localStorage.getItem('tryoutku_mantep_v1');
-      if (raw) return JSON.parse(raw).campusId || '';
-    } catch {}
-    return '';
-  });
-  const [result, setResult] = useState<EvaluatedResult | null>(null);
+  const [selectedCampusId, setSelectedCampusId] = useState<string>('');
+  const [selectedMajorId, setSelectedMajorId] = useState<number | null>(null);
   const [insist, setInsist] = useState(false);
+
+  const latestResult = state.results[0];
+  const autoScore = latestResult?.total_score ?? null;
 
   const campuses = useMemo(
     () => [...state.institutions].sort((a, b) => a.name.localeCompare(b.name)),
@@ -42,7 +27,7 @@ export const MantepView: React.FC = () => {
   const campusGradeOf = (id: number): number | null => {
     const inst = state.institutions.find(i => i.id === id);
     if (inst?.grade != null) return inst.grade;
-    const pgs = state.majors.filter(m => m.institution_id === id && m.passing_grade_total != null).map(m => m.passing_grade_total);
+    const pgs = state.majors.filter(m => m.institution_id === id && m.passing_grade_total != null).map(m => m.passing_grade_total as number);
     if (pgs.length === 0) return null;
     pgs.sort((a, b) => a - b);
     return pgs[Math.floor(pgs.length / 2)];
@@ -53,45 +38,79 @@ export const MantepView: React.FC = () => {
     [state.institutions, selectedCampusId]
   );
 
-  const evaluate = () => {
-    const scoreNum = Number(score);
-    if (!selectedCampus || !score || Number.isNaN(scoreNum)) return;
-    const grade = campusGradeOf(selectedCampus.id);
-    const met = grade != null && scoreNum >= grade;
-    setResult({ campusId: selectedCampus.id, campusGrade: grade, met, delta: grade != null ? Math.round((grade - scoreNum) * 10) / 10 : 0 });
-    try {
-      localStorage.setItem('tryoutku_mantep_v1', JSON.stringify({ score: score, campusId: selectedCampus.id }));
-    } catch {}
-  };
-
-  const scoreNum = Number(score);
   const campusMajors = useMemo(() => {
-    if (!result) return [];
+    if (!selectedCampus) return [];
     return state.majors
-      .filter(m => m.institution_id === result.campusId)
+      .filter(m => m.institution_id === selectedCampus.id)
       .sort((a, b) => (a.passing_grade_total || 0) - (b.passing_grade_total || 0));
-  }, [state.majors, result]);
+  }, [state.majors, selectedCampus]);
+
+  const campusGrade = selectedCampus ? campusGradeOf(selectedCampus.id) : null;
+
+  const selectedProdi = useMemo(
+    () => selectedMajorId != null ? campusMajors.find(m => m.id === selectedMajorId) || null : null,
+    [selectedMajorId, campusMajors]
+  );
+
+  const prodiMet = selectedProdi ? (selectedProdi.passing_grade_total != null && autoScore != null && autoScore >= selectedProdi.passing_grade_total) : null;
+  const campusMet = campusGrade != null && autoScore != null && autoScore >= campusGrade;
+
+  const eligibleMajors = useMemo(() => {
+    if (autoScore == null) return [];
+    return campusMajors.filter(m => m.passing_grade_total != null && m.passing_grade_total <= autoScore);
+  }, [campusMajors, autoScore]);
 
   const alternativeCampuses = useMemo(() => {
-    if (!result || result.met) return [];
+    if (autoScore == null) return [];
     return state.institutions
       .filter(i => {
-        if (i.id === result.campusId) return false;
         const g = campusGradeOf(i.id);
-        return g != null && scoreNum >= g;
+        return g != null && autoScore >= g;
       })
       .map(i => ({ inst: i, grade: campusGradeOf(i.id) as number }))
       .sort((a, b) => b.grade - a.grade)
       .slice(0, DEFAULT_ALTERNATIVE_LIMIT);
-  }, [state.institutions, result, scoreNum]);
+  }, [state.institutions, autoScore]);
 
-  const altMajorsOf = (instId: number): Major[] =>
+  const altMajorsOf = (instId: number) =>
     state.majors
-      .filter(m => m.institution_id === instId && m.passing_grade_total != null && m.passing_grade_total <= scoreNum)
+      .filter(m => m.institution_id === instId && m.passing_grade_total != null && autoScore != null && m.passing_grade_total <= autoScore)
       .sort((a, b) => (b.passing_grade_total || 0) - (a.passing_grade_total || 0))
       .slice(0, DEFAULT_ALTERNATIVE_LIMIT);
 
   const fmt = (n?: number | null) => n == null ? '—' : n;
+
+  if (autoScore == null) {
+    return (
+      <div className="space-y-8 pb-16 animate-in fade-in duration-300">
+        <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-sky-600 to-indigo-700 text-white shadow-xl">
+          <div className="relative z-10 max-w-3xl space-y-3">
+            <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
+              <Zap className="w-3.5 h-3.5 text-amber-300" /> Jalur 1 — Analisis Hasil Tryout
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Analisis Kelayakan Nilai terhadap Kampus Tujuan</h2>
+            <p className="text-xs sm:text-sm text-sky-100 leading-relaxed">
+              Sistem mengambil nilai<strong> Hasil Tryout</strong> terbaru Anda secara otomatis untuk dikomparasikan dengan <strong>Grade Campus</strong> &amp; passing grade prodi yang Anda pilih.
+            </p>
+          </div>
+          <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
+            <GraduationCap className="w-72 h-72" />
+          </div>
+        </div>
+
+        <Card className="p-10 text-center bg-card border border-amber-200 dark:border-amber-900/60 rounded-3xl max-w-2xl mx-auto">
+          <XCircle className="w-12 h-12 mx-auto text-amber-500 mb-4" />
+          <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Belum Ada Hasil Tryout</h3>
+          <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+            Untuk menjalankan Analisis Hasil Tryout, Anda perlu menyelesaikan minimal satu tryout terlebih dahulu. Nilai dari tryout tersebut akan otomatis menjadi acuan kelayakan.
+          </p>
+          <Button onClick={() => setActiveTab?.('tryouts')} className="mt-6 px-6 py-3 h-auto rounded-xl gap-2">
+            <Target className="w-4 h-4" /> Kerjakan Tryout Sekarang
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
@@ -99,11 +118,11 @@ export const MantepView: React.FC = () => {
       <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-sky-600 to-indigo-700 text-white shadow-xl">
         <div className="relative z-10 max-w-3xl space-y-3">
           <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
-            <Zap className="w-3.5 h-3.5 text-amber-300" /> Jalur 1 — Saya Mantep
+            <Zap className="w-3.5 h-3.5 text-amber-300" /> Jalur 1 — Analisis Hasil Tryout
           </Badge>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Input Nilai &amp; Cek Kampus Impian Anda</h2>
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Analisis Kelayakan Nilai terhadap Kampus Tujuan</h2>
           <p className="text-xs sm:text-sm text-sky-100 leading-relaxed">
-            Masukkan skor UTBK Anda lalu pilih <strong>kampus impian</strong>. Sistem akan mengevaluasi terhadap <strong>Grade Campus</strong> &amp; passing grade prodi, lalu menampilkan jurusan yang sesuai — atau menyarankan kampus/jurusan alternatif yang realistis.
+            Nilai Anda diambil otomatis dari hasil tryout terbaru, lalu dikomparasikan dengan <strong>Grade Campus</strong> &amp; passing grade prodi. Tentukan kampus tujuan untuk memulai.
           </p>
         </div>
         <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
@@ -111,64 +130,137 @@ export const MantepView: React.FC = () => {
         </div>
       </div>
 
-      {/* Input Form */}
-      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">1. Skor UTBK / Nilai Anda (0 – 1000)</Label>
-            <div className="relative">
-              <TrendingUp className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                type="number"
-                min={0}
-                max={1000}
-                value={score}
-                onChange={(e) => { setScore(e.target.value); if (result) setResult(null); }}
-                placeholder="contoh: 672.5"
-                className="pl-10 h-12 text-base font-bold"
-              />
-            </div>
-            <p className="text-[11px] text-slate-400">Gunakan skor total UTBK SNBT terbaru Anda.</p>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">2. Kampus Impian</Label>
-            <select
-              value={selectedCampusId}
-              onChange={(e) => { setSelectedCampusId(e.target.value); if (result) setResult(null); }}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-primary dark:text-white h-12"
-            >
-              <option value="">-- Pilih Kampus Impian --</option>
-              {campuses.map(c => {
-                const g = campusGradeOf(c.id);
-                return (
-                  <option key={c.id} value={c.id}>
-                    {c.name}{g != null ? ` (Grade ${g})` : ' (grade belum diatur)'}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+      {/* Nilai otomatis */}
+      <Card className="p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex flex-wrap items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+          <TrendingUp className="w-6 h-6" />
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-6 pt-6 border-t border-slate-100 dark:border-border">
-          <p className="text-xs text-slate-400">
-            {selectedCampus ? (
-              selectedCampus.grade != null
-                ? <span>Grade Campus <strong className="text-primary">{selectedCampus.grade}</strong> • Range nilai {fmt(selectedCampus.range_min)} – {fmt(selectedCampus.range_max)}</span>
-                : <span className="text-amber-500">Grade campus belum diatur admin. Evaluasi memakai median passing grade prodi.</span>
-            ) : 'Pilih kampus impian untuk melihat gradanya.'}
+        <div className="flex-1 min-w-[200px]">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Nilai Otomatis — Hasil Tryout Terakhir Anda</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+            {latestResult?.tryout_name} • {latestResult?.tryout_date}
           </p>
-          <Button onClick={evaluate} disabled={!selectedCampus || !score} className="px-6 py-3 h-auto rounded-xl bg-primary text-white hover:bg-primary/90 text-sm font-bold shadow-md gap-2">
-            <Target className="w-4 h-4" /> Evaluasi Kampus Impian
-          </Button>
+        </div>
+        <div className="text-right">
+          <p className="text-3xl font-extrabold text-slate-800 dark:text-white">{fmt(autoScore)}</p>
+          <p className="text-[11px] font-semibold text-slate-400">skor total UTBK</p>
         </div>
       </Card>
 
-      {/* Hasil Evaluasi */}
-      {result && (() => {
-        const campus = state.institutions.find(i => i.id === result.campusId);
-        if (!campus) return null;
+      {/* Pilih kampus & prodi */}
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">1. Pilih Kampus Tujuan</Label>
+          <select
+            value={selectedCampusId}
+            onChange={(e) => { setSelectedCampusId(e.target.value); setSelectedMajorId(null); setInsist(false); }}
+            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-primary dark:text-white h-12"
+          >
+            <option value="">-- Pilih Kampus Tujuan --</option>
+            {campuses.map(c => {
+              const g = campusGradeOf(c.id);
+              return (
+                <option key={c.id} value={c.id}>
+                  {c.name}{g != null ? ` (Grade Campus ${g})` : ' (grade belum diatur)'}
+                </option>
+              );
+            })}
+          </select>
+        </div>
 
-        if (result.met) {
+        {selectedCampus && (
+          <>
+            <div className="mt-6 flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-border rounded-2xl p-3">
+              <Building2 className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                <strong className="text-slate-800 dark:text-white">{selectedCampus.name}</strong> • Grade Campus{' '}
+                <strong className={campusGrade != null && autoScore >= campusGrade ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}>
+                  {fmt(campusGrade)}
+                </strong>{' '}
+                • Range nilai {fmt(selectedCampus.range_min)} – {fmt(selectedCampus.range_max)}
+              </p>
+              <Badge className={cn(
+                'ml-auto rounded-full text-[10px] font-bold h-auto px-2.5 py-1',
+                campusGrade != null && autoScore >= campusGrade
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-rose-500 text-white'
+              )}>
+                {campusGrade != null && autoScore >= campusGrade ? '✓ Grade Terpenuhi' : '✕ Grade Belum Terpenuhi'}
+              </Badge>
+            </div>
+
+            <div className="mt-6 space-y-2">
+              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                2. Pilih Program Studi (kriteria Passing Grade ditampilkan otomatis — status Lolos mengikuti nilai otomatis Anda)
+              </Label>
+              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMajorId(null)}
+                  className={cn(
+                    'w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3',
+                    selectedMajorId == null
+                      ? 'bg-primary/5 border-primary ring-1 ring-primary/40'
+                      : 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-border hover:border-primary/40'
+                  )}
+                >
+                  <div>
+                    <p className="font-bold text-sm text-slate-800 dark:text-white">Semua Prodi di {selectedCampus.name}</p>
+                    <p className="text-[11px] text-slate-400">Tampilkan seluruh daftar prodi sesuai Grade</p>
+                  </div>
+                  <span className="w-5 h-5 rounded-full border-2 border-primary/40 flex items-center justify-center shrink-0">
+                    {selectedMajorId == null && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                  </span>
+                </button>
+                {campusMajors.map(m => {
+                  const pass = m.passing_grade_total != null && autoScore >= m.passing_grade_total;
+                  const isSel = selectedMajorId === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setSelectedMajorId(m.id)}
+                      className={cn(
+                        'w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer',
+                        isSel
+                          ? 'bg-primary/5 border-primary ring-1 ring-primary/40'
+                          : 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-border hover:border-primary/40'
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{m.name}</p>
+                        <span className="w-5 h-5 rounded-full border-2 border-primary/40 flex items-center justify-center shrink-0">
+                          {isSel && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Badge variant="outline" className="rounded-md text-[10px] font-bold h-auto px-1.5 py-0.5">
+                          PG {fmt(m.passing_grade_total)}
+                        </Badge>
+                        <Badge className={cn(
+                          'rounded-md text-[9px] font-bold h-auto px-1.5 py-0.5',
+                          pass ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+                        )}>
+                          {pass ? '✓ Lolos' : '✕ Belum Lolos'}
+                        </Badge>
+                        <span className="text-[10px] text-slate-400">{m.jenjang} • {m.cluster}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </Card>
+
+      {/* Hasil evaluasi otomatis */}
+      {selectedCampus && (() => {
+        const overallMet = selectedProdi
+          ? Boolean(campusMet || (campusGrade == null && prodiMet)) && Boolean(prodiMet)
+          : Boolean(campusMet);
+
+        if (overallMet) {
           return (
             <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
               <div className="flex items-start gap-4">
@@ -176,83 +268,99 @@ export const MantepView: React.FC = () => {
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Selamat, Anda <span className="text-emerald-600 dark:text-emerald-400">Terkualifikasi</span> di {campus.name}</h3>
+                  <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">
+                    Kelayakan <span className="text-emerald-600 dark:text-emerald-400">Terpenuhi</span>{' '}
+                    {selectedProdi ? `— ${selectedProdi.name}` : `— ${selectedCampus.name}`}
+                  </h3>
                   <p className="text-xs text-slate-500 mt-1">
-                    Skor Anda <strong className="text-slate-800 dark:text-white">{scoreNum}</strong> memenuhi Grade Campus <strong>{result.campusGrade}</strong>. Berikut jurusan di {campus.name} yang diurutkan berdasarkan Passing Grade:
+                    Nilai Anda <strong className="text-slate-800 dark:text-white">{fmt(autoScore)}</strong> telah lolos batas{' '}
+                    <strong>Grade Campus {fmt(campusGrade)}</strong>
+                    {selectedProdi ? <> dan <strong>Passing Grade {fmt(selectedProdi.passing_grade_total)}</strong></> : ''}. Berikut prodi yang layak Anda pilih (Passing Grade ≤ nilai Anda):
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2 pt-4">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Jurusan di Kampus Impian ({campusMajors.length}) — urut grade naik</p>
-                {campusMajors.length === 0 && (
-                  <p className="text-sm text-slate-400 py-6 text-center border-2 border-dashed border-slate-200 dark:border-border rounded-2xl">Belum ada data prodi untuk kampus ini.</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Daftar Prodi Sesuai Grade ({eligibleMajors.length} dari {campusMajors.length} prodi)
+                </p>
+                {eligibleMajors.length === 0 && (
+                  <p className="text-sm text-slate-400 py-6 text-center border-2 border-dashed border-slate-200 dark:border-border rounded-2xl">
+                    Tidak ada prodi di kampus ini yang passing grade-nya ≤ nilai Anda.
+                  </p>
                 )}
-                {campusMajors.map((m, i) => {
-                  const pass = m.passing_grade_total != null && m.passing_grade_total <= scoreNum;
+                {eligibleMajors.map((m, i) => {
+                  const inst = state.institutions.find(x => x.id === m.institution_id);
                   return (
                     <div key={m.id} className={cn(
                       'p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-3 transition-colors',
-                      pass
-                        ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900'
-                        : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-border'
+                      selectedMajorId === m.id
+                        ? 'bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800'
+                        : 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900'
                     )}>
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-black shrink-0">{i + 1}</span>
                         <div className="min-w-0">
                           <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{m.name}</p>
-                          <p className="text-[11px] text-slate-400">PG {fmt(m.passing_grade_total)} • {m.cluster}</p>
+                          <p className="text-[11px] text-slate-400">{inst?.name} • PG {fmt(m.passing_grade_total)} • {m.cluster}</p>
                         </div>
                       </div>
-                      <Badge className={cn(
-                        'rounded-full text-[10px] font-bold h-auto px-2.5 py-1',
-                        pass ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
-                      )}>
-                        {pass ? '✓ Lolos' : 'Belum Lolos'}
+                      <Badge className="rounded-full text-[10px] font-bold h-auto px-2.5 py-1 bg-emerald-500 text-white">
+                        ✓ Lolos
                       </Badge>
                     </div>
                   );
                 })}
               </div>
 
-              <div className="pt-4 flex flex-wrap gap-3">
-                <Button variant="outline" onClick={() => state.targetMajorIds.includes(campusMajors[0]?.id) ? null : (campusMajors[0] && appStore.addTargetMajor(campusMajors[0].id))} className="gap-2">
-                  <Plus className="w-4 h-4" /> Jadikan Target Prodi Teratas
+              <div className="pt-4">
+                <Button
+                  variant={selectedProdi ? 'default' : 'ghost'}
+                  disabled={selectedProdi ? state.targetMajorIds.includes(selectedProdi.id) : true}
+                  onClick={() => selectedProdi && appStore.addTargetMajor(selectedProdi.id)}
+                  className="gap-2"
+                >
+                  {selectedProdi && state.targetMajorIds.includes(selectedProdi.id)
+                    ? <>✓ {selectedProdi.name} Sudah Jadi Target</>
+                    : <>Jadikan Prodi Pilihan sebagai Target</>}
                 </Button>
               </div>
             </Card>
           );
         }
 
-        const gapToTip = result.campusGrade != null ? result.campusGrade - scoreNum : null;
+        const delta = campusGrade != null && campusGrade > autoScore ? Math.round((campusGrade - autoScore) * 10) / 10 : 0;
         return (
           <div className="space-y-8">
-            {/* Belum terpenuhi */}
             <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-rose-200 dark:border-rose-900/60 shadow-xs gap-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Skor Anda <span className="text-rose-500">Belum Mencapai</span> Grade {campus.name}</h3>
+                  <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">
+                    Kelayakan <span className="text-rose-500">Belum Terpenuhi</span>{' '}
+                    {selectedProdi ? `— ${selectedProdi.name}` : `— ${selectedCampus.name}`}
+                  </h3>
                   <p className="text-xs text-slate-500 mt-1">
-                    Score Anda <strong className="text-slate-800 dark:text-white">{scoreNum}</strong> masih perlu{' '}
-                    <strong className="text-rose-500">{gapToTip != null && gapToTip > 0 ? gapToTip : 0} poin</strong>{' '}
-                    untuk Grade Campus <strong>{result.campusGrade}</strong>. Jangan khawatir — berikut kami siapkan kampus &amp; jurusan alternatif yang sesuai nilainya.
+                    Nilai Anda <strong className="text-slate-800 dark:text-white">{fmt(autoScore)}</strong> masih di bawah{' '}
+                    <strong>Grade Campus {fmt(campusGrade)}</strong>
+                    {selectedProdi ? <> dan <strong>Passing Grade {fmt(selectedProdi.passing_grade_total)}</strong></> : ''}.{' '}
+                    {delta > 0 && <>Selisih nilai kurang <strong className="text-rose-500">{delta} poin</strong>. </>}
+                    Jangan khawatir — berikut rekomendasi kampus &amp; jurusan yang sesuai dengan nilai Anda.
                   </p>
                 </div>
               </div>
             </Card>
 
-            {/* Rekomendasi alternatif */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-5 h-5 text-primary" />
-                <h3 className="font-extrabold text-base text-slate-800 dark:text-white">Rekomendasi Kampus &amp; Jurusan Alternatif (Grade ≤ {scoreNum})</h3>
+                <h3 className="font-extrabold text-base text-slate-800 dark:text-white">Rekomendasi Kampus &amp; Jurusan Alternatif (Grade ≤ {fmt(autoScore)})</h3>
               </div>
               {alternativeCampuses.length === 0 && (
                 <Card className="p-8 text-center bg-card border border-slate-100 dark:border-border rounded-3xl">
-                  <p className="text-sm text-slate-500">Belum ada kampus lain dengan Grade Campus ≤ skor Anda saat ini. Raih skor lebih tinggi di tryout berikutnya!</p>
+                  <p className="text-sm text-slate-500">Belum ada kampus lain dengan Grade Campus ≤ nilai Anda. Raih nilai lebih tinggi di tryout berikutnya!</p>
                 </Card>
               )}
               <div className="space-y-6">
@@ -292,7 +400,7 @@ export const MantepView: React.FC = () => {
                         </div>
                       ))}
                       {altMajorsOf(inst.id).length === 0 && (
-                        <p className="text-xs text-slate-400">Belum ada prodi yang passing grade-nya ≤ skor Anda di kampus ini.</p>
+                        <p className="text-xs text-slate-400">Belum ada prodi yang passing grade-nya ≤ nilai Anda di kampus ini.</p>
                       )}
                     </div>
                   </Card>
@@ -300,7 +408,6 @@ export const MantepView: React.FC = () => {
               </div>
             </div>
 
-            {/* Masih pada pendirian -> Bimbel */}
             <div className="rounded-3xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/20 p-6">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -310,11 +417,12 @@ export const MantepView: React.FC = () => {
                   className="w-5 h-5 rounded text-amber-500 focus:ring-amber-500"
                 />
                 <span className="text-sm font-bold text-slate-800 dark:text-white">
-                  Saya tetap pada pendirian — tidak mau pindah kampus impian.
+                  Tetap Pilih Kampus Ini
                 </span>
               </label>
               <p className="text-xs text-slate-500 mt-1 pl-8">
-                Jika tetap pada pendirian, kami tampilkan <strong>Rekomendasi Bimbel</strong> untuk mengejar selisih skor {gapToTip != null && gapToTip > 0 ? gapToTip : 0} poin menuju Grade {result.campusGrade}.
+                Jika tetap pada pilihan, kami tampilkan <strong>Rekomendasi Bimbel</strong> untuk mengejar selisih{' '}
+                {delta > 0 ? `${delta} poin` : 'nilai'} menuju Grade Campus {fmt(campusGrade)}.
               </p>
 
               {insist && (

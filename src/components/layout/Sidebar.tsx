@@ -12,8 +12,7 @@ import {
   TrendingUp, 
   Award,
   Database,
-  Users,
-  Zap
+  Users
 } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
 import { cn } from '@/lib/utils';
@@ -80,8 +79,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'PILIHAN JALUR',
       items: [
-        { id: 'mantap', label: 'Jalur 1 — Saya Mantep', icon: Zap, badge: 'Nilai' },
-        { id: 'bingung', label: 'Jalur 2 — Tes Penjurusan', icon: Brain, badge: `${state.questions.length} soal` }
+        { id: 'analisis_tryout', label: 'Jalur 1 — Analisis Hasil Tryout', icon: TrendingUp, badge: 'Nilai' },
+        { id: 'tes_minat', label: 'Jalur 2 — Tes Minat dan Bakat', icon: Brain, badge: `${state.questions.length} soal` }
       ]
     },
     {
