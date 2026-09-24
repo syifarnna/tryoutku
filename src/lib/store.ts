@@ -239,13 +239,35 @@ class AppStore {
     this.persistTargetsSnapshot();
   }
 
-  public async saveInterest(cluster: ClusterType) {
+  public async saveInterest(cluster: ClusterType): Promise<boolean> {
     this.state.profile = { ...this.state.profile, major_interest: cluster };
     this.notify();
     try {
-      await supabase.from('profiles').update({ major_interest: cluster }).eq('id', this.state.profile.id);
+      const { error } = await supabase.from('profiles').update({ major_interest: cluster }).eq('id', this.state.profile.id);
+      if (error) {
+        console.warn('Gagal simpan minat ke Supabase:', error.message);
+        return false;
+      }
+      return true;
     } catch (e) {
       console.warn('Gagal simpan minat ke Supabase:', e);
+      return false;
+    }
+  }
+
+  public async clearInterest(): Promise<boolean> {
+    this.state.profile = { ...this.state.profile, major_interest: null };
+    this.notify();
+    try {
+      const { error } = await supabase.from('profiles').update({ major_interest: null }).eq('id', this.state.profile.id);
+      if (error) {
+        console.warn('Gagal hapus minat di Supabase:', error.message);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.warn('Gagal hapus minat di Supabase:', e);
+      return false;
     }
   }
 

@@ -8,7 +8,7 @@ export interface Profile {
   email: string;
   phone: string;
   school: string;
-  major_interest: ClusterType;
+  major_interest: ClusterType | null;
   avatar_url?: string;
   role?: 'admin' | 'peserta';
   is_profile_complete?: boolean;

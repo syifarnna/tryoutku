@@ -30,6 +30,7 @@ const AnalysisCompView = lazyView(() => import('./components/views/AnalysisCompV
 const TargetMajorsView = lazyView(() => import('./components/views/TargetMajorsView'), 'TargetMajorsView');
 const UniversitasProdiView = lazyView(() => import('./components/views/UniversitasProdiView'), 'UniversitasProdiView');
 const RecomAlternativesView = lazyView(() => import('./components/views/RecomAlternativesView'), 'RecomAlternativesView');
+const RecomBestView = lazyView(() => import('./components/views/RecomBestView'), 'RecomBestView');
 const ReportsView = lazyView(() => import('./components/views/ReportsView'), 'ReportsView');
 const ProfileView = lazyView(() => import('./components/views/ProfileView'), 'ProfileView');
 const SupabaseSqlView = lazyView(() => import('./components/views/SupabaseSqlView'), 'SupabaseSqlView');
@@ -158,6 +159,8 @@ export default function App() {
         return <AnalysisCompView />;
       case 'target_majors':
         return <TargetMajorsView />;
+      case 'recom_integrated':
+        return <RecomBestView setActiveTab={setActiveTab} />;
       case 'browse_universitas':
         return <UniversitasProdiView />;
       case 'recom_alternatives':

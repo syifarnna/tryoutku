@@ -90,7 +90,7 @@ export const EMPTY_PROFILE: Profile = {
   email: '',
   phone: '',
   school: '',
-  major_interest: 'Saintek',
+  major_interest: null,
   avatar_url: '',
   role: 'peserta',
   is_profile_complete: false,

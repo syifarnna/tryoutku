@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpen, Brain, CheckCircle2, Compass, HelpCircle, Plus, RotateCcw, Sparkles, Target } from 'lucide-react';
+import { BookOpen, Brain, CheckCircle2, Compass, HelpCircle, Loader2, Plus, RotateCcw, Save, Sparkles, Target, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 import { appStore, useAppState } from '../../lib/store';
 import { ClusterType, Institution, PenjurusanQuestion } from '../../types';
 import { cn } from '../../lib/utils';
@@ -40,10 +41,48 @@ export const BingungView: React.FC = () => {
   const [phase, setPhase] = useState<'idle' | 'running' | 'result'>('idle');
   const [step, setStep] = useState(0);
   const [tally, setTally] = useState<Tally>(emptyTally());
+  const [savingInterest, setSavingInterest] = useState(false);
 
   const questions = useMemo(() => state.questions.filter(q => q.is_active), [state.questions]);
 
   const total = questions.length;
+
+  const showToast = (icon: 'success' | 'error', title: string) => {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon,
+      title,
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true,
+    });
+  };
+
+  const handleSaveInterest = async (cluster: ClusterType, label: string) => {
+    if (savingInterest) return;
+    setSavingInterest(true);
+    const ok = await appStore.saveInterest(cluster);
+    setSavingInterest(false);
+    if (ok) showToast('success', `Minat "${label}" tersimpan di profil Anda`);
+    else showToast('error', 'Gagal menyimpan minat. Coba lagi.');
+  };
+
+  const handleClearInterest = async (cluster: ClusterType, label: string) => {
+    const res = await Swal.fire({
+      icon: 'question',
+      title: 'Hapus minat saya?',
+      text: `Rumpun "${label}" tidak akan tersimpan sebagai minat di profil Anda.`,
+      showCancelButton: true,
+      confirmButtonText: 'Ya, hapus',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#e11d48',
+    });
+    if (!res.isConfirmed) return;
+    const ok = await appStore.clearInterest();
+    if (ok) showToast('success', `Minat "${label}" telah dihapus`);
+    else showToast('error', 'Gagal menghapus minat. Coba lagi.');
+  };
 
   const lastResult = useMemo<{ dominant: ClusterType; tally: Tally } | null>(() => {
     try {
@@ -140,10 +179,33 @@ export const BingungView: React.FC = () => {
             })}
           </div>
 
-          <div className="flex flex-wrap gap-3 mt-6 pt-5 border-t border-slate-100 dark:border-border">
-            <Button onClick={() => appStore.saveInterest(dominant)} className="gap-2">
-              <CheckCircle2 className="w-4 h-4" /> Simpan Sebagai Minat Saya ({s.label})
-            </Button>
+          <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-100 dark:border-border">
+            {state.profile.major_interest !== dominant ? (
+              <Button
+                onClick={() => handleSaveInterest(dominant, s.label)}
+                disabled={savingInterest}
+                className={cn('gap-2', savingInterest && 'opacity-70')}
+              >
+                {savingInterest ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...</>
+                ) : (
+                  <><Save className="w-4 h-4" /> Simpan sebagai Minat Saya ({s.label})</>
+                )}
+              </Button>
+            ) : (
+              <>
+                <span className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 text-white px-5 py-2.5 text-sm font-bold shadow-sm">
+                  <CheckCircle2 className="w-4 h-4" /> Tersimpan di Minat Saya ({s.label})
+                </span>
+                <Button
+                  variant="outline"
+                  className="gap-2 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900"
+                  onClick={() => handleClearInterest(dominant, s.label)}
+                >
+                  <Trash2 className="w-4 h-4" /> Hapus dari Minat
+                </Button>
+              </>
+            )}
             <Button variant="outline" onClick={start} className="gap-2">
               <RotateCcw className="w-4 h-4" /> Ulangi Tes
             </Button>
