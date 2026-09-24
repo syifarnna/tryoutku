@@ -123,6 +123,9 @@ class AppStore {
         if (!this._masterDataAuthed) {
           this._masterDataAuthed = true;
           this.fetchMasterData();
+          // Pulihkan prodi target yang cuma ada di snapshot localStorage / berisiko
+          // ketinggalan oleh race fetch master (anon vs authenticated).
+          this.resolveTargetMajors();
         }
       } else {
         this.state.isLoggedIn = false;
@@ -498,6 +501,8 @@ class AppStore {
           this.state.activeTargetMajorId = this.state.targetMajorIds[0];
         }
       }
+      // Pastikan row prodi target sudah ada di state sebelum snapshot & render.
+      await this.resolveTargetMajors();
       this.persistTargetsSnapshot();
 
       this.notify();
@@ -510,6 +515,43 @@ class AppStore {
     return this.state.targetMajorIds
       .map(id => this.state.majors.find(m => m.id === id))
       .filter((m): m is Major => !!m);
+  }
+
+  // Pastikan semua prodi yang terdaftar sebagai target tersedia di state global.
+  // Diperlukan karena badge di Navbar membaca targetMajorIds (sejak awal), sedangkan
+  // daftar Halaman Target bergantung pada resolution terhadap state.majors yang bisa
+  // tertinggal karena timing fetch master data (anon vs authenticated) / RLS.
+  public async resolveTargetMajors(): Promise<void> {
+    const ids = [...this.state.targetMajorIds];
+    if (ids.length === 0) return;
+    const missingIds = ids.filter(id => !this.state.majors.some(m => m.id === id));
+    if (missingIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from('majors')
+        .select('*, institutions(name, location, type)')
+        .in('id', missingIds)
+        .limit(500);
+      if (error) {
+        console.warn('Gagal menyelesaikan prodi target dari Supabase:', error.message);
+        return;
+      }
+      if (!data || data.length === 0) return;
+      const mapped: Major[] = data.map((m: any) => ({
+        ...m,
+        institution_name: m.institutions?.name,
+        institution_location: m.institutions?.location,
+        institution_type: m.institutions?.type,
+      }));
+      const known = new Set(this.state.majors.map(x => x.id));
+      const merged = mapped.filter(x => !known.has(x.id));
+      if (merged.length > 0) {
+        this.state.majors = [...this.state.majors, ...merged];
+        this.notify();
+      }
+    } catch (err) {
+      console.warn('Gagal menyelesaikan prodi target dari Supabase:', err);
+    }
   }
 
   // Admin Management Methods
