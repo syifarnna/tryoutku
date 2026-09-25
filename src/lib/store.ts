@@ -584,6 +584,18 @@ class AppStore {
     }
   }
 
+  public async updateMajor(major: Major) {
+    this.state.majors = this.state.majors.map(m => (m.id === major.id ? { ...major } : m));
+    this.notify();
+    try {
+      const { id, institution_name, institution_location, institution_type, ...rest } = major as any;
+      const { error } = await supabase.from('majors').update(rest).eq('id', id);
+      if (error) console.warn('Gagal update prodi:', error.message);
+    } catch (e) {
+      console.warn('Gagal update prodi:', e);
+    }
+  }
+
   // Load prodi untuk satu kampus (dipanggil saat kampus tujuan dipilih di Jalur 1).
   // Mengembalikan daftar prodi lengkap kampus tsb & menggabungkannya ke state global (dedup).
   public async loadMajorsForInstitution(institutionId: number): Promise<Major[]> {

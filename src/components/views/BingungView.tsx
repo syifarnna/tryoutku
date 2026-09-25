@@ -7,6 +7,7 @@ import { cn } from '../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { JenjangBadge } from '@/components/ui/JenjangBadge';
 
 const CLUSTERS: ClusterType[] = ['Saintek', 'Soshum', 'Campuran'];
 
@@ -231,7 +232,7 @@ export const BingungView: React.FC = () => {
                   </div>
                   <h4 className="font-bold text-sm text-slate-800 dark:text-white mt-3">{m.name}</h4>
                   <p className="text-[11px] text-slate-400 mt-1 flex-1">{inst?.name || '—'}{inst?.location ? ` • ${inst.location}` : ''}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">{m.jenjang || '—'}</p>
+                  <div className="mt-1"><JenjangBadge jenjang={m.jenjang} /></div>
                   <Button
                     size="sm"
                     variant="ghost"

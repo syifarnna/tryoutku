@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { normalizeJenjang, JenjangBadge } from '@/components/ui/JenjangBadge';
 import type { ClusterType } from '../../types';
 
-type JenjangFilter = 'SEMUA' | 'S1' | 'D-III' | 'D-IV';
+type JenjangFilter = 'SEMUA' | 'S1' | 'D4' | 'D3';
 type RumpunFilter = 'SEMUA' | ClusterType;
 
-const JENJANG_FILTERS: JenjangFilter[] = ['SEMUA', 'S1', 'D-III', 'D-IV'];
+const JENJANG_FILTERS: JenjangFilter[] = ['SEMUA', 'S1', 'D4', 'D3'];
 const RUMPUN_FILTERS: RumpunFilter[] = ['SEMUA', 'Saintek', 'Soshum', 'Campuran'];
 
 const CLUSTER_STYLE: Record<ClusterType, { badge: string; row: string; dot: string }> = {
@@ -35,14 +36,7 @@ const CLUSTER_STYLE: Record<ClusterType, { badge: string; row: string; dot: stri
 
 const PAGE_SIZE = 50;
 
-type NormJenjang = 'S1' | 'D-III' | 'D-IV';
-
-const normJenjang = (j?: string | null): NormJenjang => {
-  const s = (j || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (s === 'DIII' || s === 'D3') return 'D-III';
-  if (s === 'DIV' || s === 'D4') return 'D-IV';
-  return 'S1';
-};
+const normJenjang = normalizeJenjang;
 
 export const UniversitasProdiView: React.FC = () => {
   const state = useAppState();
@@ -55,18 +49,18 @@ export const UniversitasProdiView: React.FC = () => {
 
   const stats = useMemo(() => {
     const majors = state.majors;
-    const countJenjang = (j: NormJenjang) => majors.filter(m => normJenjang(m.jenjang) === j).length;
+    const countJenjang = (j: string) => majors.filter(m => normalizeJenjang(m.jenjang) === j).length;
     return {
       universitas: new Set(majors.map(m => m.institution_id)).size,
       prodi: majors.length,
       s1: countJenjang('S1'),
-      d3: countJenjang('D-III'),
-      d4: countJenjang('D-IV'),
+      d3: countJenjang('D3'),
+      d4: countJenjang('D4'),
       jenjang: {
         'S1': countJenjang('S1'),
-        'D-III': countJenjang('D-III'),
-        'D-IV': countJenjang('D-IV'),
-      } as Record<NormJenjang, number>,
+        'D4': countJenjang('D4'),
+        'D3': countJenjang('D3'),
+      } as Record<string, number>,
       rumpun: {
         Saintek: majors.filter(m => m.cluster === 'Saintek').length,
         Soshum: majors.filter(m => m.cluster === 'Soshum').length,
@@ -129,9 +123,9 @@ export const UniversitasProdiView: React.FC = () => {
         {[
           { label: 'Total Prodi', value: stats.prodi, icon: GraduationCap, color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40' },
           { label: 'Universitas', value: stats.universitas, icon: Building2, color: 'text-sky-500 bg-sky-50 dark:bg-sky-950/40' },
-          { label: 'Jenjang S1', value: stats.s1, icon: Layers, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40' },
-          { label: 'Jenjang D-III', value: stats.d3, icon: Layers, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/40' },
-          { label: 'Jenjang D-IV', value: stats.d4, icon: Layers, color: 'text-rose-500 bg-rose-50 dark:bg-rose-950/40' },
+          { label: 'Jenjang S1', value: stats.s1, icon: Layers, color: 'text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40' },
+          { label: 'Jenjang D3', value: stats.d3, icon: Layers, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40' },
+          { label: 'Jenjang D4', value: stats.d4, icon: Layers, color: 'text-sky-400 bg-sky-50 dark:bg-sky-950/40' },
         ].map((s, i) => (
           <Card key={i} className="p-4 rounded-2xl flex items-center gap-3 border-slate-200/70 dark:border-border">
             <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', s.color)}>
@@ -182,7 +176,7 @@ export const UniversitasProdiView: React.FC = () => {
             >
               {f === 'SEMUA'
                 ? f
-                : `${f}: ${fmt(stats.jenjang[f as NormJenjang])}`}
+                : `${f}: ${fmt(stats.jenjang[f as string])}`}
             </button>
           ))}
           <span className="ml-auto text-xs font-semibold text-slate-400">
@@ -256,7 +250,7 @@ export const UniversitasProdiView: React.FC = () => {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Badge variant="secondary" className="text-[10px] font-bold">{normJenjang(m.jenjang) || '—'}</Badge>
+                      <JenjangBadge jenjang={m.jenjang} />
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmt(m.daya_tampung)}</td>
                     <td className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">{fmt(m.peminat)}</td>

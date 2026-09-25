@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAppState, appStore } from '../../../lib/store';
-import { Plus, Trash2, Upload, FileSpreadsheet, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Upload, FileSpreadsheet, AlertCircle, Pencil } from 'lucide-react';
 import { Major } from '../../../types';
 import * as XLSX from 'xlsx';
 import { supabase } from '../../../lib/supabaseClient';
@@ -9,59 +9,94 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-const JENJANG_OPTIONS = ['S1', 'D-III', 'D-IV'] as const;
-type JenjangOption = typeof JENJANG_OPTIONS[number];
+import { JENJANG_OPTIONS, JenjangBadge, normalizeJenjang } from '@/components/ui/JenjangBadge';
 
 const inferJenjang = (name?: string): string => {
   const n = (name || '').toUpperCase();
-  if (/D\s*[-]?\s*3/.test(n)) return 'D-III';
-  if (/D\s*[-]?\s*4/.test(n)) return 'D-IV';
+  if (/D\s*[-]?\s*4/.test(n)) return 'D4';
+  if (/D\s*[-]?\s*3/.test(n)) return 'D3';
   return 'S1';
 };
 
-const getJenjang = (m: Major): string => m.jenjang || inferJenjang(m.name);
+const EMPTY_FORM = {
+  name: '',
+  institution_id: 1,
+  cluster: 'Saintek',
+  jenjang: 'S1',
+  passing_grade_total: 650,
+};
 
 export const AdminMajorsView: React.FC = () => {
   const state = useAppState();
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState('');
-  const [jenjangFilter, setJenjangFilter] = useState<'SEMUA' | JenjangOption>('SEMUA');
+  const [jenjangFilter, setJenjangFilter] = useState<'SEMUA' | string>('SEMUA');
+  const [errors, setErrors] = useState<{ name?: string; jenjang?: string }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [newMajor, setNewMajor] = useState<Partial<Major>>({
-    name: '',
-    institution_id: 101,
-    cluster: 'Saintek',
-    jenjang: 'S1',
-    passing_grade_total: 650
-  });
+  const [form, setForm] = useState({ ...EMPTY_FORM });
 
-  const handleAdd = () => {
-    if (!newMajor.name) return;
-    
-    appStore.addMajor({
-      ...newMajor,
-      id: Date.now()
-    } as Major);
-    
-    setIsAdding(false);
-    setNewMajor({
-      name: '',
-      institution_id: 1,
-      cluster: 'Saintek',
-      jenjang: 'S1',
-      passing_grade_total: 650
+  const resetForm = () => {
+    setForm({ ...EMPTY_FORM });
+    setErrors({});
+  };
+
+  const startAdd = () => {
+    setEditingId(null);
+    resetForm();
+    setIsAdding(true);
+  };
+
+  const startEdit = (m: Major) => {
+    setEditingId(m.id);
+    setIsAdding(true);
+    setErrors({});
+    setForm({
+      name: m.name || '',
+      institution_id: m.institution_id,
+      cluster: m.cluster || 'Saintek',
+      jenjang: m.jenjang || 'S1',
+      passing_grade_total: m.passing_grade_total || 650,
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSave = () => {
+    const nextErrors: { name?: string; jenjang?: string } = {};
+    if (!form.name.trim()) nextErrors.name = 'Nama jurusan wajib diisi.';
+    if (!form.jenjang) nextErrors.jenjang = 'Jenjang wajib dipilih.';
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    const payload: Major = {
+      id: editingId ?? Date.now(),
+      name: form.name.trim(),
+      institution_id: form.institution_id,
+      cluster: form.cluster as any,
+      jenjang: form.jenjang as any,
+      passing_grade_total: form.passing_grade_total,
+    };
+
+    if (editingId) {
+      const original = state.majors.find(m => m.id === editingId);
+      appStore.updateMajor({ ...original, ...payload } as Major);
+    } else {
+      appStore.addMajor(payload);
+    }
+
+    setIsAdding(false);
+    setEditingId(null);
+    resetForm();
   };
 
   const handleDelete = (id: number) => {
     appStore.deleteMajor(id);
-  }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,8 +115,8 @@ export const AdminMajorsView: React.FC = () => {
         throw new Error('File Excel kosong');
       }
 
-      const defaultInstitution = state.majors.length > 0 
-        ? state.majors[0].institution_id 
+      const defaultInstitution = state.majors.length > 0
+        ? state.majors[0].institution_id
         : (state.institutions?.[0]?.id || 101);
 
       const missingInstitution = jsonData.filter(row => {
@@ -97,7 +132,7 @@ export const AdminMajorsView: React.FC = () => {
         institution_id: Number(row.institution_id || row.id_kampus) || defaultInstitution,
         name: row.name || row.nama_prodi,
         cluster: row.cluster || row.rumpun || 'Campuran',
-        jenjang: row.jenjang || inferJenjang(row.name || row.nama_prodi),
+        jenjang: normalizeJenjang(row.jenjang || inferJenjang(row.name || row.nama_prodi)),
         passing_grade_total: parseFloat(row.passing_grade_total || row.passing_grade) || 600
       }));
 
@@ -105,7 +140,7 @@ export const AdminMajorsView: React.FC = () => {
       if (error) throw new Error(error.message);
 
       await appStore.fetchMasterData();
-      
+
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: any) {
       setImportError('Gagal import data: ' + getErrorMessage(err));
@@ -116,7 +151,7 @@ export const AdminMajorsView: React.FC = () => {
 
   const displayedMajors = state.majors.filter(m => {
     if (jenjangFilter === 'SEMUA') return true;
-    return getJenjang(m) === jenjangFilter;
+    return normalizeJenjang(m.jenjang) === jenjangFilter;
   });
 
   return (
@@ -126,16 +161,16 @@ export const AdminMajorsView: React.FC = () => {
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Manajemen Program Studi</h2>
           <p className="text-slate-500 dark:text-muted-foreground mt-1">Kelola data program studi dan kampus yang tersedia.</p>
         </div>
-        
+
         <div className="flex gap-2">
-          <input 
-            type="file" 
-            accept=".xlsx, .xls" 
-            className="hidden" 
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            className="hidden"
             ref={fileInputRef}
             onChange={handleFileUpload}
           />
-          <Button 
+          <Button
             onClick={() => fileInputRef.current?.click()}
             disabled={importLoading}
             className="bg-emerald-600 text-white hover:bg-emerald-700 gap-2"
@@ -143,8 +178,8 @@ export const AdminMajorsView: React.FC = () => {
             {importLoading ? <Upload className="w-4 h-4 animate-bounce" /> : <FileSpreadsheet className="w-4 h-4" />}
             Import Excel
           </Button>
-          <Button 
-            onClick={() => setIsAdding(!isAdding)}
+          <Button
+            onClick={startAdd}
             className="gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -163,23 +198,47 @@ export const AdminMajorsView: React.FC = () => {
       {isAdding && (
         <Card className="bg-card ring-0 border border-slate-200 dark:border-border shadow-sm">
           <CardContent className="space-y-4 p-6">
-            <h3 className="font-bold text-lg text-slate-800 dark:text-white">Tambah Program Studi Baru</h3>
+            <h3 className="font-bold text-lg text-slate-800 dark:text-white">
+              {editingId ? 'Edit Program Studi' : 'Tambah Program Studi Baru'}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2">
-                <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Nama Program Studi</Label>
-                <Input 
-                  type="text" 
-                  value={newMajor.name}
-                  onChange={e => setNewMajor({...newMajor, name: e.target.value})}
-                  className="h-10"
+                <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">
+                  Nama Jurusan <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={form.name}
+                  onChange={e => { setForm({ ...form, name: e.target.value }); if (errors.name) setErrors({ ...errors, name: undefined }); }}
+                  className={cn('h-10', errors.name && 'border-rose-500 ring-1 ring-rose-300')}
                   placeholder="e.g. Teknik Informatika"
                 />
+                {errors.name && <p className="text-[11px] text-rose-600 mt-1 font-semibold">{errors.name}</p>}
+              </div>
+              <div>
+                <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">
+                  Jenjang <span className="text-rose-500">*</span>
+                </Label>
+                <Select
+                  value={String(form.jenjang || '')}
+                  onValueChange={(val) => { setForm({ ...form, jenjang: val }); if (errors.jenjang) setErrors({ ...errors, jenjang: undefined }); }}
+                >
+                  <SelectTrigger className={cn('w-full h-10', errors.jenjang && 'border-rose-500 ring-1 ring-rose-300')}>
+                    <SelectValue placeholder="Pilih jenjang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JENJANG_OPTIONS.map(j => (
+                      <SelectItem key={j} value={j}>{j}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.jenjang && <p className="text-[11px] text-rose-600 mt-1 font-semibold">{errors.jenjang}</p>}
               </div>
               <div>
                 <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Institusi / Kampus</Label>
-                <Select 
-                  value={String(newMajor.institution_id)} 
-                  onValueChange={(val) => setNewMajor({...newMajor, institution_id: Number(val)})}
+                <Select
+                  value={String(form.institution_id)}
+                  onValueChange={(val) => setForm({ ...form, institution_id: Number(val) })}
                 >
                   <SelectTrigger className="w-full h-10">
                     <SelectValue />
@@ -193,9 +252,9 @@ export const AdminMajorsView: React.FC = () => {
               </div>
               <div>
                 <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Rumpun / Cluster</Label>
-                <Select 
-                  value={newMajor.cluster} 
-                  onValueChange={(val) => setNewMajor({...newMajor, cluster: val as any})}
+                <Select
+                  value={form.cluster}
+                  onValueChange={(val) => setForm({ ...form, cluster: val as any })}
                 >
                   <SelectTrigger className="w-full h-10">
                     <SelectValue />
@@ -208,42 +267,26 @@ export const AdminMajorsView: React.FC = () => {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Jenjang</Label>
-                <Select 
-                  value={String(newMajor.jenjang || 'S1')} 
-                  onValueChange={(val) => setNewMajor({...newMajor, jenjang: val as any})}
-                >
-                  <SelectTrigger className="w-full h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {JENJANG_OPTIONS.map(j => (
-                      <SelectItem key={j} value={j}>{j}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
                 <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Passing Grade Total</Label>
-                <Input 
-                  type="number" 
-                  value={newMajor.passing_grade_total || ''}
-                  onChange={e => setNewMajor({...newMajor, passing_grade_total: Number(e.target.value)})}
+                <Input
+                  type="number"
+                  value={form.passing_grade_total || ''}
+                  onChange={e => setForm({ ...form, passing_grade_total: Number(e.target.value) })}
                   className="h-10"
                 />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-4">
-              <Button 
+              <Button
                 variant="ghost"
-                onClick={() => setIsAdding(false)}
+                onClick={() => { setIsAdding(false); setEditingId(null); resetForm(); }}
               >
                 Batal
               </Button>
-              <Button 
-                onClick={handleAdd}
+              <Button
+                onClick={handleSave}
               >
-                Simpan Prodi
+                {editingId ? 'Simpan Perubahan' : 'Simpan Prodi'}
               </Button>
             </div>
           </CardContent>
@@ -255,7 +298,7 @@ export const AdminMajorsView: React.FC = () => {
         {(['SEMUA', ...JENJANG_OPTIONS] as const).map(f => {
           const count = f === 'SEMUA'
             ? state.majors.length
-            : state.majors.filter(m => getJenjang(m) === f).length;
+            : state.majors.filter(m => normalizeJenjang(m.jenjang) === f).length;
           return (
             <button
               key={f}
@@ -281,7 +324,8 @@ export const AdminMajorsView: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
-              <TableHead className="px-6 py-4 font-semibold">Prodi & Kampus</TableHead>
+              <TableHead className="px-6 py-4 font-semibold">Nama Jurusan</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-center">Kampus</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Jenjang</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Rumpun</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Passing Grade Total</TableHead>
@@ -295,30 +339,20 @@ export const AdminMajorsView: React.FC = () => {
                 <TableRow key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-muted/80">
                   <TableCell className="px-6 py-4">
                     <p className="font-bold text-slate-800 dark:text-white text-sm">{m.name}</p>
-                    <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5">{inst?.name || 'Unknown'}</p>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <span className="text-xs text-slate-500 dark:text-muted-foreground">{inst?.name || 'Unknown'}</span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <JenjangBadge jenjang={m.jenjang} />
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
                     <Badge
                       variant="outline"
                       className={cn(
                         'rounded-md text-[11px] font-bold h-auto py-1',
-                        getJenjang(m) === 'D-III'
-                          ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-100 dark:border-amber-800'
-                          : getJenjang(m) === 'D-IV'
-                            ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-100 dark:border-rose-800'
-                            : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'
-                      )}
-                    >
-                      {getJenjang(m)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-center">
-                    <Badge 
-                      variant="outline" 
-                      className={cn(
-                        'rounded-md text-[11px] font-bold h-auto py-1',
-                        m.cluster === 'Saintek' 
-                          ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-100 dark:border-blue-800' 
+                        m.cluster === 'Saintek'
+                          ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-100 dark:border-blue-800'
                           : m.cluster === 'Soshum'
                             ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 border-orange-100 dark:border-orange-800'
                             : 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400 border-violet-100 dark:border-violet-800'
@@ -331,9 +365,14 @@ export const AdminMajorsView: React.FC = () => {
                     <p className="text-sm font-bold text-primary">{m.passing_grade_total}</p>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-right">
-                    <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(m.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="inline-flex gap-1.5">
+                      <Button variant="outline" size="icon-xs" onClick={() => startEdit(m)} title="Edit Prodi">
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(m.id)} title="Hapus Prodi">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { JenjangBadge } from '@/components/ui/JenjangBadge';
 
 export const TargetMajorsView: React.FC = () => {
   const state = useAppState();
@@ -147,11 +148,14 @@ export const TargetMajorsView: React.FC = () => {
           {targetMajors.map((major, idx) => (
             <Card key={major.id} className="p-5 rounded-3xl ring-0 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 flex flex-col justify-between relative group gap-0">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <Badge className="text-[10px] font-black h-auto px-2.5 py-0.5 rounded-full bg-primary text-white border-primary">
                     Pilihan #{idx + 1}
                   </Badge>
-                  <span className="text-xs font-bold text-slate-500">PG: {major.passing_grade_total}</span>
+                  <div className="flex items-center gap-1.5">
+                    <JenjangBadge jenjang={major.jenjang} />
+                    <span className="text-xs font-bold text-slate-500">PG: {major.passing_grade_total}</span>
+                  </div>
                 </div>
                 <h4 className="font-bold text-sm text-slate-800 dark:text-white leading-snug pt-1">{major.name}</h4>
                 <p className="text-xs font-semibold text-primary">{major.institution_name}</p>

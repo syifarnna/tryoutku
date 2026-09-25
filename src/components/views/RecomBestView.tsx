@@ -6,6 +6,7 @@ import { cn } from '../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { JenjangBadge } from '@/components/ui/JenjangBadge';
 
 const clusterStyle: Record<ClusterType, { label: string; badge: string }> = {
   Saintek: { label: 'Saintek', badge: 'bg-sky-500 text-white' },
@@ -59,7 +60,7 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
         <div className="min-w-0">
           <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{m.name}</p>
           <p className="text-[11px] text-slate-400 truncate">
-            {campusName(m.institution_id)} • {m.jenjang || '—'}
+            {campusName(m.institution_id)}
           </p>
         </div>
       </div>
@@ -67,6 +68,7 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
         <Badge className={cn('rounded-md text-[10px] font-bold border-0', clusterStyle[m.cluster as ClusterType]?.badge || 'bg-primary')}>
           {m.cluster}
         </Badge>
+        <JenjangBadge jenjang={m.jenjang} />
         <Badge variant="outline" className="rounded-md text-[10px] font-bold">
           PG {fmt(m.passing_grade_total)}
         </Badge>

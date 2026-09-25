@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { JenjangBadge, normalizeJenjang } from '@/components/ui/JenjangBadge';
 
 const DEFAULT_ALTERNATIVE_LIMIT = 3;
 
@@ -16,6 +17,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
   const [selectedCampusId, setSelectedCampusId] = useState<string>('');
   const [selectedMajorId, setSelectedMajorId] = useState<number | null>(null);
   const [insist, setInsist] = useState(false);
+  const [jenjangFilter, setJenjangFilter] = useState<'SEMUA' | string>('SEMUA');
 
   // State per-kampus: data prodi diambil on-demand dari database saat kampus dipilih
   const [campusMajors, setCampusMajors] = useState<Major[]>([]);
@@ -181,7 +183,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
           <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">1. Pilih Kampus Tujuan</Label>
           <select
             value={selectedCampusId}
-            onChange={(e) => { setSelectedCampusId(e.target.value); setSelectedMajorId(null); setInsist(false); }}
+            onChange={(e) => { setSelectedCampusId(e.target.value); setSelectedMajorId(null); setInsist(false); setJenjangFilter('SEMUA'); }}
             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-primary dark:text-white h-12"
           >
             <option value="">-- Pilih Kampus Tujuan --</option>
@@ -258,6 +260,31 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
                   <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                     2. Pilih Program Studi (kriteria Passing Grade ditampilkan otomatis — status Lolos mengikuti nilai otomatis Anda)
                   </Label>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    {(['SEMUA', 'S1', 'D4', 'D3'] as const).map(f => {
+                      const count = f === 'SEMUA'
+                        ? campusMajors.length
+                        : campusMajors.filter(x => normalizeJenjang(x.jenjang) === f).length;
+                      return (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => setJenjangFilter(f)}
+                          className={cn(
+                            'px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer',
+                            jenjangFilter === f
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                          )}
+                        >
+                          {f === 'SEMUA' ? `Semua (${count})` : `${f} (${count})`}
+                        </button>
+                      );
+                    })}
+                    <span className="ml-1 text-[10px] font-semibold text-slate-400">
+                      {campusMajors.length} prodi • {selectedCampus.name}
+                    </span>
+                  </div>
                   <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
                     <button
                       type="button"
@@ -277,7 +304,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
                         {selectedMajorId == null && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
                       </span>
                     </button>
-                    {campusMajors.map(m => {
+                    {campusMajors.filter(m => jenjangFilter === 'SEMUA' || normalizeJenjang(m.jenjang) === jenjangFilter).map(m => {
                       const pass = m.passing_grade_total != null && autoScore >= m.passing_grade_total;
                       const isSel = selectedMajorId === m.id;
                       return (
@@ -308,11 +335,17 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
                             )}>
                               {pass ? '✓ Lolos' : '✕ Belum Lolos'}
                             </Badge>
-                            <span className="text-[10px] text-slate-400">{m.jenjang} • {m.cluster}</span>
+                            <JenjangBadge jenjang={m.jenjang} />
+                            <span className="text-[10px] text-slate-400">{m.cluster}</span>
                           </div>
                         </button>
                       );
                     })}
+                    {jenjangFilter !== 'SEMUA' && campusMajors.filter(m => normalizeJenjang(m.jenjang) === jenjangFilter).length === 0 && (
+                      <p className="text-xs text-slate-400 py-6 text-center border-2 border-dashed border-slate-200 dark:border-border rounded-2xl">
+                        Tidak ada prodi jenjang {jenjangFilter} di kampus ini.
+                      </p>
+                    )}
                   </div>
                 </div>
               </>
@@ -369,7 +402,13 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
                         <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-black shrink-0">{i + 1}</span>
                         <div className="min-w-0">
                           <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{m.name}</p>
-                          <p className="text-[11px] text-slate-400">{inst?.name} • PG {fmt(m.passing_grade_total)} • {m.cluster}</p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <JenjangBadge jenjang={m.jenjang} />
+                            <Badge variant="outline" className="rounded-md text-[9px] font-bold h-auto px-1.5 py-0.5 text-slate-500">
+                              {m.cluster}
+                            </Badge>
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-0.5">{inst?.name} • PG {fmt(m.passing_grade_total)}</p>
                         </div>
                       </div>
                       <Badge className="rounded-full text-[10px] font-bold h-auto px-2.5 py-1 bg-emerald-500 text-white">
@@ -453,7 +492,10 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
                         <div key={m.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-border flex items-center justify-between gap-3">
                           <div>
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{m.name}</p>
-                            <p className="text-[10px] text-slate-400">PG {fmt(m.passing_grade_total)} • {m.cluster}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <JenjangBadge jenjang={m.jenjang} />
+                              <span className="text-[10px] text-slate-400">PG {fmt(m.passing_grade_total)} • {m.cluster}</span>
+                            </div>
                           </div>
                           <Button
                             size="sm"
