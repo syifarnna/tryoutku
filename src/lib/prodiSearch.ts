@@ -70,6 +70,12 @@ export async function getMajorsStats(): Promise<MajorsStats | null> {
 
 // Menunda nilai input search sampai user berhenti mengetik (missal 500ms),
 // agar tidak melakukan hit RPC/DB di setiap ketukan keyboard.
+export async function getPopularMajors(limit = 10): Promise<Major[]> {
+  const { data, error } = await supabase.rpc('popular_majors', { p_limit: limit });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Major[];
+}
+
 export function useDebouncedValue<T>(value: T, delay = 500): T {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
