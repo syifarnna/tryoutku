@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAppState, appStore } from '../../../lib/store';
-import { Plus, Trash2, Upload, FileSpreadsheet, AlertCircle, Pencil } from 'lucide-react';
+import { Plus, Trash2, Upload, FileSpreadsheet, AlertCircle, Pencil, Search, X } from 'lucide-react';
 import { Major } from '../../../types';
 import * as XLSX from 'xlsx';
 import { supabase } from '../../../lib/supabaseClient';
@@ -36,6 +36,7 @@ export const AdminMajorsView: React.FC = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState('');
   const [jenjangFilter, setJenjangFilter] = useState<'SEMUA' | string>('SEMUA');
+  const [query, setQuery] = useState('');
   const [errors, setErrors] = useState<{ name?: string; jenjang?: string }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -150,6 +151,13 @@ export const AdminMajorsView: React.FC = () => {
   };
 
   const displayedMajors = state.majors.filter(m => {
+    const q = query.trim().toLowerCase();
+    if (q) {
+      const instName = (state.institutions.find(i => i.id === m.institution_id)?.name || '').toLowerCase();
+      const matchesName = (m.name || '').toLowerCase().includes(q);
+      const matchesInst = instName.includes(q);
+      if (!matchesName && !matchesInst) return false;
+    }
     if (jenjangFilter === 'SEMUA') return true;
     return normalizeJenjang(m.jenjang) === jenjangFilter;
   });
@@ -293,32 +301,46 @@ export const AdminMajorsView: React.FC = () => {
         </Card>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 bg-card rounded-2xl border border-slate-200 dark:border-border p-3 shadow-sm">
-        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Filter Jenjang:</span>
-        {(['SEMUA', ...JENJANG_OPTIONS] as const).map(f => {
-          const count = f === 'SEMUA'
-            ? state.majors.length
-            : state.majors.filter(m => normalizeJenjang(m.jenjang) === f).length;
-          return (
+      <div className="flex flex-col md:flex-row gap-3 bg-card rounded-2xl border border-slate-200 dark:border-border p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Cari nama jurusan atau nama kampus..."
+            className="pl-9 pr-9"
+          />
+          {query && (
             <button
-              key={f}
               type="button"
-              onClick={() => setJenjangFilter(f)}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer',
-                jenjangFilter === f
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
-              )}
+              onClick={() => setQuery('')}
+              title="Hapus pencarian"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
             >
-              {f === 'SEMUA' ? 'Semua' : f} ({count})
+              <X className="w-4 h-4" />
             </button>
-          );
-        })}
-        <span className="ml-auto text-xs font-semibold text-slate-400">
-          {displayedMajors.length} tampil
-        </span>
+          )}
+        </div>
+        <select
+          value={jenjangFilter}
+          onChange={(e) => setJenjangFilter(e.target.value)}
+          className="px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 md:w-56"
+        >
+          <option value="SEMUA">Semua Jenjang</option>
+          {(['S1', 'D4', 'D3'] as const).map(f => {
+            const count = state.majors.filter(m => normalizeJenjang(m.jenjang) === f).length;
+            return (
+              <option key={f} value={f}>{f} ({count})</option>
+            );
+          })}
+        </select>
       </div>
+
+      <p className="text-xs font-semibold text-slate-400">
+        Menampilkan <span className="text-slate-700 dark:text-white font-bold">{displayedMajors.length}</span> dari{' '}
+        <span className="text-slate-700 dark:text-white font-bold">{state.majors.length}</span> prodi
+      </p>
 
       <div className="bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
         <Table>
@@ -333,6 +355,17 @@ export const AdminMajorsView: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {displayedMajors.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="px-6 py-14 text-center">
+                  <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
+                  <p className="text-sm font-bold text-slate-500 dark:text-slate-300">Data prodi tidak ditemukan</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Tidak ada prodi yang cocok dengan kata kunci "{query.trim()}"{jenjangFilter !== 'SEMUA' && <> dan jenjang {jenjangFilter}</>}. Coba kata kunci lain atau ubah filter.
+                  </p>
+                </TableCell>
+              </TableRow>
+            )}
             {displayedMajors.map((m) => {
               const inst = state.institutions.find(i => i.id === m.institution_id);
               return (
