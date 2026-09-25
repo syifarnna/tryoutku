@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAppState, appStore } from '../../../lib/store';
 import { Plus, Trash2, Upload, FileSpreadsheet, AlertCircle, Pencil, Search, X } from 'lucide-react';
 import { Major } from '../../../types';
 import * as XLSX from 'xlsx';
 import { supabase } from '../../../lib/supabaseClient';
-import { getErrorMessage, cn } from '../../../lib/utils';
+import { getErrorMessage, cn, formatNumber } from '../../../lib/utils';
+import { searchMajors, getMajorsStats, useDebouncedValue, MajorsStats } from '../../../lib/prodiSearch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Pagination } from '@/components/ui/Pagination';
 import { JENJANG_OPTIONS, JenjangBadge, normalizeJenjang } from '@/components/ui/JenjangBadge';
 
 const inferJenjang = (name?: string): string => {
@@ -20,6 +22,8 @@ const inferJenjang = (name?: string): string => {
   if (/D\s*[-]?\s*3/.test(n)) return 'D3';
   return 'S1';
 };
+
+const PAGE_SIZE = 25;
 
 const EMPTY_FORM = {
   name: '',
@@ -41,6 +45,71 @@ export const AdminMajorsView: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({ ...EMPTY_FORM });
+
+  // State server-side search & pagination
+  const debouncedQuery = useDebouncedValue(query, 500);
+  const [page, setPage] = useState(1);
+  const [rows, setRows] = useState<Major[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [stats, setStats] = useState<MajorsStats | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const hasActiveFilter = jenjangFilter !== 'SEMUA' || debouncedQuery.trim().length > 0;
+
+  // Search/filter berubah -> kembali ke halaman 1
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedQuery, jenjangFilter]);
+
+  // Auto-clamp halaman bila total menyusut (misal setelah delete)
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  // Fetch ke server (RPC search_majors) dengan debounce
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      setLoadError('');
+      try {
+        const res = await searchMajors({
+          search: debouncedQuery,
+          jenjang: jenjangFilter === 'SEMUA' ? '' : jenjangFilter,
+          sort: 'pg',
+          page,
+          pageSize: PAGE_SIZE,
+        });
+        if (cancelled) return;
+        setRows(res.data);
+        setTotal(res.total);
+      } catch (e: any) {
+        if (!cancelled) setLoadError(getErrorMessage(e));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery, jenjangFilter, page, reloadKey]);
+
+  // Statistik global untuk jumlah per jenjang di dropdown
+  useEffect(() => {
+    let cancelled = false;
+    getMajorsStats()
+      .then(s => {
+        if (!cancelled && s) setStats(s);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const resetForm = () => {
     setForm({ ...EMPTY_FORM });
@@ -67,6 +136,8 @@ export const AdminMajorsView: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const refresh = () => setReloadKey(k => k + 1);
+
   const handleSave = () => {
     const nextErrors: { name?: string; jenjang?: string } = {};
     if (!form.name.trim()) nextErrors.name = 'Nama jurusan wajib diisi.';
@@ -84,7 +155,7 @@ export const AdminMajorsView: React.FC = () => {
     };
 
     if (editingId) {
-      const original = state.majors.find(m => m.id === editingId);
+      const original = rows.find(r => r.id === editingId) ?? state.majors.find(m => m.id === editingId);
       appStore.updateMajor({ ...original, ...payload } as Major);
     } else {
       appStore.addMajor(payload);
@@ -93,10 +164,12 @@ export const AdminMajorsView: React.FC = () => {
     setIsAdding(false);
     setEditingId(null);
     resetForm();
+    refresh();
   };
 
   const handleDelete = (id: number) => {
     appStore.deleteMajor(id);
+    refresh();
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,6 +214,7 @@ export const AdminMajorsView: React.FC = () => {
       if (error) throw new Error(error.message);
 
       await appStore.fetchMasterData();
+      refresh();
 
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: any) {
@@ -149,18 +223,6 @@ export const AdminMajorsView: React.FC = () => {
       setImportLoading(false);
     }
   };
-
-  const displayedMajors = state.majors.filter(m => {
-    const q = query.trim().toLowerCase();
-    if (q) {
-      const instName = (state.institutions.find(i => i.id === m.institution_id)?.name || '').toLowerCase();
-      const matchesName = (m.name || '').toLowerCase().includes(q);
-      const matchesInst = instName.includes(q);
-      if (!matchesName && !matchesInst) return false;
-    }
-    if (jenjangFilter === 'SEMUA') return true;
-    return normalizeJenjang(m.jenjang) === jenjangFilter;
-  });
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -200,6 +262,13 @@ export const AdminMajorsView: React.FC = () => {
         <div className="p-4 rounded-xl bg-rose-50 text-rose-600 text-sm font-bold flex gap-2 items-center">
           <AlertCircle className="w-5 h-5" />
           {importError}
+        </div>
+      )}
+
+      {loadError && (
+        <div className="p-4 rounded-xl bg-rose-50 text-rose-600 text-sm font-bold flex gap-2 items-center">
+          <AlertCircle className="w-5 h-5" />
+          Gagal memuat data: {loadError}
         </div>
       )}
 
@@ -327,22 +396,34 @@ export const AdminMajorsView: React.FC = () => {
           onChange={(e) => setJenjangFilter(e.target.value)}
           className="px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 md:w-56"
         >
-          <option value="SEMUA">Semua Jenjang</option>
-          {(['S1', 'D4', 'D3'] as const).map(f => {
-            const count = state.majors.filter(m => normalizeJenjang(m.jenjang) === f).length;
-            return (
-              <option key={f} value={f}>{f} ({count})</option>
-            );
-          })}
+          <option value="SEMUA">Semua Jenjang ({stats ? formatNumber(stats.totalProdi) : '…'})</option>
+          <option value="S1">S1 ({stats ? formatNumber(stats.s1) : '…'})</option>
+          <option value="D4">D4 ({stats ? formatNumber(stats.d4) : '…'})</option>
+          <option value="D3">D3 ({stats ? formatNumber(stats.d3) : '…'})</option>
         </select>
       </div>
 
-      <p className="text-xs font-semibold text-slate-400">
-        Menampilkan <span className="text-slate-700 dark:text-white font-bold">{displayedMajors.length}</span> dari{' '}
-        <span className="text-slate-700 dark:text-white font-bold">{state.majors.length}</span> prodi
-      </p>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-xs font-semibold text-slate-400">
+          {loading && rows.length === 0 ? (
+            'Memuat data prodi...'
+          ) : (
+            <>
+              Menampilkan <span className="text-slate-700 dark:text-white font-bold">{rows.length}</span> dari{' '}
+              <span className="text-slate-700 dark:text-white font-bold">{formatNumber(total)}</span> prodi
+              {hasActiveFilter && (
+                <> • Ditemukan <span className="text-primary font-bold">{formatNumber(total)}</span> data</>
+              )}
+            </>
+          )}
+        </p>
+        <p className="text-xs font-semibold text-slate-400">
+          Halaman <span className="text-slate-700 dark:text-white font-bold">{page}</span> dari{' '}
+          <span className="text-slate-700 dark:text-white font-bold">{totalPages}</span>
+        </p>
+      </div>
 
-      <div className="bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
+      <div className={cn("bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm transition-opacity", loading && rows.length > 0 && 'opacity-60')}>
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
@@ -355,7 +436,7 @@ export const AdminMajorsView: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {displayedMajors.length === 0 && (
+            {!loading && rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="px-6 py-14 text-center">
                   <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
@@ -366,52 +447,64 @@ export const AdminMajorsView: React.FC = () => {
                 </TableCell>
               </TableRow>
             )}
-            {displayedMajors.map((m) => {
-              const inst = state.institutions.find(i => i.id === m.institution_id);
-              return (
-                <TableRow key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-muted/80">
-                  <TableCell className="px-6 py-4">
-                    <p className="font-bold text-slate-800 dark:text-white text-sm">{m.name}</p>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-center">
-                    <span className="text-xs text-slate-500 dark:text-muted-foreground">{inst?.name || 'Unknown'}</span>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-center">
-                    <JenjangBadge jenjang={m.jenjang} />
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-center">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'rounded-md text-[11px] font-bold h-auto py-1',
-                        m.cluster === 'Saintek'
-                          ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-100 dark:border-blue-800'
-                          : m.cluster === 'Soshum'
-                            ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 border-orange-100 dark:border-orange-800'
-                            : 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400 border-violet-100 dark:border-violet-800'
-                      )}
-                    >
-                      {m.cluster}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-center">
-                    <p className="text-sm font-bold text-primary">{m.passing_grade_total}</p>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
-                    <div className="inline-flex gap-1.5">
-                      <Button variant="outline" size="icon-xs" onClick={() => startEdit(m)} title="Edit Prodi">
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(m.id)} title="Hapus Prodi">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+            {loading && rows.length === 0 && (
+              Array.from({ length: 6 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 6 }).map((__, j) => (
+                    <TableCell key={j} className="px-6 py-4">
+                      <div className="h-3.5 w-full max-w-[200px] rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                    </TableCell>
+                  ))}
                 </TableRow>
-              );
-            })}
+              ))
+            )}
+            {rows.map((m) => (
+              <TableRow key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-muted/80">
+                <TableCell className="px-6 py-4">
+                  <p className="font-bold text-slate-800 dark:text-white text-sm">{m.name}</p>
+                </TableCell>
+                <TableCell className="px-6 py-4 text-center">
+                  <span className="text-xs text-slate-500 dark:text-muted-foreground">{m.institution_name || 'Unknown'}</span>
+                </TableCell>
+                <TableCell className="px-6 py-4 text-center">
+                  <JenjangBadge jenjang={m.jenjang} />
+                </TableCell>
+                <TableCell className="px-6 py-4 text-center">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'rounded-md text-[11px] font-bold h-auto py-1',
+                      m.cluster === 'Saintek'
+                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-100 dark:border-blue-800'
+                        : m.cluster === 'Soshum'
+                          ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 border-orange-100 dark:border-orange-800'
+                          : 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400 border-violet-100 dark:border-violet-800'
+                    )}
+                  >
+                    {m.cluster}
+                  </Badge>
+                </TableCell>
+                <TableCell className="px-6 py-4 text-center">
+                  <p className="text-sm font-bold text-primary">{m.passing_grade_total}</p>
+                </TableCell>
+                <TableCell className="px-6 py-4 text-right">
+                  <div className="inline-flex gap-1.5">
+                    <Button variant="outline" size="icon-xs" onClick={() => startEdit(m)} title="Edit Prodi">
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(m.id)} title="Hapus Prodi">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </div>
   );

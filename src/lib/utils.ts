@@ -31,3 +31,8 @@ export function getErrorMessage(e: any): string {
   
   return msg;
 }
+
+export function formatNumber(n?: number | null): string {
+  if (n == null) return '0';
+  return n.toLocaleString('id-ID');
+}

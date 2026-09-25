@@ -1,14 +1,16 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Building2, GraduationCap, Target, Layers } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Building2, GraduationCap, Target, Layers, Loader2 } from 'lucide-react';
 import { useAppState } from '../../lib/store';
 import { appStore } from '../../lib/store';
 import { cn } from '../../lib/utils';
+import { searchMajors, getMajorsStats, useDebouncedValue, MajorsStats } from '../../lib/prodiSearch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { normalizeJenjang, JenjangBadge } from '@/components/ui/JenjangBadge';
-import type { ClusterType } from '../../types';
+import { Pagination } from '@/components/ui/Pagination';
+import { JenjangBadge } from '@/components/ui/JenjangBadge';
+import type { ClusterType, Major } from '../../types';
 
 type JenjangFilter = 'SEMUA' | 'S1' | 'D4' | 'D3';
 type RumpunFilter = 'SEMUA' | ClusterType;
@@ -36,76 +38,98 @@ const CLUSTER_STYLE: Record<ClusterType, { badge: string; row: string; dot: stri
 
 const PAGE_SIZE = 50;
 
-const normJenjang = normalizeJenjang;
+const EMPTY_STATS: MajorsStats = {
+  universitas: 0,
+  totalProdi: 0,
+  s1: 0,
+  d4: 0,
+  d3: 0,
+  saintek: 0,
+  soshum: 0,
+  campuran: 0,
+};
 
 export const UniversitasProdiView: React.FC = () => {
   const state = useAppState();
-
   const [search, setSearch] = useState('');
   const [jenjang, setJenjang] = useState<JenjangFilter>('SEMUA');
   const [rumpun, setRumpun] = useState<RumpunFilter>('SEMUA');
   const [sortBy, setSortBy] = useState<'name' | 'pg'>('pg');
   const [page, setPage] = useState(1);
 
-  const stats = useMemo(() => {
-    const majors = state.majors;
-    const countJenjang = (j: string) => majors.filter(m => normalizeJenjang(m.jenjang) === j).length;
-    return {
-      universitas: new Set(majors.map(m => m.institution_id)).size,
-      prodi: majors.length,
-      s1: countJenjang('S1'),
-      d3: countJenjang('D3'),
-      d4: countJenjang('D4'),
-      jenjang: {
-        'S1': countJenjang('S1'),
-        'D4': countJenjang('D4'),
-        'D3': countJenjang('D3'),
-      } as Record<string, number>,
-      rumpun: {
-        Saintek: majors.filter(m => m.cluster === 'Saintek').length,
-        Soshum: majors.filter(m => m.cluster === 'Soshum').length,
-        Campuran: majors.filter(m => m.cluster === 'Campuran').length,
-      } as Record<ClusterType, number>,
+  // Server-side state
+  const debouncedSearch = useDebouncedValue(search, 500);
+  const [rows, setRows] = useState<Major[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<MajorsStats>(EMPTY_STATS);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, jenjang, rumpun, sortBy]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await searchMajors({
+          search: debouncedSearch,
+          jenjang: jenjang === 'SEMUA' ? '' : jenjang,
+          rumpun: rumpun === 'SEMUA' ? '' : rumpun,
+          sort: sortBy,
+          page,
+          pageSize: PAGE_SIZE,
+        });
+        if (cancelled) return;
+        setRows(res.data);
+        setTotal(res.total);
+      } catch (e) {
+        if (!cancelled) {
+          setRows([]);
+          setTotal(0);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
-  }, [state.majors]);
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearch, jenjang, rumpun, sortBy, page]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let rows = state.majors;
-
-    if (jenjang !== 'SEMUA') {
-      rows = rows.filter(m => normJenjang(m.jenjang) === jenjang);
-    }
-
-    if (rumpun !== 'SEMUA') {
-      rows = rows.filter(m => m.cluster === rumpun);
-    }
-
-    if (q) {
-      rows = rows.filter(m =>
-        (m.name || '').toLowerCase().includes(q) ||
-        (m.institution_name || '').toLowerCase().includes(q) ||
-        (m.code || '').toLowerCase().includes(q)
-      );
-    }
-
-    if (sortBy === 'name') {
-      rows = [...rows].sort((a, b) => (a.institution_name || '').localeCompare(b.institution_name || '') || (a.name || '').localeCompare(b.name || ''));
-    } else {
-      rows = [...rows].sort((a, b) => (b.passing_grade_total || 0) - (a.passing_grade_total || 0));
-    }
-
-    return rows;
-  }, [state.majors, search, jenjang, rumpun, sortBy]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-
-  const resetPage = () => setPage(1);
+  useEffect(() => {
+    let cancelled = false;
+    getMajorsStats()
+      .then(s => {
+        if (!cancelled && s) setStats(s);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const fmt = (n?: number | null) =>
     n == null ? '—' : n.toLocaleString('id-ID');
+
+  const jenjangCounts: Record<string, number> = {
+    'S1': stats.s1,
+    'D4': stats.d4,
+    'D3': stats.d3,
+  };
+  const rumpunCounts: Record<ClusterType, number> = {
+    Saintek: stats.saintek,
+    Soshum: stats.soshum,
+    Campuran: stats.campuran,
+  };
 
   return (
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
@@ -113,7 +137,7 @@ export const UniversitasProdiView: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">Browser Universitas & Program Studi 2025</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Data passing grade UTBK-SNBT 2025 • {fmt(stats.prodi)} prodi dari {fmt(stats.universitas)} PTN
+            Data passing grade UTBK-SNBT 2025 • {fmt(stats.totalProdi)} prodi dari {fmt(stats.universitas)} PTN
           </p>
         </div>
       </div>
@@ -121,7 +145,7 @@ export const UniversitasProdiView: React.FC = () => {
       {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: 'Total Prodi', value: stats.prodi, icon: GraduationCap, color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40' },
+          { label: 'Total Prodi', value: stats.totalProdi, icon: GraduationCap, color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40' },
           { label: 'Universitas', value: stats.universitas, icon: Building2, color: 'text-sky-500 bg-sky-50 dark:bg-sky-950/40' },
           { label: 'Jenjang S1', value: stats.s1, icon: Layers, color: 'text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40' },
           { label: 'Jenjang D3', value: stats.d3, icon: Layers, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40' },
@@ -146,14 +170,14 @@ export const UniversitasProdiView: React.FC = () => {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input
               value={search}
-              onChange={(e) => { setSearch(e.target.value); resetPage(); }}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Cari nama kampus, program studi, atau kode (mis. ITB, Hukum, 611001)..."
               className="pl-9"
             />
           </div>
           <select
             value={sortBy}
-            onChange={(e) => { setSortBy(e.target.value as 'name' | 'pg'); resetPage(); }}
+            onChange={(e) => { setSortBy(e.target.value as 'name' | 'pg'); setPage(1); }}
             className="px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             <option value="pg">Urut: Passing Grade Tertinggi</option>
@@ -166,7 +190,7 @@ export const UniversitasProdiView: React.FC = () => {
           {JENJANG_FILTERS.map(f => (
             <button
               key={f}
-              onClick={() => { setJenjang(f); resetPage(); }}
+              onClick={() => { setJenjang(f); setPage(1); }}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer',
                 jenjang === f
@@ -174,13 +198,11 @@ export const UniversitasProdiView: React.FC = () => {
                   : 'bg-background text-muted-foreground border-border hover:bg-muted'
               )}
             >
-              {f === 'SEMUA'
-                ? f
-                : `${f}: ${fmt(stats.jenjang[f as string])}`}
+              {f === 'SEMUA' ? f : `${f}: ${fmt(jenjangCounts[f])}`}
             </button>
           ))}
           <span className="ml-auto text-xs font-semibold text-slate-400">
-            {fmt(filtered.length)} hasil
+            {loading ? 'Memuat...' : `Ditemukan ${fmt(total)} data`}
           </span>
         </div>
 
@@ -189,7 +211,7 @@ export const UniversitasProdiView: React.FC = () => {
           {RUMPUN_FILTERS.map(f => (
             <button
               key={f}
-              onClick={() => { setRumpun(f); resetPage(); }}
+              onClick={() => { setRumpun(f); setPage(1); }}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer',
                 rumpun === f
@@ -197,16 +219,14 @@ export const UniversitasProdiView: React.FC = () => {
                   : 'bg-background text-muted-foreground border-border hover:bg-muted'
               )}
             >
-              {f === 'SEMUA'
-                ? f
-                : `${f} ${fmt(stats.rumpun[f])}`}
+              {f === 'SEMUA' ? f : `${f} ${fmt(rumpunCounts[f])}`}
             </button>
           ))}
         </div>
       </Card>
 
       {/* Table */}
-      <Card className="rounded-2xl overflow-hidden border-slate-200/70 dark:border-border">
+      <Card className={cn('rounded-2xl overflow-hidden border-slate-200/70 dark:border-border transition-opacity', loading && rows.length > 0 && 'opacity-60')}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -224,7 +244,7 @@ export const UniversitasProdiView: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {pageRows.length === 0 && (
+              {!loading && rows.length === 0 && (
                 <tr>
                   <td colSpan={10} className="px-4 py-12 text-center text-slate-400">
                     <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
@@ -232,7 +252,15 @@ export const UniversitasProdiView: React.FC = () => {
                   </td>
                 </tr>
               )}
-              {pageRows.map((m) => {
+              {loading && rows.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="px-4 py-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto opacity-50" />
+                    <span className="text-xs">Memuat data prodi...</span>
+                  </td>
+                </tr>
+              )}
+              {rows.map((m) => {
                 const isTarget = state.targetMajorIds.includes(m.id);
                 const cs = CLUSTER_STYLE[m.cluster === 'Saintek' || m.cluster === 'Soshum' || m.cluster === 'Campuran' ? m.cluster : 'Campuran'];
                 return (
@@ -280,31 +308,12 @@ export const UniversitasProdiView: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 dark:border-border gap-3 flex-wrap">
-            <p className="text-xs text-slate-400">
-              Halaman {safePage} dari {totalPages} • {fmt(filtered.length)} prodi
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={safePage <= 1}
-                onClick={() => setPage(safePage - 1)}
-              >
-                Sebelumnya
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={safePage >= totalPages}
-                onClick={() => setPage(safePage + 1)}
-              >
-                Berikutnya
-              </Button>
-            </div>
-          </div>
-        )}
+        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 dark:border-border gap-3 flex-wrap">
+          <p className="text-xs text-slate-400">
+            Halaman {Math.min(page, totalPages)} dari {totalPages} • {fmt(total)} prodi
+          </p>
+          <Pagination page={Math.min(page, totalPages)} totalPages={totalPages} onChange={setPage} />
+        </div>
       </Card>
     </div>
   );
