@@ -29,8 +29,7 @@ const AnalysisPassingView = lazyView(() => import('./components/views/AnalysisPa
 const AnalysisCompView = lazyView(() => import('./components/views/AnalysisCompView'), 'AnalysisCompView');
 const TargetMajorsView = lazyView(() => import('./components/views/TargetMajorsView'), 'TargetMajorsView');
 const UniversitasProdiView = lazyView(() => import('./components/views/UniversitasProdiView'), 'UniversitasProdiView');
-const RecomAlternativesView = lazyView(() => import('./components/views/RecomAlternativesView'), 'RecomAlternativesView');
-const RecomBestView = lazyView(() => import('./components/views/RecomBestView'), 'RecomBestView');
+const RekomendasiView = lazyView(() => import('./components/views/RekomendasiView'), 'RekomendasiView');
 const ReportsView = lazyView(() => import('./components/views/ReportsView'), 'ReportsView');
 const ProfileView = lazyView(() => import('./components/views/ProfileView'), 'ProfileView');
 const SupabaseSqlView = lazyView(() => import('./components/views/SupabaseSqlView'), 'SupabaseSqlView');
@@ -159,12 +158,12 @@ export default function App() {
         return <AnalysisCompView />;
       case 'target_majors':
         return <TargetMajorsView />;
+      case 'rekomendasi':
       case 'recom_integrated':
-        return <RecomBestView setActiveTab={setActiveTab} />;
+      case 'recom_alternatives':
+        return <RekomendasiView key={activeTab} setActiveTab={setActiveTab} initialTab={activeTab === 'recom_alternatives' ? 'alt' : 'best'} />;
       case 'browse_universitas':
         return <UniversitasProdiView />;
-      case 'recom_alternatives':
-        return <RecomAlternativesView setActiveTab={setActiveTab} />;
       case 'reports':
         return <ReportsView />;
       case 'profile':
