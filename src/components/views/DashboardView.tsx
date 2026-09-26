@@ -56,19 +56,20 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
   }, []);
 
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      setSearchTotal(0);
-      return;
-    }
     const t = setTimeout(async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        setSearchTotal(0);
+        return;
+      }
       setSearchLoading(true);
       try {
         const res = await searchMajors({ search: searchQuery, jenjang: jenjang === 'SEMUA' ? '' : jenjang, rumpun: rumpun === 'SEMUA' ? '' : rumpun, page: 1, pageSize: 10 });
         setSearchResults(res.data);
         setSearchTotal(res.total);
-      } catch (e) {
-        console.warn(e);
+      } catch {
+        setSearchResults([]);
+        setSearchTotal(0);
       } finally {
         setSearchLoading(false);
       }
@@ -76,7 +77,7 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
     return () => clearTimeout(t);
   }, [searchQuery, jenjang, rumpun]);
 
-  const fmt = (n?: number | null) => (n == null ? '—' : n.toLocaleString('id-ID'));
+  const fmt = (n?: number | null) => n == null ? '—' : formatNumber(n);
   const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0];
   const targetMajor = activeTargetMajorId ? state.majors.find(m => m.id === activeTargetMajorId) : undefined;
   const latestResult = state.results[0];
