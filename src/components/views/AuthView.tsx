@@ -80,20 +80,35 @@ export const AuthView: React.FC = () => {
           }
         }
       });
+
       if (error) {
+        let msg = getErrorMessage(error);
         if (error.message?.includes('Database error saving new user')) {
-           Swal.fire('Gagal Register', 'Terjadi kesalahan database (Trigger Gagal). Harap pastikan Anda telah menjalankan ulang query DDL SQL (blueprint terbaru) di Supabase agar tabel profiles memiliki kolom nisn & is_profile_complete.', 'error');
+          msg = 'Terjadi kesalahan database (Trigger Gagal). Harap pastikan Anda telah menjalankan ulang query DDL SQL (blueprint terbaru) di Supabase agar tabel profiles memiliki kolom nisn & is_profile_complete.';
         } else if (error.message?.includes('User already registered')) {
-           Swal.fire('Gagal Register', 'Email ini sudah terdaftar. Jika sebelumnya Anda gagal register karena error SQL, profil Anda mungkin korup. Tolong gunakan Email yang berbeda.', 'error');
-        } else {
-           Swal.fire('Gagal Register', getErrorMessage(error), 'error');
+          msg = 'Email ini sudah terdaftar. Jika sebelumnya Anda gagal register karena error SQL, profil Anda mungkin korup. Tolong gunakan Email yang berbeda.';
         }
-      } else if (data.session) {
-        // Logged in automatically
-      } else {
-        Swal.fire('Sukses', 'Registrasi berhasil! Silakan langsung login (Email Auto-Confirm telah aktif jika blueprint SQL terbaru sudah dijalankan).', 'success');
-        setMode('login');
+        Swal.fire('Gagal Register', msg, 'error');
+        setLoading(false);
+        return;
       }
+
+      if (data.user) {
+        if (!data.session) {
+          Swal.fire('Sukses', 'Registrasi berhasil! Silakan login menggunakan email dan password Anda.', 'success');
+          switchMode('login');
+          setLoading(false);
+          return;
+        }
+      } else {
+        Swal.fire('Sukses', 'Registrasi berhasil! Silakan login.', 'success');
+        switchMode('login');
+        setLoading(false);
+        return;
+      }
+    }
+    
+    if (mode === 'register') {
       setLoading(false);
       return;
     }
