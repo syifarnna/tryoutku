@@ -457,6 +457,11 @@ class AppStore {
         this.state.tutoringCenters = tutoringData;
       }
 
+      const { data: compData } = await supabase.from('competencies').select('*').order('code', { ascending: true });
+      if (compData && compData.length > 0) {
+        this.state.competencies = compData;
+      }
+
       this.notify();
     } catch (err) {
       console.warn('Gagal memuat data master dari Supabase:', err);

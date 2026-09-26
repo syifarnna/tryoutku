@@ -102,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'TARGET & REKOMENDASI',
       items: [
         { id: 'browse_universitas', label: 'Browser Kampus & Prodi 2025', icon: Compass, badge: '' },
-        { id: 'rekomendasi', label: 'Rekomendasi Prodi & Institut', icon: Sparkles, badge: 'Satu Halaman' },
+        { id: 'rekomendasi', label: 'Rekomendasi', icon: Sparkles, badge: '' },
         { id: 'target_majors', label: 'Target Institut Saya', icon: Target, badge: `${state.targetMajorIds.length}` }
       ]
     },

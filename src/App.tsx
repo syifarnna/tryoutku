@@ -155,7 +155,7 @@ export default function App() {
       case 'analysis_passing':
         return <AnalysisPassingView setActiveTab={setActiveTab} />;
       case 'analysis_comp':
-        return <AnalysisCompView />;
+        return <AnalysisCompView setActiveTab={setActiveTab} />;
       case 'target_majors':
         return <TargetMajorsView />;
       case 'rekomendasi':
