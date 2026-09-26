@@ -7,6 +7,7 @@ import {
   FileText, 
   LayoutDashboard, 
   LogOut, 
+  Scale, 
   Settings, 
   Target, 
   TrendingUp, 
@@ -59,7 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'admin_users', label: 'Daftar Pengguna', icon: Users, badge: '' },
         { id: 'admin_campuses', label: 'Kelola Kampus & Grade', icon: Database, badge: '' },
         { id: 'admin_majors', label: 'Kelola Prodi', icon: Target, badge: `` },
-        { id: 'admin_questions', label: 'Bank Soal Penjurusan', icon: Brain, badge: `${state.questions.length}` },
+        { id: 'admin_questions', label: 'Bank Soal Penjurusan', icon: Brain, badge: '' },
         { id: 'admin_results', label: 'Leaderboard Nasional', icon: Award, badge: '' }
       ]
     },
@@ -74,48 +75,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'MENU UTAMA',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: '' }
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }
       ]
     },
     {
-      title: 'PILIHAN JALUR',
+      title: 'EKSPLORASI & PENJURUSAN',
       items: [
-        { id: 'analisis_tryout', label: 'Jalur 1 — Analisis Hasil Tryout', icon: TrendingUp, badge: 'Nilai' },
-        { id: 'tes_minat', label: 'Jalur 2 — Tes Minat dan Bakat', icon: Brain, badge: `${state.questions.length} soal` }
+        { id: 'browse_universitas', label: 'Browser Kampus & Prodi', icon: Compass },
+        { id: 'tes_minat', label: 'Jalur 2 - Tes Penjurusan', icon: Brain },
+        { id: 'analisis_tryout', label: 'Jalur 1 - Analisis Nilai', icon: TrendingUp }
       ]
     },
     {
       title: 'SIMULASI UJIAN',
       items: [
-        { id: 'tryouts', label: 'Daftar Tryout', icon: BookOpen, badge: 'Baru' },
-        { id: 'results', label: 'Hasil Tryout Saya', icon: Award, badge: `${state.results.length}` }
+        { id: 'tryouts', label: 'Daftar Tryout', icon: BookOpen },
+        { id: 'results', label: 'Hasil Tryout Saya', icon: Award }
       ]
     },
     {
-      title: 'ANALISIS NILAI (INTI)',
+      title: 'ANALISIS & TARGET (INTI)',
       items: [
-        { id: 'analysis_passing', label: 'Perbandingan Passing Grade', icon: TrendingUp, badge: 'Kritis' },
-        { id: 'analysis_comp', label: 'Analisis Kompetensi', icon: BarChart3, badge: '' }
+        { id: 'analysis_comp', label: 'Analisis Kompetensi', icon: BarChart3 },
+        { id: 'analysis_passing', label: 'Perbandingan Prodi', icon: Scale },
+        { id: 'target_majors', label: 'Target Institut', icon: Target }
       ]
     },
     {
-      title: 'TARGET & REKOMENDASI',
+      title: 'HASIL & REKOMENDASI',
       items: [
-        { id: 'browse_universitas', label: 'Browser Kampus & Prodi 2025', icon: Compass, badge: '' },
-        { id: 'rekomendasi', label: 'Rekomendasi', icon: Sparkles, badge: '' },
-        { id: 'target_majors', label: 'Target Institut Saya', icon: Target, badge: `${state.targetMajorIds.length}` }
-      ]
-    },
-    {
-      title: 'LAPORAN',
-      items: [
-        { id: 'reports', label: 'Laporan Komprehensif', icon: FileText, badge: 'PDF' }
+        { id: 'rekomendasi', label: 'Rekomendasi', icon: Sparkles },
+        { id: 'reports', label: 'Laporan Komprehensif', icon: FileText }
       ]
     },
     {
       title: 'PENGATURAN',
       items: [
-        { id: 'profile', label: 'Profil Siswa', icon: Settings, badge: '' }
+        { id: 'profile', label: 'Profil Siswa', icon: Settings }
       ]
     }
   ];
