@@ -55,16 +55,24 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
     return () => { cancelled = true; };
   }, []);
 
+  const hasActiveFilters = searchQuery.trim() !== '' || jenjang !== 'SEMUA' || rumpun !== 'SEMUA';
+
   useEffect(() => {
     const t = setTimeout(async () => {
-      if (!searchQuery.trim()) {
+      if (!hasActiveFilters) {
         setSearchResults([]);
         setSearchTotal(0);
         return;
       }
       setSearchLoading(true);
       try {
-        const res = await searchMajors({ search: searchQuery, jenjang: jenjang === 'SEMUA' ? '' : jenjang, rumpun: rumpun === 'SEMUA' ? '' : rumpun, page: 1, pageSize: 10 });
+        const res = await searchMajors({
+          search: searchQuery.trim(),
+          jenjang: jenjang === 'SEMUA' ? '' : jenjang,
+          rumpun: rumpun === 'SEMUA' ? '' : rumpun,
+          page: 1,
+          pageSize: searchQuery.trim() ? 10 : 8,
+        });
         setSearchResults(res.data);
         setSearchTotal(res.total);
       } catch {
@@ -75,32 +83,7 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
       }
     }, 400);
     return () => clearTimeout(t);
-  }, [searchQuery, jenjang, rumpun]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setSearchLoading(true);
-      try {
-        const res = await searchMajors({ search: '', jenjang: jenjang === 'SEMUA' ? '' : jenjang, rumpun: rumpun === 'SEMUA' ? '' : rumpun, page: 1, pageSize: 10 });
-        if (!cancelled) {
-          setSearchResults(res.data);
-          setSearchTotal(res.total);
-        }
-      } catch {
-        if (!cancelled) {
-          setSearchResults([]);
-          setSearchTotal(0);
-        }
-      } finally {
-        if (!cancelled) setSearchLoading(false);
-      }
-    };
-    if (!searchQuery.trim()) {
-      load();
-    }
-    return () => { cancelled = true; };
-  }, [jenjang, rumpun]);
+  }, [searchQuery, jenjang, rumpun, hasActiveFilters]);
 
   const fmt = (n?: number | null) => n == null ? '—' : formatNumber(n);
   const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0];
@@ -225,9 +208,9 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
           )}
         </Card>
 
-        {(searchResults.length > 0 || (!searchQuery.trim() && popular.length > 0)) && (
+        {(searchResults.length > 0 || (!hasActiveFilters && popular.length > 0)) && (
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {(searchQuery.trim() ? searchResults : popular.slice(0, 8)).map(m => {
+            {(hasActiveFilters ? searchResults : popular.slice(0, 8)).map(m => {
               const inst = state.institutions.find(i => i.id === m.institution_id);
               const cs = CLUSTER_STYLE[m.cluster === 'Saintek' || m.cluster === 'Soshum' || m.cluster === 'Campuran' ? m.cluster : 'Campuran'];
               return (
@@ -251,7 +234,7 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
           </div>
         )}
         {searchLoading && <p className="text-xs text-slate-400 text-center py-4">Mencari...</p>}
-        {!searchLoading && searchQuery.trim() && searchResults.length === 0 && <p className="text-xs text-slate-400 text-center py-4">Tidak ada hasil untuk "{searchQuery.trim()}"</p>}
+        {!searchLoading && hasActiveFilters && searchResults.length === 0 && <p className="text-xs text-slate-400 text-center py-4">Tidak ada hasil untuk filter ini.</p>}
       </div>
 
       {/* SECTION 4: Widget Statistik & Distribusi Data */}
