@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { JenjangBadge } from '@/components/ui/JenjangBadge';
 import { Pagination } from '@/components/ui/Pagination';
-import { Search, Target, GraduationCap, Building2, Layers, TrendingUp, AlertCircle, CheckCircle2, Clock, BookOpen, Sparkles, ArrowRight, Info, Award } from 'lucide-react';
+import { Search, Target, GraduationCap, Building2, Layers, TrendingUp, AlertCircle, CheckCircle2, Clock, BookOpen, Sparkles, ArrowRight, Info, Award, Compass } from 'lucide-react';
 import type { Major, ClusterType } from '../../types';
 
 type JenjangFilter = 'SEMUA' | 'S1' | 'D4' | 'D3';
@@ -134,6 +134,24 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
           {targetMajors.length > 0 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />} Pilihan Prodi: {targetMajors.length}/2
         </Badge>
       </div>
+
+      {/* Onboarding: Belum tahu minat */}
+      {!state.profile.major_interest && targetMajors.length === 0 && (
+        <div className="rounded-2xl border border-violet-200 dark:border-violet-900 bg-linear-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/40 dark:to-fuchsia-950/40 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-slate-800 dark:text-white">Belum tahu minatmu?</p>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">Ikuti tes penjurusan singkat agar sistem merekomendasikan prodi &amp; kampus yang paling cocok untukmu.</p>
+            </div>
+          </div>
+          <Button onClick={() => setActiveTab('tes_minat')} className="shrink-0 gap-1.5 text-xs">
+            <Sparkles className="w-3.5 h-3.5" /> Ikuti Tes Penjurusan
+          </Button>
+        </div>
+      )}
 
       {/* SECTION 2: Ringkasan Analisis Pilihan Saya */}
       <div>
