@@ -82,8 +82,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'EKSPLORASI & PENJURUSAN',
       items: [
         { id: 'browse_universitas', label: 'Browser Kampus & Prodi', icon: Compass },
-        { id: 'tes_minat', label: 'Jalur 2 - Tes Penjurusan', icon: Brain },
-        { id: 'analisis_tryout', label: 'Jalur 1 - Analisis Nilai', icon: TrendingUp }
+        { id: 'tes_minat', label: 'Tes Penjurusan', icon: Brain },
+        { id: 'analisis_tryout', label: 'Analisis Nilai', icon: TrendingUp }
       ]
     },
     {
