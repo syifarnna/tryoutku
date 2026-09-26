@@ -43,13 +43,13 @@ const DEFAULT_STATE: AppState = {
   isLoggedIn: false, // Default to false, wait for Supabase Auth
   rememberMe: true,
   profile: EMPTY_PROFILE,
-  institutions: INITIAL_INSTITUTIONS,
-  majors: INITIAL_MAJORS,
-  competencies: INITIAL_COMPETENCIES,
-  tryouts: INITIAL_TRYOUTS,
+  institutions: [],
+  majors: [],
+  competencies: [],
+  tryouts: [],
   results: [],
   targetMajorIds: [], 
-  activeTargetMajorId: 1, 
+  activeTargetMajorId: null, 
   useRealSupabase: true,
   questions: [],
   tutoringCenters: []
