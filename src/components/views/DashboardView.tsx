@@ -77,6 +77,31 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
     return () => clearTimeout(t);
   }, [searchQuery, jenjang, rumpun]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setSearchLoading(true);
+      try {
+        const res = await searchMajors({ search: '', jenjang: jenjang === 'SEMUA' ? '' : jenjang, rumpun: rumpun === 'SEMUA' ? '' : rumpun, page: 1, pageSize: 10 });
+        if (!cancelled) {
+          setSearchResults(res.data);
+          setSearchTotal(res.total);
+        }
+      } catch {
+        if (!cancelled) {
+          setSearchResults([]);
+          setSearchTotal(0);
+        }
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    };
+    if (!searchQuery.trim()) {
+      load();
+    }
+    return () => { cancelled = true; };
+  }, [jenjang, rumpun]);
+
   const fmt = (n?: number | null) => n == null ? '—' : formatNumber(n);
   const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0];
   const targetMajor = activeTargetMajorId ? state.majors.find(m => m.id === activeTargetMajorId) : undefined;
