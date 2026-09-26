@@ -26,19 +26,34 @@ export const AnalysisPassingView: React.FC<AnalysisPassingViewProps> = ({ setAct
   const state = useAppState();
   const [handlingExport, setHandlingExport] = useState(false);
 
-  const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0] || 1;
+  const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0] || null;
   const summary = appStore.getAnalysis(activeTargetMajorId);
 
   if (!summary) {
+    const noTarget = state.targetMajorIds.length === 0;
     return (
       <div className="p-12 text-center bg-card rounded-3xl border border-slate-100">
-        <p className="text-sm text-slate-500">Belum ada hasil tryout yang tercatat. Silakan kerjakan tryout terlebih dahulu.</p>
-        <Button 
-          onClick={() => setActiveTab('tryouts')} 
-          className="mt-4 px-5 py-2 h-auto rounded-xl bg-primary text-white text-xs font-bold"
-        >
-          Mulai Tryout
-        </Button>
+        {noTarget ? (
+          <>
+            <p className="text-sm text-slate-500">Belum ada prodi target yang dipilih untuk dianalisis.</p>
+            <Button
+              onClick={() => setActiveTab('target_majors')}
+              className="mt-4 px-5 py-2 h-auto rounded-xl bg-primary text-white text-xs font-bold gap-1.5"
+            >
+              <Target className="w-3.5 h-3.5" /> Pilih Prodi Target
+            </Button>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-slate-500">Belum ada hasil tryout yang tercatat. Silakan kerjakan tryout terlebih dahulu.</p>
+            <Button
+              onClick={() => setActiveTab('tryouts')}
+              className="mt-4 px-5 py-2 h-auto rounded-xl bg-primary text-white text-xs font-bold"
+            >
+              Mulai Tryout
+            </Button>
+          </>
+        )}
       </div>
     );
   }

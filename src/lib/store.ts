@@ -33,7 +33,7 @@ export interface AppState {
   tryouts: Tryout[];
   results: TryoutResult[];
   targetMajorIds: number[]; 
-  activeTargetMajorId: number; 
+  activeTargetMajorId: number | null; 
   useRealSupabase: boolean; // Keep for compatibility but it's always true now
   questions: PenjurusanQuestion[];
   tutoringCenters: TutoringCenter[];
@@ -224,7 +224,7 @@ class AppStore {
   public async removeTargetMajor(majorId: number) {
     this.state.targetMajorIds = this.state.targetMajorIds.filter(id => id !== majorId);
     if (this.state.activeTargetMajorId === majorId) {
-      this.state.activeTargetMajorId = this.state.targetMajorIds[0] || INITIAL_MAJORS[0].id;
+      this.state.activeTargetMajorId = this.state.targetMajorIds[0] || null;
     }
     this.notify();
     this.persistTargetsSnapshot();
@@ -337,9 +337,11 @@ class AppStore {
   }
 
   // Analysis & Recommendation Engine
-  public getAnalysis(targetMajorId?: number, specificResultId?: number): AnalysisSummary | null {
-    const majorId = targetMajorId || this.state.activeTargetMajorId || 1;
-    const major = this.state.majors.find(m => m.id === majorId) || INITIAL_MAJORS[0];
+  public getAnalysis(targetMajorId?: number | null, specificResultId?: number): AnalysisSummary | null {
+    const majorId = targetMajorId ?? this.state.activeTargetMajorId ?? this.state.targetMajorIds[0] ?? null;
+    if (majorId == null) return null;
+    const major = this.state.majors.find(m => m.id === majorId);
+    if (!major) return null;
     
     const result = specificResultId 
       ? this.state.results.find(r => r.id === specificResultId) 

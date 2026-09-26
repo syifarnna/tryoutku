@@ -14,10 +14,41 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
   const state = useAppState();
   const [addedIds, setAddedIds] = useState<number[]>([]);
 
-  const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0] || 1;
+  const targetMajorsList = appStore.getTargetMajors();
+  const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0] || null;
   const summary = appStore.getAnalysis(activeTargetMajorId);
 
-  if (!summary) return null;
+  if (!summary) {
+    return (
+      <div className="space-y-8 pb-16 animate-in fade-in duration-300">
+        <div className="p-8 rounded-3xl bg-linear-to-r from-primary to-secondary text-white shadow-xl relative overflow-hidden">
+          <div className="relative z-10 max-w-3xl space-y-3">
+            <Badge className="bg-white/20 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
+              <Compass className="w-3.5 h-3.5 text-amber-300" />
+              <span>Fitur Inti: Kalkulator Peluang Lolos Alternatif</span>
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Rekomendasi Institut Alternatif Sesuai Skor Anda
+            </h2>
+          </div>
+        </div>
+        <div className="p-12 text-center bg-card rounded-3xl border border-slate-100 space-y-4">
+          <Compass className="w-10 h-10 mx-auto text-slate-300" />
+          <p className="text-sm text-slate-500 max-w-md mx-auto">
+            {state.results.length === 0
+              ? 'Selesaikan minimal satu tryout terlebih dahulu agar skor Anda menjadi acuan rekomendasi.'
+              : 'Pilih prodi target terlebih dahulu agar sistem dapat menghitung peluang kelulusan & memberikan kampus alternatif yang sesuai pilihan Anda.'}
+          </p>
+          <div className="flex justify-center">
+            <Button onClick={() => setActiveTab(state.results.length === 0 ? 'tryouts' : 'target_majors')} className="gap-1.5">
+              <Target className="w-4 h-4" />
+              {state.results.length === 0 ? 'Kerjakan Tryout Sekarang' : 'Pilih Prodi Target'}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleAddTarget = (id: number) => {
     appStore.addTargetMajor(id);
@@ -45,6 +76,26 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
           <Target className="w-72 h-72" />
         </div>
       </div>
+
+      {/* Pilih prodi target yang dibandingkan */}
+      <Card className="p-4 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider shrink-0">
+          <Target className="w-4 h-4" />
+          <span>Prodi Target Perbandingan:</span>
+        </div>
+        <select
+          value={activeTargetMajorId || ''}
+          onChange={(e) => appStore.setActiveTargetMajor(parseInt(e.target.value))}
+          className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:border-primary cursor-pointer"
+        >
+          {targetMajorsList.map(m => (
+            <option key={m.id} value={m.id}>{m.name} — {m.institution_name} (PG {m.passing_grade_total})</option>
+          ))}
+        </select>
+        <p className="text-[11px] text-slate-400 shrink-0">
+          Perbandingan dihitung terhadap <strong className="text-slate-700 dark:text-slate-200">{summary.target_major.name}</strong> (PG {summary.target_major.passing_grade_total})
+        </p>
+      </Card>
 
       {/* Alternatives Grid */}
       {summary.alternative_majors.length === 0 ? (
