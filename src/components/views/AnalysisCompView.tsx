@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BookOpen, GraduationCap, Lightbulb, TrendingUp } from 'lucide-react';
+import { BookOpen, ExternalLink, GraduationCap, Lightbulb, Sparkles, TrendingUp } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import { useAppState } from '../../lib/store';
 import { cn } from '../../lib/utils';
@@ -212,6 +212,9 @@ export const AnalysisCompView: React.FC<{ setActiveTab?: (tab: string) => void }
                 bimbel: 'Kelas intensif UTBK di bimbel terdekat'
               };
               const weak = skor < WEAK_THRESHOLD;
+              const matchedTcs = state.tutoringCenters
+                .filter(tc => tc.focus_competency_code === comp.code && tc.link_url && tc.link_url !== '#')
+                .slice(0, 2);
               return (
                 <div
                   key={comp.code}
@@ -250,10 +253,42 @@ export const AnalysisCompView: React.FC<{ setActiveTab?: (tab: string) => void }
                     {guide.tips}
                   </p>
 
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 pt-1 border-t border-slate-100 dark:border-border/60">
-                    <GraduationCap className="w-3.5 h-3.5 shrink-0" />
-                    Rekomendasi: {guide.bimbel}
-                  </div>
+                  {matchedTcs.length > 0 ? (
+                    <div className="space-y-2 pt-1">
+                      {matchedTcs.map(tc => (
+                        <a
+                          key={tc.id}
+                          href={tc.link_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group flex items-center justify-between gap-2 rounded-xl bg-card border border-slate-200 dark:border-border/70 p-3 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Sparkles className="w-4 h-4 text-indigo-500 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{tc.name}</p>
+                              <p className="text-[10px] text-slate-400">
+                                {tc.rating ? `★ ${tc.rating}` : ''}{tc.rating && tc.price ? ' • ' : ''}{tc.price || ''}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary shrink-0 transition-all group-hover:gap-2">
+                            Buka
+                            <ExternalLink className="w-3 h-3" />
+                          </span>
+                        </a>
+                      ))}
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 pt-1">
+                        <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                        Rekomendasi: {guide.bimbel}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 pt-1 border-t border-slate-100 dark:border-border/60">
+                      <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                      Rekomendasi: {guide.bimbel}
+                    </div>
+                  )}
                 </div>
               );
             })}
