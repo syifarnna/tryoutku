@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Bell, 
   Database, 
+  LogOut, 
   Menu, 
   Moon, 
   Search, 
@@ -11,7 +12,7 @@ import {
   AlertTriangle,
   ExternalLink
 } from 'lucide-react';
-import { useAppState } from '../../lib/store';
+import { appStore, useAppState } from '../../lib/store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -249,6 +250,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                     Supabase SQL Blueprint
                   </DropdownMenuItem>
                 )}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={() => { appStore.logout(); }}
+                  className="gap-2.5 px-4 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 focus:bg-rose-50 dark:focus:bg-rose-950/40 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Keluar (Logout)
+                </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
