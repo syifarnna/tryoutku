@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Building2, CheckCircle2, GraduationCap, Loader2, ShieldCheck, Sparkles, Target, TrendingUp, XCircle, Zap } from 'lucide-react';
+import { Building2, CheckCircle2, ExternalLink, GraduationCap, Loader2, ShieldCheck, Sparkles, Target, TrendingUp, XCircle, Zap } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
 import { Major } from '../../types';
 import { cn } from '../../lib/utils';
@@ -539,28 +539,52 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
                   {state.tutoringCenters.length === 0 && (
                     <p className="col-span-full text-sm text-slate-500 text-center py-4">Belum ada data bimbel dari database.</p>
                   )}
-                  {state.tutoringCenters.map(tc => (
-                    <Card key={tc.id} className="p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between gap-0">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <Badge className="rounded-full text-[10px] font-bold bg-amber-500 text-white border-0">★ {tc.rating ?? '—'}</Badge>
-                          <span className="text-[10px] font-bold text-primary">{tc.price}</span>
+                  {state.tutoringCenters.map(tc => {
+                    const linkUrl = tc.link_url && tc.link_url !== '#' ? tc.link_url : '';
+                    const cardBody = (
+                      <>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge className="rounded-full text-[10px] font-bold bg-amber-500 text-white border-0">★ {tc.rating ?? '—'}</Badge>
+                            <span className="text-[10px] font-bold text-primary">{tc.price}</span>
+                          </div>
+                          <h4 className="font-bold text-sm text-slate-800 dark:text-white">{tc.name}</h4>
+                          <p className="text-[11px] text-slate-500 leading-relaxed">{tc.description || ''}</p>
+                          {tc.focus_competency_code && (
+                            <Badge variant="outline" className="rounded-md text-[10px] font-bold text-slate-500">
+                              Fokus: {tc.focus_competency_code}
+                            </Badge>
+                          )}
                         </div>
-                        <h4 className="font-bold text-sm text-slate-800 dark:text-white">{tc.name}</h4>
-                        <p className="text-[11px] text-slate-500 leading-relaxed">{tc.description || ''}</p>
-                        {tc.focus_competency_code && (
-                          <Badge variant="outline" className="rounded-md text-[10px] font-bold text-slate-500">
-                            Fokus: {tc.focus_competency_code}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="pt-4 mt-3 border-t border-slate-100 dark:border-border">
-                        <Button variant="outline" size="sm" className="w-full rounded-xl text-[11px] font-bold" onClick={() => { if (tc.link_url && tc.link_url !== '#') window.open(tc.link_url, '_blank'); }}>
-                          Hubungi Bimbel {tc.contact_info ? `• ${tc.contact_info}` : ''}
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
+                        <div className="pt-4 mt-3 border-t border-slate-100 dark:border-border flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-bold text-slate-400 truncate">
+                            {tc.contact_info ? `Kontak: ${tc.contact_info}` : ''}
+                          </span>
+                          {linkUrl ? (
+                            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary shrink-0 transition-all group-hover:gap-2.5">
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              Buka Bimbel
+                            </span>
+                          ) : null}
+                        </div>
+                      </>
+                    );
+                    return linkUrl ? (
+                      <a
+                        key={tc.id}
+                        href={linkUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex flex-col justify-between gap-4 p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                      >
+                        {cardBody}
+                      </a>
+                    ) : (
+                      <Card key={tc.id} className="p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col justify-between gap-0 cursor-default">
+                        {cardBody}
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </div>
