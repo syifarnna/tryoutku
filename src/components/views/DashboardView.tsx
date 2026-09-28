@@ -56,6 +56,17 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
     }
   }, [state.isLoggedIn]);
 
+  // Self-healing: kalau fetch master menimpa state.majors dan prodi target belum
+  // ada di daftar, resolve ulang supaya ringkasan tetap tampil tanpa menunggu
+  // membuka halaman Target Institut.
+  useEffect(() => {
+    if (!state.isLoggedIn || state.targetMajorIds.length === 0) return;
+    const hasUnresolved = state.targetMajorIds.some(id => !state.majors.some(m => m.id === id));
+    if (hasUnresolved) {
+      appStore.resolveTargetMajors();
+    }
+  }, [state.isLoggedIn, state.targetMajorIds, state.majors]);
+
   useEffect(() => {
     let cancelled = false;
     getMajorsStats().then(s => { if (!cancelled && s) setStats(s); }).catch(() => {});

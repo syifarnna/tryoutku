@@ -123,9 +123,6 @@ class AppStore {
         if (!this._masterDataAuthed) {
           this._masterDataAuthed = true;
           this.fetchMasterData();
-          // Pulihkan prodi target yang cuma ada di snapshot localStorage / berisiko
-          // ketinggalan oleh race fetch master (anon vs authenticated).
-          this.resolveTargetMajors();
         }
       } else {
         this.state.isLoggedIn = false;
@@ -464,6 +461,13 @@ class AppStore {
       const { data: compData } = await supabase.from('competencies').select('*').order('code', { ascending: true });
       if (compData && compData.length > 0) {
         this.state.competencies = compData;
+      }
+
+      // fetch ini MENGGANTI state.majors, sehingga resolve target yang berjalan lebih
+      // awal saat login bisa tertimpa. Reconcile ulang di akhir agar prodi target
+      // selalu hadir (dan dashboard tidak kosong sampai membuka halaman Target).
+      if (this.state.isLoggedIn && this.state.targetMajorIds.length > 0) {
+        await this.resolveTargetMajors();
       }
 
       this.notify();
