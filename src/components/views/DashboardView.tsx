@@ -48,6 +48,14 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
   const [searchLoading, setSearchLoading] = useState(false);
   const targetMajors = state.getTargetMajors ? state.getTargetMajors() : state.targetMajorIds.map(id => state.majors.find(m => m.id === id)).filter(Boolean);
 
+  // Muat & segerakan data Target Institut begitu user login/buka dashboard (atau
+  // sudah login saat halaman pertama dimuat) agar ringkasan prodi tidak kosong.
+  useEffect(() => {
+    if (state.isLoggedIn) {
+      appStore.ensureTargetMajorsLoaded();
+    }
+  }, [state.isLoggedIn]);
+
   useEffect(() => {
     let cancelled = false;
     getMajorsStats().then(s => { if (!cancelled && s) setStats(s); }).catch(() => {});

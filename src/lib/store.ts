@@ -211,9 +211,11 @@ class AppStore {
       this.persistTargetsSnapshot();
       
       try {
+        const { data: sData } = await supabase.auth.getUser();
+        const uid = sData?.user?.id || this.state.profile.id;
         await supabase.from('target_institutions').insert({
-          user_id: this.state.profile.id,
-          student_id: this.state.profile.id,
+          user_id: uid,
+          student_id: uid,
           major_id: majorId,
           priority: this.state.targetMajorIds.length
         });
@@ -230,9 +232,11 @@ class AppStore {
     this.persistTargetsSnapshot();
 
     try {
+      const { data: sData } = await supabase.auth.getUser();
+      const uid = sData?.user?.id || this.state.profile.id;
       await supabase.from('target_institutions')
         .delete()
-        .match({ user_id: this.state.profile.id, major_id: majorId });
+        .match({ user_id: uid, major_id: majorId });
     } catch (e) { console.warn('Supabase sync error', e); }
   }
 
@@ -493,24 +497,12 @@ class AppStore {
         };
       }
 
-      const { data: res, error: rErr } = await supabase.from('tryout_results').select('*').eq('user_id', this.state.profile.id).order('created_at', { ascending: false });
+      const { data: res, error: rErr } = await supabase.from('tryout_results').select('*').eq('user_id', targetAuthId).order('created_at', { ascending: false });
       if (!rErr && res) {
         this.state.results = res;
       }
 
-      const { data: targetsData } = await supabase.from('target_institutions')
-        .select('*')
-        .eq('user_id', this.state.profile.id)
-        .order('priority', { ascending: true });
-      if (targetsData && targetsData.length > 0) {
-        this.state.targetMajorIds = targetsData.map(t => t.major_id);
-        if (!this.state.activeTargetMajorId && this.state.targetMajorIds.length > 0) {
-          this.state.activeTargetMajorId = this.state.targetMajorIds[0];
-        }
-      }
-      // Pastikan row prodi target sudah ada di state sebelum snapshot & render.
-      await this.resolveTargetMajors();
-      this.persistTargetsSnapshot();
+      await this.ensureTargetMajorsLoaded();
 
       this.notify();
     } catch (err) {
@@ -558,6 +550,41 @@ class AppStore {
       }
     } catch (err) {
       console.warn('Gagal menyelesaikan prodi target dari Supabase:', err);
+    }
+  }
+
+  // Muat data Target Institut (target_institutions) + resolve prodi target ke state.
+  // Dipanggil di syncFromSupabase saat login dan dipicu ulang dari DashboardView
+  // agar ringkasan "Pilihan Prodi Anda" langsung terisi tanpa membuka halaman Target.
+  // Query memakai auth uid agar konsisten dengan RLS (own_select membandingkan
+  // user_id dengan auth.uid(); profile.id bisa berbeda dari auth.uid).
+  public async ensureTargetMajorsLoaded(): Promise<void> {
+    try {
+      let ownerUid = this.state.profile.id;
+      try {
+        const { data: sData } = await supabase.auth.getUser();
+        if (sData?.user?.id) ownerUid = sData.user.id;
+      } catch { /* backend non-supabase */ }
+
+      if (ownerUid) {
+        const { data: targetsData } = await supabase.from('target_institutions')
+          .select('*')
+          .eq('user_id', ownerUid)
+          .order('priority', { ascending: true });
+        if (targetsData && targetsData.length > 0) {
+          this.state.targetMajorIds = targetsData.map(t => t.major_id);
+          if (!this.state.activeTargetMajorId && this.state.targetMajorIds.length > 0) {
+            this.state.activeTargetMajorId = this.state.targetMajorIds[0];
+          }
+        }
+      }
+
+      // Pastikan row prodi target sudah ada di state sebelum snapshot & render.
+      await this.resolveTargetMajors();
+      this.persistTargetsSnapshot();
+      this.notify();
+    } catch (err) {
+      console.warn('Gagal memuat target institut dari Supabase:', err);
     }
   }
 
