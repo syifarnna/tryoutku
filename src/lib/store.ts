@@ -634,7 +634,7 @@ class AppStore {
     }
   }
 
-  // Load prodi untuk satu kampus (dipanggil saat kampus tujuan dipilih di Jalur 1).
+  // Load prodi untuk satu kampus (dipanggil saat kampus tujuan dipilih).
   // Mengembalikan daftar prodi lengkap kampus tsb & menggabungkannya ke state global (dedup).
   public async loadMajorsForInstitution(institutionId: number): Promise<Major[]> {
     try {

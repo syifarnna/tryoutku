@@ -262,7 +262,7 @@ export const BingungView: React.FC = () => {
       <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-violet-600 to-fuchsia-700 text-white shadow-xl">
         <div className="relative z-10 max-w-3xl space-y-3">
           <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
-            <Brain className="w-3.5 h-3.5 text-fuchsia-300" /> Jalur 2 — Tes Minat dan Bakat
+            <Brain className="w-3.5 h-3.5 text-fuchsia-300" /> Tes Minat dan Bakat
           </Badge>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Temukan Jurusan Dengan Tes Penjurusan</h2>
           <p className="text-xs sm:text-sm text-violet-100 leading-relaxed">
@@ -278,7 +278,7 @@ export const BingungView: React.FC = () => {
         <Card className="p-10 text-center bg-card border border-slate-100 dark:border-border rounded-3xl">
           <HelpCircle className="w-10 h-10 mx-auto text-slate-300 mb-3" />
           <h3 className="font-bold text-slate-700 dark:text-white">Belum ada soal penjurusan</h3>
-          <p className="text-sm text-slate-400 mt-1">Admin belum menambahkan bank soal. Silakan hubungi admin untuk mengaktifkan jalur ini.</p>
+          <p className="text-sm text-slate-400 mt-1">Admin belum menambahkan bank soal. Silakan hubungi admin untuk mengaktifkan tes ini.</p>
         </Card>
       )}
 

@@ -77,7 +77,7 @@ export const AdminQuestionsView: React.FC = () => {
             <ListChecks className="w-6 h-6 text-primary" /> Bank Soal Tes Penjurusan
           </h2>
           <p className="text-slate-500 dark:text-muted-foreground mt-1">
-            Kelola pertanyaan yang akan dikerjakan siswa pada <strong>Jalur 2 — Tes Minat dan Bakat</strong>.&nbsp;
+            Kelola pertanyaan yang akan dikerjakan siswa pada <strong>Tes Minat dan Bakat</strong>.&nbsp;
             <span className="font-bold text-primary">{state.questions.length} soal ({activeQuestions} aktif)</span>.
           </p>
         </div>

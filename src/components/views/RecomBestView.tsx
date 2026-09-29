@@ -94,11 +94,11 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
       <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-emerald-600 to-teal-700 text-white shadow-xl">
         <div className="relative z-10 max-w-3xl space-y-3">
           <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
-            <Layers className="w-3.5 h-3.5 text-emerald-200" /> Korelasi Jalur 1 ⊕ Jalur 2
+            <Layers className="w-3.5 h-3.5 text-emerald-200" /> Korelasi Nilai ⊕ Minat
           </Badge>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Rekomendasi Prodi Terbaik</h2>
           <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">
-            Perpaduan <strong>Nilai Tryout Anda</strong> (Jalur 1) dengan <strong>Hasil Tes Minat &amp; Bakat</strong> (Jalur 2). Sistem hanya merekomendasikan prodi yang memenuhi <strong>dua kriteria</strong>: nilai mencukupi passing grade <em>dan</em> rumpun keilmuan sesuai minat — diurutkan dari paling relevan hingga alternatif.
+            Perpaduan <strong>Nilai Tryout Anda</strong> dengan <strong>Hasil Tes Minat &amp; Bakat</strong>. Sistem hanya merekomendasikan prodi yang memenuhi <strong>dua kriteria</strong>: nilai mencukupi passing grade <em>dan</em> rumpun keilmuan sesuai minat — diurutkan dari paling relevan hingga alternatif.
           </p>
         </div>
         <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
@@ -113,7 +113,7 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
             <TrendingUp className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nilai Tryout (Jalur 1)</p>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nilai Tryout</p>
             <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-0.5">{autoScore != null ? autoScore : '—'}</p>
           </div>
         </Card>
@@ -122,7 +122,7 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
             <Compass className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Rumpun Minat (Jalur 2)</p>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Rumpun Minat</p>
             <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-0.5 truncate">
               {interest ? clusterStyle[interest].label : <span className="text-amber-500 text-sm font-bold">Belum disimpan</span>}
             </p>
@@ -158,7 +158,7 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
           <Compass className="w-10 h-10 mx-auto text-amber-500 mb-3" />
           <h3 className="font-bold text-lg text-slate-800 dark:text-white">Minat Rumpun Belum Disimpan</h3>
           <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
-            Kerjakan <strong>Tes Minat dan Bakat</strong> (Jalur 2), lalu klik <strong>"Simpan sebagai Minat Saya"</strong> pada hasilnya. Minat tidak tersimpan otomatis — hanya saat Anda sengaja menyimpannya.
+            Kerjakan <strong>Tes Minat dan Bakat</strong>, lalu klik <strong>"Simpan sebagai Minat Saya"</strong> pada hasilnya. Minat tidak tersimpan otomatis — hanya saat Anda sengaja menyimpannya.
           </p>
           <Button onClick={() => setActiveTab?.('tes_minat')} className="mt-5 gap-2" variant="outline">
             <Sparkles className="w-4 h-4" /> Ikuti Tes Minat &amp; Bakat

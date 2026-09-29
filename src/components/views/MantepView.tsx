@@ -113,7 +113,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
         <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-sky-600 to-indigo-700 text-white shadow-xl">
           <div className="relative z-10 max-w-3xl space-y-3">
             <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
-              <Zap className="w-3.5 h-3.5 text-amber-300" /> Jalur 1 — Analisis Hasil Tryout
+              <Zap className="w-3.5 h-3.5 text-amber-300" /> Analisis Hasil Tryout
             </Badge>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Analisis Kelayakan Nilai terhadap Kampus Tujuan</h2>
             <p className="text-xs sm:text-sm text-sky-100 leading-relaxed">
@@ -148,7 +148,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
       <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-sky-600 to-indigo-700 text-white shadow-xl">
         <div className="relative z-10 max-w-3xl space-y-3">
           <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
-            <Zap className="w-3.5 h-3.5 text-amber-300" /> Jalur 1 — Analisis Hasil Tryout
+            <Zap className="w-3.5 h-3.5 text-amber-300" /> Analisis Hasil Tryout
           </Badge>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Analisis Kelayakan Nilai terhadap Kampus Tujuan</h2>
           <p className="text-xs sm:text-sm text-sky-100 leading-relaxed">
