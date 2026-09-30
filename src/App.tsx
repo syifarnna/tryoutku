@@ -125,7 +125,7 @@ export default function App() {
         case 'admin_majors':
           return <AdminMajorsView />;
         case 'admin_campuses':
-          return <AdminCampusesView />;
+          return <AdminCampusesView setActiveTab={setActiveTab} />;
         case 'admin_questions':
           return <AdminQuestionsView />;
         case 'admin_results':
