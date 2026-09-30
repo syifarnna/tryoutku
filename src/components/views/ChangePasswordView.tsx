@@ -41,17 +41,35 @@ export const ChangePasswordView: React.FC = () => {
         throw new Error(`Gagal mengubah password: ${getErrorMessage(passErr)}`);
       }
 
-      const { error: flagErr } = await supabase
-        .from('profiles')
-        .update({ must_change_password: false })
-        .eq('id', userId);
+      // Bersihkan flag 'wajib ganti password' via RPC yang aman terhadap RLS.
+      // RPC ini menargetkan baris milik auth user saat ini (auth.uid()).
+      const { data: markResult, error: rpcErr } = await supabase.rpc('mark_password_changed');
 
-      if (flagErr) {
-        throw new Error(`Gagal memperbarui status akun: ${getErrorMessage(flagErr)}`);
+      if (rpcErr) {
+        // Fallback: update langsung by profile id (jika RPC belum tersedia).
+        const { error: flagErr } = await supabase
+          .from('profiles')
+          .update({ must_change_password: false })
+          .eq('id', userId);
+        if (flagErr) {
+          throw new Error(`Gagal memperbarui status akun: ${getErrorMessage(flagErr)}`);
+        }
+      } else {
+        const ok = markResult && (markResult as any).success;
+        if (!ok) {
+          // Baris tidak ditemukan via RPC — coba update langsung by id.
+          const { error: flagErr } = await supabase
+            .from('profiles')
+            .update({ must_change_password: false })
+            .eq('id', userId);
+          if (flagErr) {
+            throw new Error(`Gagal memperbarui status akun: ${getErrorMessage(flagErr)}`);
+          }
+        }
       }
 
       setSuccess(true);
-      
+
       setTimeout(() => {
         appStore.updateProfileLocally({ must_change_password: false });
       }, 2000);

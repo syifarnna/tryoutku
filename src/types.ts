@@ -13,6 +13,7 @@ export interface Profile {
   role?: 'admin' | 'peserta';
   is_profile_complete?: boolean;
   must_change_password?: boolean;
+  password_changed_at?: string;
   updated_at: string;
 }
 

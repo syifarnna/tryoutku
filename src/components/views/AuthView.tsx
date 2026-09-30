@@ -119,12 +119,21 @@ export const AuthView: React.FC = () => {
           try {
             const syncResult = await supabase.rpc('sync_profile_auth_user', { p_nisn: nisn });
             if (syncResult?.data?.success) {
+              // Akun baru diprovisioning saat itu juga (password default dibuat di DB)
+              // -> boleh dicoba login ulang dengan password default.
               retryEmail = syncResult.data.email;
             } else if (syncResult?.data?.error?.includes('sudah memiliki akses')) {
-              const resetResult = await supabase.rpc('reset_password_by_nisn', { p_nisn: nisn });
-              if (resetResult?.data?.success) {
-                retryEmail = resetResult.data.email;
-              }
+              // Akun NISN ini SUDAH pernah login/diganti password sendiri.
+              // JANGAN auto-reset password: itu menimpa password pilihan user dan
+              // memaksa flag 'must_change_password = true' lagi sehingga user terus
+              // diarahkan ganti password setiap login berikutnya.
+              Swal.fire(
+                'Gagal Login',
+                'Password salah. Akun NISN ini sudah pernah login. Gunakan email & password yang sudah Anda buat, atau minta admin mereset password Anda.',
+                'warning'
+              );
+              setLoading(false);
+              return;
             }
           } catch {}
 

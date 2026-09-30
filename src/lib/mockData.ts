@@ -277,7 +277,41 @@ DROP FUNCTION IF EXISTS public.handle_new_user;
 -- 15) Refresh schema cache
 NOTIFY pgrst, 'reload schema';
 
--- 16) RPC: leaderboard (dukung filter per tipe TO)
+-- 16) Kolom pencatat waktu password terakhir diganti + RPC pembersih flag
+--     'wajib ganti password'. Dipanggil dari halaman Ganti Password.
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS password_changed_at timestamptz;
+
+CREATE OR REPLACE FUNCTION public.mark_password_changed()
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_uid text := (auth.uid())::text;
+  v_rows integer := 0;
+BEGIN
+  IF v_uid IS NULL OR v_uid = '' THEN
+    RETURN jsonb_build_object('success', false, 'rows', 0, 'error', 'not authenticated');
+  END IF;
+
+  UPDATE public.profiles
+     SET must_change_password = false,
+         password_changed_at = now(),
+         updated_at = now()
+   WHERE auth_uid = v_uid OR id = v_uid;
+
+  GET DIAGNOSTICS v_rows = ROW_COUNT;
+  RETURN jsonb_build_object('success', v_rows > 0, 'rows', v_rows);
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.mark_password_changed() FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.mark_password_changed() TO authenticated;
+NOTIFY pgrst, 'reload schema';
+
+-- 17) RPC: leaderboard (dukung filter per tipe TO)
 CREATE OR REPLACE FUNCTION public.get_leaderboard(p_type text DEFAULT NULL)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
