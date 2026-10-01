@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
-import { BookOpen, Brain, CheckCircle2, Compass, HelpCircle, Loader2, Plus, RotateCcw, Save, Sparkles, Target, Trash2 } from 'lucide-react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { BookOpen, Brain, Briefcase, Building2, CheckCircle2, Compass, HelpCircle, Loader2, MapPin, Plus, RotateCcw, Save, Sparkles, Target, Trash2, X } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { appStore, useAppState } from '../../lib/store';
-import { ClusterType, Institution, PenjurusanQuestion } from '../../types';
+import { supabase } from '../../lib/supabaseClient';
+import { ClusterType, Institution, Major, PenjurusanQuestion } from '../../types';
 import { cn } from '../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,13 @@ type Tally = Record<ClusterType, number>;
 
 const emptyTally = (): Tally => ({ Saintek: 0, Soshum: 0, Campuran: 0 });
 
+interface MajorDescription {
+  found: boolean;
+  description?: string;
+  career_prospects?: string;
+  cluster?: string;
+}
+
 export const BingungView: React.FC = () => {
   const state = useAppState();
 
@@ -43,6 +51,10 @@ export const BingungView: React.FC = () => {
   const [step, setStep] = useState(0);
   const [tally, setTally] = useState<Tally>(emptyTally());
   const [savingInterest, setSavingInterest] = useState(false);
+  const [descCache, setDescCache] = useState<Record<number, MajorDescription>>({});
+  const [selectedMajor, setSelectedMajor] = useState<Major | null>(null);
+  const [campusesForMajor, setCampusesForMajor] = useState<{ institution: Institution; major: Major }[]>([]);
+  const [loadingCampuses, setLoadingCampuses] = useState(false);
 
   const questions = useMemo(() => state.questions.filter(q => q.is_active), [state.questions]);
 
@@ -137,6 +149,55 @@ export const BingungView: React.FC = () => {
       .slice(0, 6);
   }, [state.majors, phase, tally, lastResult]);
 
+  useEffect(() => {
+    if (recommendedMajors.length === 0) return;
+    const idsToFetch = recommendedMajors.filter(m => !descCache[m.id]).map(m => m.id);
+    if (idsToFetch.length === 0) return;
+    let cancelled = false;
+    Promise.all(idsToFetch.map(async (id) => {
+      const m = recommendedMajors.find(x => x.id === id);
+      if (!m) return null;
+      try {
+        const { data } = await supabase.rpc('get_major_description', { p_name: m.name });
+        return { id, desc: data as MajorDescription };
+      } catch {
+        return { id, desc: { found: false } as MajorDescription };
+      }
+    })).then(results => {
+      if (cancelled) return;
+      const next: Record<number, MajorDescription> = { ...descCache };
+      results.forEach(r => { if (r) next[r.id] = r.desc; });
+      setDescCache(next);
+    });
+    return () => { cancelled = true; };
+  }, [recommendedMajors, descCache]);
+
+  const openMajorDetail = async (major: Major) => {
+    setSelectedMajor(major);
+    setLoadingCampuses(true);
+    try {
+      const { data, error } = await supabase
+        .from('majors')
+        .select('*, institutions(id, name, location, type, grade, range_min, range_max)')
+        .ilike('name', major.name)
+        .order('passing_grade_total', { ascending: false })
+        .limit(100);
+      if (error || !data) {
+        setCampusesForMajor([]);
+        return;
+      }
+      const mapped = (data as any[]).map((row: any) => ({
+        institution: row.institutions as Institution,
+        major: { ...row, institution_name: row.institutions?.name, institution_location: row.institutions?.location, institution_type: row.institutions?.type } as Major,
+      })).filter(x => x.institution);
+      setCampusesForMajor(mapped);
+    } catch {
+      setCampusesForMajor([]);
+    } finally {
+      setLoadingCampuses(false);
+    }
+  };
+
   const maxCount = Math.max(1, ...CLUSTERS.map(c => (phase === 'result' ? tally[c] : (lastResult?.tally?.[c] ?? 0))));
 
   const renderResult = (dominant: ClusterType) => {
@@ -149,7 +210,6 @@ export const BingungView: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        {/* Dominant card */}
         <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs">
           <div className="flex items-center gap-4">
             <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md', s.badge)}>
@@ -213,7 +273,6 @@ export const BingungView: React.FC = () => {
           </div>
         </Card>
 
-        {/* Recommended majors */}
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-primary" />
@@ -222,6 +281,7 @@ export const BingungView: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recommendedMajors.map(m => {
               const inst = state.institutions.find(i => i.id === m.institution_id);
+              const desc = descCache[m.id];
               return (
                 <Card key={m.id} className="p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col">
                   <div className="flex items-center justify-between gap-2">
@@ -231,17 +291,36 @@ export const BingungView: React.FC = () => {
                     <span className="text-[10px] font-black text-slate-400">PG {m.passing_grade_total ?? '—'}</span>
                   </div>
                   <h4 className="font-bold text-sm text-slate-800 dark:text-white mt-3">{m.name}</h4>
-                  <p className="text-[11px] text-slate-400 mt-1 flex-1">{inst?.name || '—'}{inst?.location ? ` • ${inst.location}` : ''}</p>
+                  <p className="text-[11px] text-slate-400 mt-1">{inst?.name || '—'}{inst?.location ? ` • ${inst.location}` : ''}</p>
                   <div className="mt-1"><JenjangBadge jenjang={m.jenjang} /></div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => !state.targetMajorIds.includes(m.id) && appStore.addTargetMajor(m.id)}
-                    disabled={state.targetMajorIds.includes(m.id)}
-                    className="mt-3 text-[11px] font-bold text-primary h-auto"
-                  >
-                    {state.targetMajorIds.includes(m.id) ? '✓ Sudah Jadi Target' : <><Plus className="w-3.5 h-3.5" /> Jadikan Target Prodi</>}
-                  </Button>
+                  {desc?.found && desc.description && (
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed">{desc.description}</p>
+                  )}
+                  {desc?.found && desc.career_prospects && (
+                    <div className="mt-2 flex items-start gap-1.5">
+                      <Briefcase className="w-3 h-3 text-emerald-500 shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 line-clamp-2 leading-relaxed">{desc.career_prospects}</p>
+                    </div>
+                  )}
+                  <div className="mt-auto pt-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openMajorDetail(m)}
+                      className="flex-1 text-[11px] font-bold h-auto gap-1.5"
+                    >
+                      <Building2 className="w-3.5 h-3.5" /> Lihat Kampus
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => !state.targetMajorIds.includes(m.id) && appStore.addTargetMajor(m.id)}
+                      disabled={state.targetMajorIds.includes(m.id)}
+                      className="text-[11px] font-bold text-primary h-auto"
+                    >
+                      {state.targetMajorIds.includes(m.id) ? '✓ Target' : <><Plus className="w-3.5 h-3.5" /> Target</>}
+                    </Button>
+                  </div>
                 </Card>
               );
             })}
@@ -258,7 +337,6 @@ export const BingungView: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
-      {/* Header */}
       <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-violet-600 to-fuchsia-700 text-white shadow-xl">
         <div className="relative z-10 max-w-3xl space-y-3">
           <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
@@ -359,6 +437,99 @@ export const BingungView: React.FC = () => {
         const dom = dominantOf(tally);
         return renderResult(dom);
       })()}
+
+      {selectedMajor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-slate-200 dark:border-border rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-border flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">{selectedMajor.name}</h3>
+                  <JenjangBadge jenjang={selectedMajor.jenjang} />
+                  <Badge className={cn('rounded-md text-[10px] font-bold text-white border-0', clusterStyle[selectedMajor.cluster as ClusterType]?.badge || 'bg-primary')}>
+                    {selectedMajor.cluster}
+                  </Badge>
+                </div>
+                <p className="text-xs text-slate-400">{selectedMajor.institution_name}{selectedMajor.institution_location ? ` • ${selectedMajor.institution_location}` : ''}</p>
+              </div>
+              <button onClick={() => setSelectedMajor(null)} className="p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              {descCache[selectedMajor.id]?.found && descCache[selectedMajor.id]?.description && (
+                <div>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Apa yang Dipelajari</h4>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{descCache[selectedMajor.id].description}</p>
+                </div>
+              )}
+              {descCache[selectedMajor.id]?.found && descCache[selectedMajor.id]?.career_prospects && (
+                <div>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Briefcase className="w-3.5 h-3.5 text-emerald-500" /> Prospek Kerja
+                  </h4>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-400 leading-relaxed">{descCache[selectedMajor.id].career_prospects}</p>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-primary" /> Kampus dengan Jurusan Ini
+                </h4>
+                {loadingCampuses ? (
+                  <div className="flex items-center justify-center py-8 gap-2 text-slate-400">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="text-xs">Memuat daftar kampus...</span>
+                  </div>
+                ) : campusesForMajor.length === 0 ? (
+                  <p className="text-sm text-slate-400 py-4 text-center">Tidak ditemukan kampus lain dengan jurusan ini.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {campusesForMajor.map((item, idx) => (
+                      <div key={`${item.major.id}-${idx}`} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-border">
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{item.institution.name}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {item.institution.location && (
+                              <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                                <MapPin className="w-3 h-3" /> {item.institution.location}
+                              </span>
+                            )}
+                            <Badge variant="outline" className="text-[9px] font-bold h-auto px-1.5 py-0.5">{item.institution.type}</Badge>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0 ml-3">
+                          <p className="text-xs font-black text-indigo-600 dark:text-indigo-400">PG {item.major.passing_grade_total ?? '—'}</p>
+                          {!state.targetMajorIds.includes(item.major.id) ? (
+                            <button
+                              onClick={() => appStore.addTargetMajor(item.major.id)}
+                              className="text-[10px] font-bold text-primary hover:underline mt-0.5 cursor-pointer"
+                            >
+                              + Target
+                            </button>
+                          ) : (
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">✓ Target</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-100 dark:border-border flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setSelectedMajor(null)}>Tutup</Button>
+              {!state.targetMajorIds.includes(selectedMajor.id) && (
+                <Button onClick={() => { appStore.addTargetMajor(selectedMajor.id); setSelectedMajor(null); }} className="gap-2">
+                  <Plus className="w-4 h-4" /> Jadikan Target
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
