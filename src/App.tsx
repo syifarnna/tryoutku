@@ -48,7 +48,54 @@ const BingungView = lazyView(() => import('./components/views/BingungView'), 'Bi
 export default function App() {
   const state = useAppState();
   
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  // ---------------------------------------------------------------------------
+  // Hash-based routing: URL (window.location.hash) adalah sumber kebenaran untuk
+  // tab aktif. Saat reload, halaman dibaca dari hash sehingga pengguna tetap
+  // berada di halaman yang sedang dibuka (bukan reset ke dashboard).
+  // ---------------------------------------------------------------------------
+
+  const TAB_HASH: Record<string, string> = {
+    dashboard: 'dashboard',
+    admin_tryouts: 'admin/tryouts',
+    admin_majors: 'admin/majors',
+    admin_campuses: 'admin/campuses',
+    admin_questions: 'admin/questions',
+    admin_results: 'admin/results',
+    admin_users: 'admin/users',
+    analisis_tryout: 'analisis',
+    tes_minat: 'tes-minat',
+    tryouts: 'tryouts',
+    results: 'results',
+    analysis_passing: 'analysis-passing',
+    analysis_comp: 'analysis-comp',
+    target_majors: 'target',
+    rekomendasi: 'rekomendasi',
+    recom_integrated: 'rekomendasi',
+    recom_alternatives: 'rekomendasi/alternatif',
+    browse_universitas: 'kampus',
+    reports: 'laporan',
+    profile: 'profil',
+    supabase_cfg: 'supabase-sql',
+  };
+
+  const hashToTab = (hash: string): string => {
+    const path = hash.replace(/^#\/?/, '').replace(/\/+$/, '');
+    // Sub-routing campus detail (#/kampus/:id) -> tetap tab browse_universitas
+    if (path.startsWith('kampus/') || path === 'kampus') return 'browse_universitas';
+    if (path.startsWith('rekomendasi/alternatif')) return 'recom_alternatives';
+    if (path.startsWith('rekomendasi')) return 'rekomendasi';
+    const entry = Object.entries(TAB_HASH).find(([, h]) => h === path);
+    return entry ? entry[0] : 'dashboard';
+  };
+
+  const initialTab = () => {
+    if (typeof window !== 'undefined') {
+      return hashToTab(window.location.hash);
+    }
+    return 'dashboard';
+  };
+
+  const [activeTab, setActiveTabRaw] = useState<string>(initialTab);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isSqlModalOpen, setIsSqlModalOpen] = useState<boolean>(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -58,6 +105,32 @@ export default function App() {
     return false;
   });
   const [activeTryoutModal, setActiveTryoutModal] = useState<Tryout | null>(null);
+
+  // Sinkronkan tab -> URL saat navigasi terjadi (sidebar/navbar/dalam halaman).
+  const setActiveTab = (tab: string) => {
+    setActiveTabRaw(tab);
+    const hashTarget = TAB_HASH[tab];
+    if (hashTarget && typeof window !== 'undefined') {
+      // Jangan timpa hash campus-detail ketika sudah berada di dalamnya.
+      const currentPath = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
+      if (tab === 'browse_universitas' && (currentPath === 'kampus' || currentPath.startsWith('kampus/'))) {
+        return;
+      }
+      if (currentPath !== hashTarget) {
+        window.location.hash = `#/${hashTarget}`;
+      }
+    }
+  };
+
+  // Tolak perubahan hash eksternal (back/forward browser atau klik hash lain)
+  // kembali ke state tab.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onHash = () => setActiveTabRaw(hashToTab(window.location.hash));
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSetDarkMode = (val: boolean) => {
     setIsDarkMode(val);
@@ -79,6 +152,20 @@ export default function App() {
     window.addEventListener('open-sql-modal', handleOpenSqlModal);
     return () => window.removeEventListener('open-sql-modal', handleOpenSqlModal);
   }, []);
+
+  if (!state.authChecked) {
+    // Auth masih dicek (token/session dipulihkan dari Supabase). Jangan langsung
+    // me-render AuthView: bisa flash login walau sesi valid, atau mengarahkan ke
+    // dashboard sebelum state halaman ter-restore.
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <p className="text-xs text-muted-foreground font-semibold">Memeriksa sesi Anda…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!state.isLoggedIn) {
     return (

@@ -24,6 +24,7 @@ import {
 import { supabase } from './supabaseClient';
 
 export interface AppState {
+  authChecked: boolean;
   isLoggedIn: boolean;
   rememberMe: boolean;
   profile: Profile;
@@ -40,6 +41,7 @@ export interface AppState {
 }
 
 const DEFAULT_STATE: AppState = {
+  authChecked: false,
   isLoggedIn: false, // Default to false, wait for Supabase Auth
   rememberMe: true,
   profile: EMPTY_PROFILE,
@@ -114,6 +116,9 @@ class AppStore {
     this.fetchMasterData();
     
     supabase.auth.onAuthStateChange((event, session) => {
+      // Auth check selesai pada event pertama (INITIAL_SESSION / TOKEN_REFRESHED / dst)
+      // sehingga UI tidak me-render AuthView sebelum status sesi dipastikan.
+      this.state.authChecked = true;
       if (session?.user) {
         this.state.isLoggedIn = true;
         this.state.profile.email = session.user.email || '';
@@ -134,6 +139,18 @@ class AppStore {
         this.notify();
       }
     });
+
+    // Safety net: bila backend Supabase tidak didefinisikan (VITE_SUPABASE_URL kosong),
+    // onAuthStateChange mungkin tidak pernah terpanggil -> pastikan authChecked tetap true
+    // agar aplikasi tidak terkunci di layar loading selamanya.
+    if (!import.meta.env.VITE_SUPABASE_URL) {
+      setTimeout(() => {
+        if (!this.state.authChecked) {
+          this.state.authChecked = true;
+          this.notify();
+        }
+      }, 500);
+    }
   }
 
   public getState(): AppState {
@@ -167,6 +184,7 @@ class AppStore {
   }
 
   public mockLogin(email: string, name?: string) {
+    this.state.authChecked = true;
     this.state.isLoggedIn = true;
     this.state.profile = {
       ...EMPTY_PROFILE,
