@@ -9,6 +9,8 @@ export interface Profile {
   phone: string;
   school: string;
   major_interest: ClusterType | null;
+  province?: string;
+  city?: string;
   avatar_url?: string;
   role?: 'admin' | 'peserta';
   is_profile_complete?: boolean;
@@ -22,6 +24,8 @@ export interface Institution {
   name: string;
   type: InstitutionType;
   location: string;
+  province?: string;
+  city?: string;
   logo?: string;
   grade?: number;      // Grade Campus: batas nilai/nilai minimum masuk kampus
   range_min?: number;  // Range Nilai bawah (nilai tryout terendah prodi di kampus)

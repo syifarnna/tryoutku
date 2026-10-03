@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { BookOpen, Brain, Briefcase, Building2, CheckCircle2, Compass, HelpCircle, Loader2, MapPin, Plus, RotateCcw, Save, Sparkles, Target, Trash2, X } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { appStore, useAppState } from '../../lib/store';
@@ -104,6 +104,26 @@ export const BingungView: React.FC = () => {
     } catch { return null; }
   }, []);
 
+  const homeLocation = useMemo(
+    () => ({ province: state.profile.province || '', city: state.profile.city || '' }),
+    [state.profile.province, state.profile.city]
+  );
+
+  // Prioritas kedekatan kampus dgn domisili siswa: 0 = sekota, 1 = se-provinsi, 2 = lain.
+  const proximityTier = useCallback((major: Major): number => {
+    if (!homeLocation.province) return 2;
+    const inst = state.institutions.find(i => i.id === major.institution_id);
+    if (!inst?.province) return 2;
+    const sameProv = inst.province.toLowerCase() === homeLocation.province.toLowerCase();
+    if (!sameProv) return 2;
+    if (homeLocation.city && inst.city && inst.city.toLowerCase() === homeLocation.city.toLowerCase()) return 0;
+    return 1;
+  }, [homeLocation, state.institutions]);
+
+  const byProximity = useCallback((a: Major, b: Major): number =>
+    proximityTier(a) - proximityTier(b) || (a.passing_grade_total || 0) - (b.passing_grade_total || 0),
+  [proximityTier]);
+
   const start = () => { if (total === 0) return; setPhase('running'); setStep(0); setTally(emptyTally()); };
 
   const pick = (cluster: ClusterType) => {
@@ -141,13 +161,13 @@ export const BingungView: React.FC = () => {
           .sort((a, b) => (a.passing_grade_total || 0) - (b.passing_grade_total || 0))
           .slice(0, 4));
       }
-      return mix.sort((a, b) => (a.passing_grade_total || 0) - (b.passing_grade_total || 0)).slice(0, 6);
+      return mix.sort(byProximity).slice(0, 6);
     }
     return state.majors
       .filter(m => m.cluster === dom)
-      .sort((a, b) => (a.passing_grade_total || 0) - (b.passing_grade_total || 0))
+      .sort(byProximity)
       .slice(0, 6);
-  }, [state.majors, phase, tally, lastResult]);
+  }, [state.majors, phase, tally, lastResult, byProximity]);
 
   useEffect(() => {
     if (recommendedMajors.length === 0) return;
@@ -190,6 +210,7 @@ export const BingungView: React.FC = () => {
         institution: row.institutions as Institution,
         major: { ...row, institution_name: row.institutions?.name, institution_location: row.institutions?.location, institution_type: row.institutions?.type } as Major,
       })).filter(x => x.institution);
+      mapped.sort((a, b) => proximityTier(a.major) - proximityTier(b.major));
       setCampusesForMajor(mapped);
     } catch {
       setCampusesForMajor([]);
@@ -274,20 +295,64 @@ export const BingungView: React.FC = () => {
         </Card>
 
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <h3 className="font-extrabold text-base text-slate-800 dark:text-white">Rekomendasi Jurusan untuk Anda ({s.label})</h3>
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h3 className="font-extrabold text-base text-slate-800 dark:text-white">Rekomendasi Jurusan untuk Anda ({s.label})</h3>
+            </div>
+            {homeLocation.province && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 text-[10px] font-bold px-3 py-1">
+                <MapPin className="w-3 h-3" /> {homeLocation.city || homeLocation.province}
+              </span>
+            )}
           </div>
+
+          {homeLocation.province ? (
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
+              Diurutkan berdasarkan kampus terdekat dari domisilimu ({homeLocation.city ? `${homeLocation.city}, ` : ''}{homeLocation.province}) — jurusan sekota didahulukan.
+            </p>
+          ) : (
+            <Card className="p-4 mb-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
+                <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                  Atur <strong>provinsi &amp; kota domisilimu</strong> di Profil agar rekomendasi jurusan memprioritaskan kampus terdekat.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 text-[11px] font-bold h-auto"
+                onClick={() => { window.location.hash = '#/profil'; }}
+              >
+                Atur Lokasi
+              </Button>
+            </Card>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recommendedMajors.map(m => {
               const inst = state.institutions.find(i => i.id === m.institution_id);
               const desc = descCache[m.id];
+              const tier = proximityTier(m);
               return (
                 <Card key={m.id} className="p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col">
                   <div className="flex items-center justify-between gap-2">
-                    <Badge className={cn('rounded-md text-[10px] font-bold text-white border-0', clusterStyle[m.cluster as ClusterType]?.badge || 'bg-primary')}>
-                      {m.cluster}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge className={cn('rounded-md text-[10px] font-bold text-white border-0', clusterStyle[m.cluster as ClusterType]?.badge || 'bg-primary')}>
+                        {m.cluster}
+                      </Badge>
+                      {homeLocation.province && tier === 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 border-0">
+                          <MapPin className="w-2.5 h-2.5" /> Terdekat
+                        </span>
+                      )}
+                      {homeLocation.province && tier === 1 && (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-sky-500 text-white text-[10px] font-bold px-1.5 py-0.5 border-0">
+                          Satu Provinsi
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[10px] font-black text-slate-400">PG {m.passing_grade_total ?? '—'}</span>
                   </div>
                   <h4 className="font-bold text-sm text-slate-800 dark:text-white mt-3">{m.name}</h4>
