@@ -47,9 +47,7 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
   useEffect(() => {
     if (healedRef.current) return;
     healedRef.current = true;
-    if (state.majors.length === 0) {
-      appStore.fetchMasterData();
-    }
+    appStore.fetchMasterData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -61,8 +59,39 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
     );
   }, [state.institutions, search]);
 
-  const campusProdiCount = (id: number) => state.majors.filter(m => m.institution_id === id).length;
-  const majorsReady = state.majors.length > 0;
+  const [prodiCounts, setProdiCounts] = useState<Record<number, number>>({});
+  const [countsLoading, setCountsLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCounts = async () => {
+      if (filtered.length === 0) {
+        setProdiCounts({});
+        setCountsLoading(false);
+        return;
+      }
+      setCountsLoading(true);
+      try {
+        const counts: Record<number, number> = {};
+        await Promise.all(filtered.map(async (inst) => {
+          const res = await searchMajors({ institutionId: inst.id, page: 1, pageSize: 1 });
+          if (!cancelled) counts[inst.id] = res.total;
+        }));
+        if (!cancelled) setProdiCounts(counts);
+      } catch {
+        const fallback: Record<number, number> = {};
+        for (const inst of filtered) fallback[inst.id] = state.majors.filter(m => m.institution_id === inst.id).length;
+        if (!cancelled) setProdiCounts(fallback);
+      } finally {
+        if (!cancelled) setCountsLoading(false);
+      }
+    };
+    loadCounts();
+    return () => { cancelled = true; };
+  }, [filtered, state.majors]);
+
+  const campusProdiCount = (id: number) => prodiCounts[id] ?? 0;
+  const majorsReady = !countsLoading;
 
   if (selectedCampus) {
     return (

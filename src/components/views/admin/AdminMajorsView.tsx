@@ -229,7 +229,11 @@ export const AdminMajorsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Manajemen Program Studi</h2>
-          <p className="text-slate-500 dark:text-muted-foreground mt-1">Kelola data program studi dan kampus yang tersedia.</p>
+          <p className="text-slate-500 dark:text-muted-foreground mt-1">
+            Kelola data program studi dan kampus yang tersedia.{' '}
+            <span className="font-bold text-primary">{stats ? formatNumber(stats.totalProdi) : '…'} prodi</span> dari{' '}
+            <span className="font-bold text-primary">{state.institutions.length} kampus</span>.
+          </p>
         </div>
 
         <div className="flex gap-2">
