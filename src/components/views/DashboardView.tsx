@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppState } from '../../lib/store';
 import { appStore } from '../../lib/store';
 import { cn, formatNumber } from '../../lib/utils';
@@ -9,14 +9,35 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { JenjangBadge } from '@/components/ui/JenjangBadge';
 import { Pagination } from '@/components/ui/Pagination';
-import { Search, Target, GraduationCap, Building2, Layers, TrendingUp, AlertCircle, CheckCircle2, Clock, BookOpen, Sparkles, ArrowRight, Info, Award, Compass, MapPin } from 'lucide-react';
-import type { Major, ClusterType } from '../../types';
+import { ScoreLineChart } from '@/components/ui/ScoreLineChart';
+import Swal from 'sweetalert2';
+import { Search, Target, GraduationCap, Building2, Layers, TrendingUp, AlertCircle, CheckCircle2, Clock, BookOpen, Sparkles, ArrowRight, Info, Award, Compass, MapPin, PlusCircle, Save, RotateCcw, Pencil, Trash2 } from 'lucide-react';
+import type { Major, ClusterType, UtbkScore } from '../../types';
 
 type JenjangFilter = 'SEMUA' | 'S1' | 'D4' | 'D3';
 type RumpunFilter = 'SEMUA' | ClusterType;
 
 const JENJANG_FILTERS: JenjangFilter[] = ['SEMUA', 'S1', 'D4', 'D3'];
 const RUMPUN_FILTERS: RumpunFilter[] = ['SEMUA', 'Saintek', 'Soshum', 'Campuran'];
+
+const FALLBACK_SUBTESTS: { code: string; name: string }[] = [
+  { code: 'PU', name: 'Penalaran Umum' },
+  { code: 'PPU', name: 'Pengetahuan & Pemahaman Umum' },
+  { code: 'PBM', name: 'Kemampuan Memahami Bacaan' },
+  { code: 'PK', name: 'Pengetahuan Kuantitatif' },
+  { code: 'LBI', name: 'Literasi Bahasa Indonesia' },
+  { code: 'LBE', name: 'Literasi Bahasa Inggris' },
+  { code: 'PM', name: 'Penalaran Matematika' },
+];
+
+const todayISO = () => new Date().toISOString().split('T')[0];
+
+const formatShortDate = (iso?: string | null) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' });
+};
 
 const CLUSTER_STYLE: Record<ClusterType, { badge: string; row: string; dot: string }> = {
   Saintek: {
@@ -114,6 +135,182 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
   const completedTryoutIds = new Set(state.results.map(r => r.tryout_id));
   const availableTryouts = state.tryouts.filter(t => !completedTryoutIds.has(t.id));
 
+  // ===== Input Nilai Tryout UTBK (mandiri) =====
+  const subtests = state.competencies.length > 0
+    ? state.competencies.map(c => ({ code: c.code, name: c.name }))
+    : FALLBACK_SUBTESTS;
+
+  const [utbkScores, setUtbkScores] = useState<Record<string, string>>({});
+  const [utbkTotal, setUtbkTotal] = useState<string>('');
+  const [utbkTotalTouched, setUtbkTotalTouched] = useState(false);
+  const [utbkLabel, setUtbkLabel] = useState('');
+  const [utbkDate, setUtbkDate] = useState(todayISO());
+  const [editingUtbkId, setEditingUtbkId] = useState<number | null>(null);
+  const [savingUtbk, setSavingUtbk] = useState(false);
+
+  const weightOf = (code: string) => {
+    const c = state.competencies.find(x => x.code === code);
+    return c && c.weight ? c.weight : 1;
+  };
+
+  const numericScores = useMemo(() => {
+    const out: Record<string, number> = {};
+    subtests.forEach(s => {
+      const raw = utbkScores[s.code];
+      if (raw === '' || raw == null) return;
+      const num = Number(raw);
+      if (!Number.isNaN(num)) out[s.code] = num;
+    });
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [utbkScores, state.competencies]);
+
+  const suggestedTotal = useMemo(() => {
+    const codes = subtests.map(s => s.code).filter(c => numericScores[c] != null);
+    if (codes.length === 0) return 0;
+    const sum = codes.reduce((acc, c) => acc + numericScores[c] * weightOf(c), 0);
+    const wsum = codes.reduce((acc, c) => acc + weightOf(c), 0) || 1;
+    return Math.round((sum / wsum) * 10) / 10;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numericScores, state.competencies]);
+
+  useEffect(() => {
+    if (!utbkTotalTouched) {
+      setUtbkTotal(suggestedTotal ? String(suggestedTotal) : '');
+    }
+  }, [suggestedTotal, utbkTotalTouched]);
+
+  const resetUtbkForm = () => {
+    setUtbkScores({});
+    setUtbkTotal('');
+    setUtbkTotalTouched(false);
+    setUtbkLabel('');
+    setUtbkDate(todayISO());
+    setEditingUtbkId(null);
+  };
+
+  const handleUtbkScoreChange = (code: string, val: string) => {
+    setUtbkTotalTouched(false);
+    if (val === '') {
+      setUtbkScores(prev => ({ ...prev, [code]: '' }));
+      return;
+    }
+    let num = parseInt(val, 10);
+    if (Number.isNaN(num)) num = 0;
+    num = Math.max(0, Math.min(1000, num));
+    setUtbkScores(prev => ({ ...prev, [code]: String(num) }));
+  };
+
+  const handleUtbkTotalChange = (val: string) => {
+    setUtbkTotalTouched(true);
+    if (val === '') {
+      setUtbkTotal('');
+      return;
+    }
+    let num = parseInt(val, 10);
+    if (Number.isNaN(num)) num = 0;
+    num = Math.max(0, Math.min(1000, num));
+    setUtbkTotal(String(num));
+  };
+
+  const handleUtbkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const codes = subtests.map(s => s.code);
+    const missing = codes.filter(c => utbkScores[c] === '' || utbkScores[c] == null);
+    if (missing.length > 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Lengkapi semua subtes',
+        text: `Masih ada ${missing.length} subtes yang belum diisi.`,
+        confirmButtonColor: '#6355d8',
+      });
+      return;
+    }
+    const total = Number(utbkTotal);
+    if (Number.isNaN(total) || total < 0 || total > 1000) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Skor total tidak valid',
+        text: 'Masukkan skor total antara 0 sampai 1000.',
+        confirmButtonColor: '#6355d8',
+      });
+      return;
+    }
+
+    const payload = {
+      total_score: total,
+      scores: numericScores,
+      label: utbkLabel.trim() || null,
+      recorded_on: utbkDate || todayISO(),
+    };
+
+    setSavingUtbk(true);
+    const ok = editingUtbkId == null
+      ? !!(await appStore.addUtbkScore(payload))
+      : await appStore.updateUtbkScore(editingUtbkId, payload);
+    setSavingUtbk(false);
+
+    if (ok) {
+      Swal.fire({
+        icon: 'success',
+        title: editingUtbkId == null ? 'Nilai berhasil disimpan' : 'Nilai berhasil diperbarui',
+        timer: 1600,
+        showConfirmButton: false,
+      });
+      resetUtbkForm();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal menyimpan',
+        text: 'Terjadi masalah saat menyimpan ke database. Coba lagi.',
+        confirmButtonColor: '#6355d8',
+      });
+    }
+  };
+
+  const handleEditUtbk = (row: UtbkScore) => {
+    const s: Record<string, string> = {};
+    subtests.forEach(x => {
+      s[x.code] = row.scores?.[x.code] != null ? String(row.scores[x.code]) : '';
+    });
+    setUtbkScores(s);
+    setUtbkTotal(String(row.total_score));
+    setUtbkTotalTouched(true);
+    setUtbkLabel(row.label || '');
+    setUtbkDate(row.recorded_on || todayISO());
+    setEditingUtbkId(row.id);
+    document.getElementById('utbk-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleDeleteUtbk = async (row: UtbkScore) => {
+    const res = await Swal.fire({
+      icon: 'warning',
+      title: 'Hapus nilai ini?',
+      text: `${row.label || 'Nilai UTBK'} • ${formatShortDate(row.recorded_on)} (${row.total_score})`,
+      showCancelButton: true,
+      confirmButtonText: 'Hapus',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#dc2626',
+    });
+    if (!res.isConfirmed) return;
+    const ok = await appStore.deleteUtbkScore(row.id);
+    if (ok) {
+      if (editingUtbkId === row.id) resetUtbkForm();
+      Swal.fire({ icon: 'success', title: 'Nilai terhapus', timer: 1200, showConfirmButton: false });
+    } else {
+      Swal.fire({ icon: 'error', title: 'Gagal menghapus', confirmButtonColor: '#6355d8' });
+    }
+  };
+
+  const utbkRows = state.utbkScores;
+  const utbkLatest = utbkRows[0];
+  const utbkHighest = utbkRows.length ? Math.max(...utbkRows.map(r => r.total_score)) : 0;
+  const utbkAvg = utbkRows.length ? utbkRows.reduce((a, b) => a + b.total_score, 0) / utbkRows.length : 0;
+  const utbkDelta = utbkRows.length > 1 ? Math.round((utbkRows[0].total_score - utbkRows[1].total_score) * 10) / 10 : 0;
+  const utbkChartPoints = [...utbkRows]
+    .reverse()
+    .map(r => ({ label: formatShortDate(r.recorded_on), value: Math.round(r.total_score) }));
+
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
 
@@ -186,6 +383,159 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
           </Button>
         </div>
       )}
+
+      {/* Input & Perkembangan Nilai Tryout UTBK */}
+      <div>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-primary" /> Nilai Tryout UTBK
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Form Input */}
+          <Card id="utbk-form" className="lg:col-span-1 p-5 rounded-2xl border border-slate-200 dark:border-border shadow-xs gap-4">
+            <div>
+              <h3 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-primary" />
+                {editingUtbkId == null ? 'Input Nilai UTBK' : 'Perbarui Nilai UTBK'}
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Masukkan skor tryout UTBK terakhir Anda (0–1000) untuk memantau progres.
+              </p>
+            </div>
+
+            <form onSubmit={handleUtbkSubmit} className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1 col-span-2 sm:col-span-1">
+                  <label className="text-[11px] font-semibold text-slate-500">Tanggal Tryout</label>
+                  <Input type="date" value={utbkDate} onChange={(e) => setUtbkDate(e.target.value)} className="h-auto px-3 py-2 rounded-lg text-sm" />
+                </div>
+                <div className="space-y-1 col-span-2 sm:col-span-1">
+                  <label className="text-[11px] font-semibold text-slate-500">Keterangan</label>
+                  <Input type="text" value={utbkLabel} onChange={(e) => setUtbkLabel(e.target.value)} placeholder="cth: Tryout GO #3" className="h-auto px-3 py-2 rounded-lg text-sm" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {subtests.map((s) => (
+                  <div key={s.code} className="p-2.5 rounded-xl border border-slate-200 dark:border-border bg-slate-50/50 dark:bg-card/50">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-xs text-slate-800 dark:text-white">{s.code}</span>
+                      <span className="text-[10px] text-slate-400">/1000</span>
+                    </div>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="1000"
+                      value={utbkScores[s.code] ?? ''}
+                      onChange={(e) => handleUtbkScoreChange(s.code, e.target.value)}
+                      placeholder="0"
+                      className="h-auto px-2.5 py-1.5 rounded-lg text-sm font-bold text-center"
+                    />
+                    <span className="text-[10px] text-slate-400 block truncate mt-1">{s.name}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">Skor Total UTBK</span>
+                  <span className="text-[10px] text-slate-400">{utbkTotalTouched ? 'Diisi manual' : 'Otomatis (rata-rata berbobot)'}</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    value={utbkTotal}
+                    onChange={(e) => handleUtbkTotalChange(e.target.value)}
+                    placeholder="0"
+                    className="w-20 h-auto px-2.5 py-1.5 rounded-lg text-sm font-extrabold text-center text-primary"
+                  />
+                  <span className="text-[10px] text-slate-400">/1000</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <Button type="submit" disabled={savingUtbk} className="flex-1 gap-1.5 text-xs">
+                  {editingUtbkId == null ? (
+                    <><PlusCircle className="w-3.5 h-3.5" /><span>{savingUtbk ? 'Menyimpan...' : 'Simpan & Tambah Riwayat'}</span></>
+                  ) : (
+                    <><Save className="w-3.5 h-3.5" /><span>{savingUtbk ? 'Menyimpan...' : 'Perbarui Nilai'}</span></>
+                  )}
+                </Button>
+                <Button type="button" variant="outline" onClick={resetUtbkForm} className="text-xs gap-1.5">
+                  <RotateCcw className="w-3.5 h-3.5" /><span>Reset</span>
+                </Button>
+              </div>
+            </form>
+          </Card>
+
+          {/* Rekap + Chart + Riwayat */}
+          <div className="lg:col-span-2 space-y-4">
+            {utbkRows.length === 0 ? (
+              <Card className="p-8 rounded-2xl border border-dashed border-slate-300 dark:border-border bg-card/50 flex flex-col items-center justify-center text-center min-h-[200px]">
+                <TrendingUp className="w-8 h-8 text-slate-400 mb-2" />
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-300">Belum ada nilai UTBK</p>
+                <p className="text-xs text-slate-400 mt-1">Isi nilai tryout UTBK terakhir Anda di form untuk melihat grafik perkembangan.</p>
+              </Card>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Skor Terakhir', value: utbkLatest ? utbkLatest.total_score : 0, icon: Award, color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40' },
+                    { label: 'Tertinggi', value: utbkHighest, icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40' },
+                    { label: 'Rata-rata', value: Math.round(utbkAvg * 10) / 10, icon: Layers, color: 'text-sky-500 bg-sky-50 dark:bg-sky-950/40' },
+                    { label: 'Perubahan', value: `${utbkDelta > 0 ? '+' : ''}${utbkDelta}`, icon: utbkDelta < 0 ? AlertCircle : CheckCircle2, color: utbkDelta < 0 ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40' : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40' },
+                  ].map((s, i) => (
+                    <Card key={i} className="p-3.5 rounded-2xl flex items-center gap-3 border-slate-200/70 dark:border-border">
+                      <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", s.color)}><s.icon className="w-4 h-4" /></div>
+                      <div className="min-w-0">
+                        <p className="text-base font-bold text-slate-800 dark:text-white leading-tight truncate">{s.value}</p>
+                        <p className="text-[10px] font-medium text-slate-400 truncate">{s.label}</p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+
+                <Card className="p-4 rounded-2xl border border-slate-200 dark:border-border shadow-xs gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-primary" /> Perkembangan Nilai UTBK
+                    </span>
+                    <Badge variant="secondary" className="text-[10px] font-bold">{utbkRows.length} input</Badge>
+                  </div>
+                  <ScoreLineChart points={utbkChartPoints} />
+                </Card>
+
+                <Card className="rounded-2xl border border-slate-200 dark:border-border shadow-xs overflow-hidden gap-0">
+                  <div className="px-4 py-3 border-b border-slate-100 dark:border-border flex items-center justify-between">
+                    <span className="text-sm font-bold text-slate-800 dark:text-white">Riwayat Input Nilai</span>
+                    <span className="text-[11px] text-slate-400">Terbaru di atas</span>
+                  </div>
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {utbkRows.map((row) => (
+                      <div key={row.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50/70 dark:hover:bg-muted/40 transition-colors">
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{row.label || 'Nilai UTBK'}</p>
+                          <p className="text-[11px] text-slate-400">{formatShortDate(row.recorded_on)}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-sm font-extrabold text-primary tabular-nums">{row.total_score}</span>
+                          <Button type="button" variant="ghost" size="icon-sm" aria-label="Edit nilai" onClick={() => handleEditUtbk(row)} className="text-slate-400 hover:text-primary">
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button type="button" variant="ghost" size="icon-sm" aria-label="Hapus nilai" onClick={() => handleDeleteUtbk(row)} className="text-slate-400 hover:text-rose-500">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* SECTION 2: Ringkasan Analisis Pilihan Saya */}
       <div>

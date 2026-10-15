@@ -118,6 +118,16 @@ export interface TryoutResult {
   scores: Record<string, number>; // { PU: 710, PK: 640, ... }
 }
 
+export interface UtbkScore {
+  id: number;
+  user_id?: string;
+  total_score: number;
+  scores: Record<string, number>; // { PU: 710, PPU: 680, ... } — rincian 7 subtes
+  label?: string | null;
+  recorded_on: string; // ISO date (YYYY-MM-DD)
+  created_at: string;
+}
+
 export interface LeaderboardEntry {
   id: number;
   user_id: string;

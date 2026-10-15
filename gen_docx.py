@@ -198,12 +198,13 @@ body.append(p('Signup menggunakan signUp dengan metadata (full_name, nisn, schoo
 body.append(p('Session persistence ditangani oleh SDK Supabase. Listener onAuthStateChange terdaftar di AppStore constructor untuk sync profile dan master data saat login/logout.'))
 body.append(p(''))
 body.append(heading('5.4 Database Tables', 2))
-body.append(p('9 tabel yang diakses oleh client code:'))
+body.append(p('10 tabel yang diakses oleh client code:'))
 tables = [
     ('profiles', 'Data profil user (id, auth_uid, full_name, nisn, email, role, is_profile_complete, must_change_password)'),
     ('majors', 'Program studi (id, institution_id, code, name, cluster, jenjang, passing_grade_total, requirements)'),
     ('institutions', 'Institusi/kampus (id, name, type PTN/PTS/Kedinasan, location, grade, range_min/max)'),
     ('tryout_results', 'Hasil tryout (user_id, tryout_id, total_score, predicate, scores JSONB per subtes)'),
+    ('utbk_scores', 'Riwayat input nilai tryout UTBK mandiri user (user_id, total_score, scores JSONB 7 subtes, label, recorded_on)'),
     ('target_institutions', 'Target prodi pilihan user (user_id, major_id, priority)'),
     ('tryouts', 'Definisi tryout (name, date, type, duration_minutes, question_count, status)'),
     ('penjurusan_questions', 'Bank soal tes penjurusan (question, option_a-d, cluster_a-d, is_active)'),
@@ -247,6 +248,18 @@ for item in [
     body.append(bullet(item))
 body.append(p(''))
 
+body.append(heading('5.8 Input Nilai UTBK Mandiri (Dashboard)', 2))
+body.append(p('User dapat menginput skor tryout UTBK terakhirnya sendiri langsung dari Dashboard (total + rincian 7 subtes). Data disimpan permanen ke tabel utbk_scores:'))
+for item in [
+    'addUtbkScore - Insert nilai baru ke riwayat (optimistic update, di-rollback bila insert gagal)',
+    'updateUtbkScore - Memperbarui entri riwayat yang ada',
+    'deleteUtbkScore - Menghapus entri riwayat',
+    'syncFromSupabase memuat ulang utbk_scores saat login, sehingga riwayat tetap tampil setiap dashboard dibuka',
+    'Dashboard merender rekap (skor terakhir, tertinggi, rata-rata, perubahan) dan grafik perkembangan memakai SVG line chart (tanpa library chart eksternal)',
+]:
+    body.append(bullet(item))
+body.append(p(''))
+
 body.append(heading('6. Fitur Export', 1))
 body.append(heading('6.1 PDF Export (jsPDF + autoTable)', 2))
 body.append(p('Dua fungsi export PDF di src/lib/exportUtils.ts:'))
@@ -263,7 +276,7 @@ body.append(p(''))
 
 body.append(heading('7. Visualisasi & Feedback', 1))
 body.append(heading('7.1 SweetAlert2', 2))
-body.append(p('Digunakan sebagai mekanisme feedback utama untuk error, konfirmasi, dan success message di 6 file (AuthView, BingungView, ChangePasswordView, SupabaseSqlView, AdminUsersView, AdminResultsView). Error message diproses melalui helper getErrorMessage() yang menerjemahkan error Supabase/auth ke Bahasa Indonesia.'))
+body.append(p('Digunakan sebagai mekanisme feedback utama untuk error, konfirmasi, dan success message di 7 file (AuthView, BingungView, ChangePasswordView, SupabaseSqlView, AdminUsersView, AdminResultsView, DashboardView). Error message diproses melalui helper getErrorMessage() yang menerjemahkan error Supabase/auth ke Bahasa Indonesia.'))
 body.append(p(''))
 body.append(heading('7.2 Animasi CSS', 2))
 body.append(p('Seluruh animasi menggunakan tw-animate-css (CSS-based), bukan Framer Motion (package motion terinstall tapi tidak pernah di-import). Pola yang digunakan:'))
@@ -284,7 +297,7 @@ dirs = [
     ('src/App.tsx', 'Root component, manual router, auth gating, dark mode, layout shell'),
     ('src/types.ts', 'Semua interface domain (Profile, Institution, Major, Competency, Tryout, dll)'),
     ('src/index.css', 'Tailwind v4 config, OKLCH tokens, dark mode variant, radius scale'),
-    ('src/lib/store.ts', 'AppStore singleton (687 baris) - global state, Supabase sync, scoring engine, gap analysis, admin CRUD'),
+    ('src/lib/store.ts', 'AppStore singleton (910 baris) - global state, Supabase sync, scoring engine, gap analysis, admin CRUD'),
     ('src/lib/supabaseClient.ts', 'Factory client Supabase dengan resolusi kredensial bertingkat'),
     ('src/lib/prodiSearch.ts', 'Server-side search layer via RPC (search_majors, stats_majors, popular_majors) + debounce hook'),
     ('src/lib/exportUtils.ts', 'PDF dan Excel export utilities'),

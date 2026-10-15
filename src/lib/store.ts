@@ -11,7 +11,8 @@ import {
   TargetInstitution, 
   Tryout, 
   TryoutResult,
-  TutoringCenter
+  TutoringCenter,
+  UtbkScore
 } from '../types';
 import { 
   INITIAL_COMPETENCIES, 
@@ -33,6 +34,7 @@ export interface AppState {
   competencies: Competency[];
   tryouts: Tryout[];
   results: TryoutResult[];
+  utbkScores: UtbkScore[];
   targetMajorIds: number[]; 
   activeTargetMajorId: number | null; 
   useRealSupabase: boolean; // Keep for compatibility but it's always true now
@@ -50,6 +52,7 @@ const DEFAULT_STATE: AppState = {
   competencies: [],
   tryouts: [],
   results: [],
+  utbkScores: [],
   targetMajorIds: [], 
   activeTargetMajorId: null, 
   useRealSupabase: true,
@@ -133,6 +136,7 @@ class AppStore {
         this.state.isLoggedIn = false;
         this.state.profile = { ...EMPTY_PROFILE };
         this.state.results = [];
+        this.state.utbkScores = [];
         this.state.targetMajorIds = [];
         this._masterDataAuthed = false;
         try { localStorage.removeItem('tryoutku_targets_v1'); } catch (e) {}
@@ -355,6 +359,135 @@ class AppStore {
     return newResult;
   }
 
+  // Riwayat input nilai UTBK mandiri (form di Dashboard).
+  // Data disimpan permanen di tabel utbk_scores agar dapat dirender ulang
+  // setiap dashboard dibuka (lihat syncFromSupabase).
+  private sortUtbkScores() {
+    this.state.utbkScores = [...this.state.utbkScores].sort((a, b) => {
+      const d = (b.recorded_on || '').localeCompare(a.recorded_on || '');
+      if (d !== 0) return d;
+      return (b.created_at || '').localeCompare(a.created_at || '');
+    });
+  }
+
+  private async currentOwnerUid(): Promise<string> {
+    try {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user?.id) return data.user.id;
+    } catch { /* backend non-supabase */ }
+    return this.state.profile.id;
+  }
+
+  public async addUtbkScore(input: {
+    total_score: number;
+    scores: Record<string, number>;
+    label?: string | null;
+    recorded_on?: string;
+  }): Promise<UtbkScore | null> {
+    const ownerUid = await this.currentOwnerUid();
+    const recordedOn = input.recorded_on || new Date().toISOString().split('T')[0];
+    const payload: Record<string, unknown> = {
+      total_score: input.total_score,
+      scores: input.scores,
+      label: input.label ?? null,
+      recorded_on: recordedOn,
+    };
+    if (ownerUid) payload.user_id = ownerUid;
+
+    const optimistic: UtbkScore = {
+      id: -Date.now(),
+      user_id: ownerUid,
+      total_score: input.total_score,
+      scores: input.scores,
+      label: input.label ?? null,
+      recorded_on: recordedOn,
+      created_at: new Date().toISOString(),
+    };
+    this.state.utbkScores = [optimistic, ...this.state.utbkScores];
+    this.sortUtbkScores();
+    this.notify();
+
+    try {
+      const { data, error } = await supabase.from('utbk_scores').insert(payload).select().single();
+      if (error) {
+        console.warn('Gagal menyimpan nilai UTBK ke Supabase:', error.message);
+        this.state.utbkScores = this.state.utbkScores.filter(s => s.id !== optimistic.id);
+        this.notify();
+        return null;
+      }
+      this.state.utbkScores = this.state.utbkScores.map(s => (s.id === optimistic.id ? data : s));
+      this.sortUtbkScores();
+      this.notify();
+      return data;
+    } catch (err) {
+      console.warn('Supabase sync error:', err);
+      this.state.utbkScores = this.state.utbkScores.filter(s => s.id !== optimistic.id);
+      this.notify();
+      return null;
+    }
+  }
+
+  public async updateUtbkScore(id: number, input: {
+    total_score: number;
+    scores: Record<string, number>;
+    label?: string | null;
+    recorded_on?: string;
+  }): Promise<boolean> {
+    const prev = this.state.utbkScores;
+    this.state.utbkScores = this.state.utbkScores.map(s => (s.id === id ? {
+      ...s,
+      total_score: input.total_score,
+      scores: input.scores,
+      label: input.label ?? null,
+      recorded_on: input.recorded_on || s.recorded_on,
+    } : s));
+    this.sortUtbkScores();
+    this.notify();
+
+    try {
+      const { error } = await supabase.from('utbk_scores').update({
+        total_score: input.total_score,
+        scores: input.scores,
+        label: input.label ?? null,
+        ...(input.recorded_on ? { recorded_on: input.recorded_on } : {}),
+      }).eq('id', id);
+      if (error) {
+        console.warn('Gagal memperbarui nilai UTBK:', error.message);
+        this.state.utbkScores = prev;
+        this.notify();
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('Supabase sync error:', err);
+      this.state.utbkScores = prev;
+      this.notify();
+      return false;
+    }
+  }
+
+  public async deleteUtbkScore(id: number): Promise<boolean> {
+    const prev = this.state.utbkScores;
+    this.state.utbkScores = this.state.utbkScores.filter(s => s.id !== id);
+    this.notify();
+
+    try {
+      const { error } = await supabase.from('utbk_scores').delete().eq('id', id);
+      if (error) {
+        console.warn('Gagal menghapus nilai UTBK:', error.message);
+        this.state.utbkScores = prev;
+        this.notify();
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('Supabase sync error:', err);
+      this.state.utbkScores = prev;
+      this.notify();
+      return false;
+    }
+  }
+
   // Analysis & Recommendation Engine
   public getAnalysis(targetMajorId?: number | null, specificResultId?: number): AnalysisSummary | null {
     const majorId = targetMajorId ?? this.state.activeTargetMajorId ?? this.state.targetMajorIds[0] ?? null;
@@ -522,6 +655,11 @@ class AppStore {
       const { data: res, error: rErr } = await supabase.from('tryout_results').select('*').eq('user_id', targetAuthId).order('created_at', { ascending: false });
       if (!rErr && res) {
         this.state.results = res;
+      }
+
+      const { data: utbkData, error: uErr } = await supabase.from('utbk_scores').select('*').eq('user_id', targetAuthId).order('recorded_on', { ascending: false });
+      if (!uErr && utbkData) {
+        this.state.utbkScores = utbkData;
       }
 
       await this.ensureTargetMajorsLoaded();

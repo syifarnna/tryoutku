@@ -430,5 +430,37 @@ BEGIN
   RETURN COALESCE(result, '[]'::JSONB);
 END;
 $$;
+
+-- 18) Tabel riwayat input nilai Tryout UTBK mandiri (form di Dashboard).
+--     Menyimpan skor total + rincian 7 subtes (jsonb) per user.
+CREATE TABLE IF NOT EXISTS public.utbk_scores (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id UUID NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
+  total_score DOUBLE PRECISION NOT NULL CHECK (total_score >= 0 AND total_score <= 1000),
+  scores JSONB NOT NULL DEFAULT '{}'::jsonb,
+  label TEXT,
+  recorded_on DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS utbk_scores_user_id_idx ON public.utbk_scores (user_id);
+CREATE INDEX IF NOT EXISTS utbk_scores_user_recorded_idx ON public.utbk_scores (user_id, recorded_on DESC);
+
+ALTER TABLE public.utbk_scores ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS own_select ON public.utbk_scores;
+CREATE POLICY own_select ON public.utbk_scores FOR SELECT USING ((user_id)::text = (auth.uid())::text);
+DROP POLICY IF EXISTS own_insert ON public.utbk_scores;
+CREATE POLICY own_insert ON public.utbk_scores FOR INSERT WITH CHECK ((user_id)::text = (auth.uid())::text);
+DROP POLICY IF EXISTS own_update ON public.utbk_scores;
+CREATE POLICY own_update ON public.utbk_scores FOR UPDATE USING ((user_id)::text = (auth.uid())::text) WITH CHECK ((user_id)::text = (auth.uid())::text);
+DROP POLICY IF EXISTS own_delete ON public.utbk_scores;
+CREATE POLICY own_delete ON public.utbk_scores FOR DELETE USING ((user_id)::text = (auth.uid())::text);
+DROP POLICY IF EXISTS admin_select_all ON public.utbk_scores;
+CREATE POLICY admin_select_all ON public.utbk_scores FOR SELECT USING (public.is_admin());
+DROP POLICY IF EXISTS admin_all ON public.utbk_scores;
+CREATE POLICY admin_all ON public.utbk_scores FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+NOTIFY pgrst, 'reload schema';
 `;
 
