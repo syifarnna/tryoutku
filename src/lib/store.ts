@@ -488,6 +488,11 @@ class AppStore {
     }
   }
 
+  public getUtbkLatestScore(): number | null {
+    if (this.state.utbkScores.length === 0) return null;
+    return this.state.utbkScores[0].total_score;
+  }
+
   // Analysis & Recommendation Engine
   public getAnalysis(targetMajorId?: number | null, specificResultId?: number): AnalysisSummary | null {
     const majorId = targetMajorId ?? this.state.activeTargetMajorId ?? this.state.targetMajorIds[0] ?? null;
@@ -495,9 +500,34 @@ class AppStore {
     const major = this.state.majors.find(m => m.id === majorId);
     if (!major) return null;
     
-    const result = specificResultId 
+    let result = specificResultId 
       ? this.state.results.find(r => r.id === specificResultId) 
       : this.state.results[0];
+
+    const utbkScore = this.getUtbkLatestScore();
+
+    if (!result && utbkScore == null) return null;
+
+    if (!result && utbkScore != null) {
+      result = {
+        id: -999,
+        user_id: '',
+        student_id: '',
+        tryout_id: -1,
+        tryout_name: 'Input Nilai UTBK',
+        tryout_type: 'UTBK',
+        tryout_date: new Date().toISOString().split('T')[0],
+        total_score: utbkScore,
+        predicate: 'Cukup',
+        scores: {},
+        created_at: new Date().toISOString(),
+      } as TryoutResult;
+    } else if (result && utbkScore != null && utbkScore > result.total_score) {
+      result = {
+        ...result,
+        total_score: utbkScore,
+      };
+    }
 
     if (!result) return null;
 
