@@ -27,7 +27,9 @@ const RANK_ALT = 6;
 export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({ setActiveTab }) => {
   const state = useAppState();
 
-  const autoScore = state.results[0]?.total_score ?? null;
+  const tryoutScore = state.results[0]?.total_score ?? null;
+  const utbkScore = appStore.getUtbkLatestScore();
+  const autoScore = utbkScore != null ? utbkScore : tryoutScore;
   const interest = state.profile.major_interest;
 
   const { tier1, tier2, totalReachable } = useMemo(() => {
