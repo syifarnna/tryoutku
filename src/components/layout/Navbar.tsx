@@ -173,7 +173,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {notifications.map((notif) => (
                   <DropdownMenuItem
                     key={notif.id}
-                    onClick={() => { setActiveTab('analysis_passing'); }}
                     className="p-4 focus:bg-slate-50 dark:focus:bg-muted/50 cursor-pointer"
                   >
                     <div className="flex gap-3 w-full">

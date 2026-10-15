@@ -129,9 +129,6 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
             Target aktif Anda saat ini adalah <strong>{targetMajor?.name || 'Belum dipilih'} ({targetMajor?.institution_name || '—'})</strong> dengan passing grade <strong>{targetMajor?.passing_grade_total ?? '—'}</strong>. Terus asah kompetensi berhitung dan literasi akademis Anda!
           </p>
           <div className="pt-2 flex flex-wrap items-center gap-3">
-            <Button onClick={() => setActiveTab('analysis_passing')} className="px-5 py-2.5 rounded-xl bg-white text-primary text-xs font-bold hover:bg-indigo-50 shadow-md transition-all cursor-pointer border-0">
-              <TrendingUp className="w-4 h-4" /><span>Lihat Analisis Passing Grade</span>
-            </Button>
             {availableTryouts[0] && (
               <Button onClick={() => onTakeTryout(availableTryouts[0])} className="px-5 py-2.5 rounded-xl bg-black/80 text-white text-xs font-semibold hover:bg-black transition-all border border-white/20">
                 <BookOpen className="w-3.5 h-3.5 fill-current" /><span>Kerjakan {availableTryouts[0].name.split(' - ')[0]}</span>

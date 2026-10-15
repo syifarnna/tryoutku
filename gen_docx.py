@@ -255,7 +255,7 @@ for item in [
     'exportAnalysisPDF - Analisis passing grade dengan status LULUS/BELUM MEMENUHI berwarna, tabel gap per kompetensi',
 ]:
     body.append(bullet(item))
-body.append(p('Di beberapa view (TryoutsView, AnalysisPassingView), jsPDF di-dynamic import agar tidak masuk bundle utama. ReportsView mengimport secara statis.'))
+body.append(p('Di beberapa view (TryoutsView), jsPDF di-dynamic import agar tidak masuk bundle utama. ReportsView mengimport secara statis.'))
 body.append(p(''))
 body.append(heading('6.2 Excel Export/Import (SheetJS/XLSX)', 2))
 body.append(p('exportResultsExcel menghasilkan file .xlsx dengan sheet Hasil Tryout berisi 7 kolom subtes terpisah. XLSX juga digunakan untuk bulk import prodi di AdminMajorsView (upload spreadsheet, parse, bulk insert ke Supabase).'))
@@ -293,7 +293,7 @@ dirs = [
     ('src/components/ui/', '22 shadcn/ui primitives + 2 custom (JenjangBadge, Pagination)'),
     ('src/components/layout/', 'App chrome: Navbar, Sidebar (menu definition + role-based sections), Footer'),
     ('src/components/modals/', 'TakeTryoutModal (simulasi ujian), SupabaseSqlModal (SQL blueprint viewer)'),
-    ('src/components/views/', '15 participant views + 7 admin views, semuanya code-split via React.lazy'),
+    ('src/components/views/', '14 participant views + 7 admin views, semuanya code-split via React.lazy'),
 ]
 for path, desc in dirs:
     body.append(bullet('%s - %s' % (path, desc)))

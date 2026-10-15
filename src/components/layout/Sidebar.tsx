@@ -6,7 +6,6 @@ import {
   FileText, 
   LayoutDashboard, 
   LogOut, 
-  Scale, 
   Settings, 
   Target, 
   TrendingUp, 
@@ -120,14 +119,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'SIMULASI UJIAN',
       items: [
-        { id: 'tryouts', label: 'Daftar Tryout', icon: BookOpen },
         { id: 'results', label: 'Hasil Tryout Saya', icon: Award }
       ]
     },
     {
       title: 'ANALISIS & TARGET (INTI)',
       items: [
-        { id: 'analysis_passing', label: 'Perbandingan Prodi', icon: Scale },
         { id: 'target_majors', label: 'Target Institut', icon: Target }
       ]
     },

@@ -40,7 +40,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
               : 'Pilih prodi target terlebih dahulu agar sistem dapat menghitung peluang kelulusan & memberikan kampus alternatif yang sesuai pilihan Anda.'}
           </p>
           <div className="flex justify-center">
-            <Button onClick={() => setActiveTab(state.results.length === 0 ? 'tryouts' : 'target_majors')} className="gap-1.5">
+            <Button onClick={() => setActiveTab(state.results.length === 0 ? 'dashboard' : 'target_majors')} className="gap-1.5">
               <Target className="w-4 h-4" />
               {state.results.length === 0 ? 'Kerjakan Tryout Sekarang' : 'Pilih Prodi Target'}
             </Button>

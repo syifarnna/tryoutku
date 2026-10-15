@@ -147,7 +147,7 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
           <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
             Untuk mendapatkan rekomendasi terintegrasi, selesaikan minimal satu tryout terlebih dahulu agar nilai Anda menjadi acuan kelayakan.
           </p>
-          <Button onClick={() => setActiveTab?.('tryouts')} className="mt-5 gap-2">
+          <Button onClick={() => setActiveTab?.('dashboard')} className="mt-5 gap-2">
             <Target className="w-4 h-4" /> Kerjakan Tryout Sekarang
           </Button>
         </Card>

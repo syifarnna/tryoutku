@@ -8,7 +8,6 @@ export const Footer: React.FC = () => {
       </div>
       <div className="hidden sm:flex gap-4">
         <a href="#dashboard" className="hover:text-primary transition-colors">Sneat Admin Bootstrap</a>
-        <a href="#analysis_passing" className="hover:text-primary transition-colors">Gap Analysis Engine</a>
       </div>
     </footer>
   );

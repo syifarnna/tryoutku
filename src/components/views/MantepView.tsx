@@ -131,7 +131,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
           <p className="text-sm text-slate-500 mt-2 leading-relaxed">
             Untuk menjalankan Analisis Hasil Tryout, Anda perlu menyelesaikan minimal satu tryout terlebih dahulu. Nilai dari tryout tersebut akan otomatis menjadi acuan kelayakan.
           </p>
-          <Button onClick={() => setActiveTab?.('tryouts')} className="mt-6 px-6 py-3 h-auto rounded-xl gap-2">
+          <Button onClick={() => setActiveTab?.('dashboard')} className="mt-6 px-6 py-3 h-auto rounded-xl gap-2">
             <Target className="w-4 h-4" /> Kerjakan Tryout Sekarang
           </Button>
         </Card>

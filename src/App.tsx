@@ -25,7 +25,6 @@ function lazyView<N extends keyof ViewModule>(
 
 const DashboardView = lazyView(() => import('./components/views/DashboardView'), 'DashboardView');
 const TryoutsView = lazyView(() => import('./components/views/TryoutsView'), 'TryoutsView');
-const AnalysisPassingView = lazyView(() => import('./components/views/AnalysisPassingView'), 'AnalysisPassingView');
 const TargetMajorsView = lazyView(() => import('./components/views/TargetMajorsView'), 'TargetMajorsView');
 const UniversitasProdiView = lazyView(() => import('./components/views/UniversitasProdiView'), 'UniversitasProdiView');
 const RekomendasiView = lazyView(() => import('./components/views/RekomendasiView'), 'RekomendasiView');
@@ -63,9 +62,7 @@ export default function App() {
     admin_users: 'admin/users',
     analisis_tryout: 'analisis',
     tes_minat: 'tes-minat',
-    tryouts: 'tryouts',
     results: 'results',
-    analysis_passing: 'analysis-passing',
     target_majors: 'target',
     rekomendasi: 'rekomendasi',
     recom_integrated: 'rekomendasi',
@@ -233,12 +230,8 @@ export default function App() {
         return <MantepView setActiveTab={setActiveTab} />;
       case 'tes_minat':
         return <BingungView />;
-      case 'tryouts':
-        return <TryoutsView key="tryouts" onTakeTryout={handleTakeTryout} defaultSubTab="list" />;
       case 'results':
-        return <TryoutsView key="results" onTakeTryout={handleTakeTryout} defaultSubTab="history" />;
-      case 'analysis_passing':
-        return <AnalysisPassingView setActiveTab={setActiveTab} />;
+        return <TryoutsView key="results" onTakeTryout={handleTakeTryout} />;
       case 'target_majors':
         return <TargetMajorsView />;
       case 'rekomendasi':
@@ -330,7 +323,7 @@ export default function App() {
         onClose={() => setActiveTryoutModal(null)}
         onFinished={() => {
           setActiveTryoutModal(null);
-          setActiveTab('analysis_passing');
+          setActiveTab('results');
         }}
       />
 
