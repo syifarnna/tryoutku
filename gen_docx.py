@@ -97,7 +97,6 @@ for item in [
     'Styling: Tailwind CSS v4 (CSS-first) + shadcn/ui base-nova + Base UI',
     'Backend / Database: Supabase (PostgreSQL + PostgREST + Auth)',
     'State Management: Custom Observable Store (tanpa Redux/Zustand)',
-    'Charts: Recharts (bar chart kompetensi)',
     'Export: jsPDF + jspdf-autotable (PDF), SheetJS/XLSX (Excel)',
     'Alerts: SweetAlert2',
     'Animations: tw-animate-css (CSS-based)',
@@ -263,13 +262,10 @@ body.append(p('exportResultsExcel menghasilkan file .xlsx dengan sheet Hasil Try
 body.append(p(''))
 
 body.append(heading('7. Visualisasi & Feedback', 1))
-body.append(heading('7.1 Recharts', 2))
-body.append(p('Satu-satunya chart di aplikasi: grouped vertical bar chart di AnalysisCompView.tsx yang membandingkan skor user vs rata-rata nasional per kompetensi subtes. Menggunakan ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, dan Cell untuk pewarnaan kondisional per bar.'))
-body.append(p(''))
-body.append(heading('7.2 SweetAlert2', 2))
+body.append(heading('7.1 SweetAlert2', 2))
 body.append(p('Digunakan sebagai mekanisme feedback utama untuk error, konfirmasi, dan success message di 6 file (AuthView, BingungView, ChangePasswordView, SupabaseSqlView, AdminUsersView, AdminResultsView). Error message diproses melalui helper getErrorMessage() yang menerjemahkan error Supabase/auth ke Bahasa Indonesia.'))
 body.append(p(''))
-body.append(heading('7.3 Animasi CSS', 2))
+body.append(heading('7.2 Animasi CSS', 2))
 body.append(p('Seluruh animasi menggunakan tw-animate-css (CSS-based), bukan Framer Motion (package motion terinstall tapi tidak pernah di-import). Pola yang digunakan:'))
 for item in [
     'View transitions: animate-in fade-in duration-300 di setiap view root',
@@ -297,7 +293,7 @@ dirs = [
     ('src/components/ui/', '22 shadcn/ui primitives + 2 custom (JenjangBadge, Pagination)'),
     ('src/components/layout/', 'App chrome: Navbar, Sidebar (menu definition + role-based sections), Footer'),
     ('src/components/modals/', 'TakeTryoutModal (simulasi ujian), SupabaseSqlModal (SQL blueprint viewer)'),
-    ('src/components/views/', '16 participant views + 7 admin views, semuanya code-split via React.lazy'),
+    ('src/components/views/', '15 participant views + 7 admin views, semuanya code-split via React.lazy'),
 ]
 for path, desc in dirs:
     body.append(bullet('%s - %s' % (path, desc)))

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { 
-  BarChart3, 
   BookOpen, 
   Brain,
   Compass, 
@@ -128,7 +127,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'ANALISIS & TARGET (INTI)',
       items: [
-        { id: 'analysis_comp', label: 'Analisis Kompetensi', icon: BarChart3 },
         { id: 'analysis_passing', label: 'Perbandingan Prodi', icon: Scale },
         { id: 'target_majors', label: 'Target Institut', icon: Target }
       ]
