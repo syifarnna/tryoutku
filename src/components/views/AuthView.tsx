@@ -13,7 +13,6 @@ export const AuthView: React.FC = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [school, setSchool] = useState('');
-  const [role, setRole] = useState<'peserta' | 'admin'>('peserta');
   const [remember, setRemember] = useState(true);
   const [resetSent, setResetSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +26,6 @@ export const AuthView: React.FC = () => {
       setPassword('');
       setFullName('');
       setSchool('');
-      setRole('peserta');
     } else if (newMode === 'login') {
       setEmail('');
       setNisn('');
@@ -62,8 +60,7 @@ export const AuthView: React.FC = () => {
             data: {
               full_name: fullName,
               nisn: nisn,
-              school: school,
-              role: role,
+              school: school
             }
           }
         });
@@ -180,8 +177,8 @@ export const AuthView: React.FC = () => {
             {mode === 'reset' && 'Atur Ulang Kata Sandi'}
           </h3>
           <p className="text-xs text-muted-foreground">
-            {mode === 'login' && 'Silakan masuk menggunakan kredensial akun Supabase Anda (Siswa maupun Admin)'}
-            {mode === 'register' && 'Daftar sebagai Siswa atau Admin / Operator platform TryoutKu'}
+            {mode === 'login' && 'Silakan masuk menggunakan kredensial akun TryoutKu Anda'}
+            {mode === 'register' && 'Buat akun siswa TryoutKu untuk mulai mengerjakan tryout'}
             {mode === 'reset' && 'Kami akan mengirimkan tautan reset password ke email Anda'}
           </p>
         </div>
@@ -224,41 +221,6 @@ export const AuthView: React.FC = () => {
 
           {mode === 'register' && (
             <>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Role Akun</label>
-                <div className="flex rounded-lg bg-muted p-1 gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setRole('peserta')}
-                    className={cn(
-                      "flex-1 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer",
-                      role === 'peserta'
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Siswa
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('admin')}
-                    className={cn(
-                      "flex-1 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer",
-                      role === 'admin'
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Admin / Operator
-                  </button>
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  {role === 'admin'
-                    ? 'Akun Admin mendapat akses penuh: Kelola Kampus & Grade, Bank Soal Penjurusan, Tryout, dan Pengguna.'
-                    : 'Akun Siswa dapat mengerjakan tryout, tes minat dan bakat, serta analisis kelayakan nilai terhadap kampus tujuan.'}
-                </p>
-              </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
                 <div className="relative">

@@ -94,7 +94,10 @@ export const EMPTY_PROFILE: Profile = {
   avatar_url: '',
   role: 'peserta',
   is_profile_complete: false,
-  must_change_password: true,
+  // Default TIDAK memaksa ganti password. Profil kosong ini dipakai sebelum data
+  // profil asli termuat dari Supabase; flag dikoreksi dari DB setelah sync.
+  // Hanya akun buatan Admin (password default) atau hasil reset yang di-set true.
+  must_change_password: false,
   updated_at: new Date().toISOString()
 };
 
@@ -211,7 +214,7 @@ BEGIN
   UPDATE public.profiles SET auth_uid = v_new_auth_uid::text WHERE id = v_id;
   IF v_email IS NULL OR TRIM(v_email) = '' THEN v_email := v_nisn || '@peserta.com'; UPDATE public.profiles SET email = v_email WHERE id = v_id; END IF;
   INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, confirmation_token, recovery_token, email_change_token_new, email_change)
-  VALUES ('00000000-0000-0000-0000-000000000000', v_new_auth_uid, 'authenticated', 'authenticated', v_email, crypt('Password123', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('full_name', v_full_name, 'nisn', v_nisn), '', '', '', '');
+  VALUES ('00000000-0000-0000-0000-000000000000', v_new_auth_uid, 'authenticated', 'authenticated', v_email, crypt('Password123', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('full_name', v_full_name, 'nisn', v_nisn, 'must_change_password', true), '', '', '', '');
   INSERT INTO auth.identities (id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at)
   VALUES (gen_random_uuid(), v_new_auth_uid, jsonb_build_object('sub', v_new_auth_uid::text, 'email', v_email), 'email', v_new_auth_uid::text, now(), now(), now());
   UPDATE public.profiles SET must_change_password = true WHERE id = v_id;
@@ -270,9 +273,96 @@ WHERE p.email IS NOT NULL
 -- 13) Confirm email
 UPDATE auth.users SET email_confirmed_at = COALESCE(email_confirmed_at, now()) WHERE email_confirmed_at IS NULL;
 
--- 14) Hapus trigger handle_new_user jika bermasalah
+-- 14) Trigger handle_new_user: buat profil otomatis saat registrasi.
+--     Penting:
+--     - Registrasi mandiri (signUp) TIDAK memaksa ganti password.
+--       Hanya akun buatan Admin (metadata must_change_password=true) yang dipaksa ganti.
+--     - Role dari metadata signUp DIABAIKAN. Registrasi publik SELALU 'peserta'.
+--       Hanya admin (lewat halaman manajemen admin) yang boleh memberi role 'admin'.
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-DROP FUNCTION IF EXISTS public.handle_new_user;
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (
+    id, auth_uid, email, full_name, nisn, school, role,
+    must_change_password, is_profile_complete, updated_at
+  )
+  VALUES (
+    new.id::text,
+    new.id::text,
+    new.email,
+    COALESCE(NULLIF(new.raw_user_meta_data->>'full_name',''), ''),
+    NULLIF(new.raw_user_meta_data->>'nisn',''),
+    NULLIF(new.raw_user_meta_data->>'school',''),
+    'peserta',
+    COALESCE((new.raw_user_meta_data->>'must_change_password')::boolean, false),
+    false,
+    now()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    auth_uid = excluded.auth_uid,
+    email    = excluded.email,
+    full_name = COALESCE(NULLIF(excluded.full_name,''), public.profiles.full_name),
+    nisn      = COALESCE(excluded.nisn, public.profiles.nisn),
+    school    = COALESCE(excluded.school, public.profiles.school),
+    -- Role TIDAK pernah ditimpa dari metadata; pertahankan role yang tersimpan.
+    role      = public.profiles.role,
+    must_change_password = COALESCE((new.raw_user_meta_data->>'must_change_password')::boolean, public.profiles.must_change_password);
+  RETURN new;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 14b) KEAMANAN: hanya admin yang boleh mengubah kolom 'role'.
+--      Non-admin yang menyisipkan role istimewa lewat payload akan dibersihkan
+--      (role dikembalikan ke nilai lama).
+CREATE OR REPLACE FUNCTION public.guard_profile_role()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF public.is_admin() THEN
+    RETURN NEW;
+  END IF;
+  NEW.role := OLD.role;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS guard_profile_role_trg ON public.profiles;
+CREATE TRIGGER guard_profile_role_trg
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.guard_profile_role();
+
+-- 14c) KEAMANAN: user biasa hanya boleh insert profil dirinya sendiri,
+--      dan tidak boleh berperan 'admin'.
+DROP POLICY IF EXISTS own_insert ON public.profiles;
+CREATE POLICY own_insert ON public.profiles
+  FOR INSERT
+  WITH CHECK (
+    (
+      (auth_uid = (auth.uid())::text OR id = (auth.uid())::text)
+      AND role IS DISTINCT FROM 'admin'
+    )
+    OR public.is_admin()
+  );
+
+-- 14d) Halaman manajemen admin berhak mengubah role pengguna lain.
+--      Trigger guard_profile_role memastikan hanya admin yang lolos.
+DROP POLICY IF EXISTS admin_update_all ON public.profiles;
+CREATE POLICY admin_update_all ON public.profiles
+  FOR UPDATE
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
 
 -- 15) Refresh schema cache
 NOTIFY pgrst, 'reload schema';

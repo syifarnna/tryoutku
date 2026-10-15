@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   BarChart3, 
   BookOpen, 
@@ -14,7 +14,8 @@ import {
   Award,
   Database,
   Sparkles,
-  Users
+  Users,
+  X
 } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenSqlModal 
 }) => {
   const state = useAppState();
+
+  // Tutup otomatis saat ukuran layar mengecil ke mobile/tablet, dan saat
+  // pengguna menekan tombol Escape di keyboard.
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!e.matches) setIsOpen(false);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    mql.addEventListener('change', handleChange);
+    window.addEventListener('keydown', handleKey);
+    return () => {
+      mql.removeEventListener('change', handleChange);
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, [setIsOpen]);
+
+  // Kunci scroll body ketika menu mobile terbuka agar konten di belakang
+  // (overlay) tidak ikut tergeser.
+  useEffect(() => {
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+    if (isOpen && !isDesktop) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [isOpen]);
 
   const menuSections = state.profile.role === 'admin' ? [
     {
@@ -138,11 +170,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}>
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-border gap-3">
+        <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-border gap-3 shrink-0">
           <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-xs">
             TK
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col flex-1 min-w-0">
             <span className="font-bold text-xl tracking-tight text-slate-800 dark:text-white">
               Tryout<span className="text-primary">Ku</span>
             </span>
@@ -150,11 +182,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
               Sneat Admin
             </span>
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(false)}
+            aria-label="Tutup menu"
+            className="lg:hidden shrink-0 text-slate-500 hover:text-slate-800 dark:text-muted-foreground dark:hover:text-white"
+          >
+            <X className="w-5 h-5" />
+          </Button>
         </div>
 
         {/* Navigation List */}
-        <ScrollArea className="flex-1 py-4 px-4">
-          <div className="space-y-6">
+        <ScrollArea className="flex-1 min-h-0 overflow-hidden py-4 px-4">
+          <div className="space-y-6 pb-2">
             {menuSections.map((sec, idx) => (
               <div key={idx}>
                 <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
@@ -215,7 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <Separator />
 
         {/* User Card & Logout */}
-        <div className="p-4 bg-muted/50 dark:bg-card">
+        <div className="p-4 bg-muted/50 dark:bg-card shrink-0">
           <div className="flex items-center gap-3 mb-3 px-1">
             <Avatar size="lg" className="border-2 border-primary">
               <AvatarImage 
