@@ -195,10 +195,10 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
       setUtbkScores(prev => ({ ...prev, [code]: '' }));
       return;
     }
-    let num = parseInt(val, 10);
+    let num = parseFloat(val.replace(',', '.'));
     if (Number.isNaN(num)) num = 0;
     num = Math.max(0, Math.min(1000, num));
-    setUtbkScores(prev => ({ ...prev, [code]: String(num) }));
+    setUtbkScores(prev => ({ ...prev, [code]: String(Math.round(num * 10) / 10) }));
   };
 
   const handleUtbkTotalChange = (val: string) => {
@@ -207,10 +207,10 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
       setUtbkTotal('');
       return;
     }
-    let num = parseInt(val, 10);
+    let num = parseFloat(val.replace(',', '.'));
     if (Number.isNaN(num)) num = 0;
     num = Math.max(0, Math.min(1000, num));
-    setUtbkTotal(String(num));
+    setUtbkTotal(String(Math.round(num * 10) / 10));
   };
 
   const handleUtbkSubmit = async (e: React.FormEvent) => {
@@ -425,6 +425,8 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
                       type="number"
                       min="0"
                       max="1000"
+                      step="0.1"
+                      inputMode="decimal"
                       value={utbkScores[s.code] ?? ''}
                       onChange={(e) => handleUtbkScoreChange(s.code, e.target.value)}
                       placeholder="0"
@@ -445,6 +447,8 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
                     type="number"
                     min="0"
                     max="1000"
+                    step="0.1"
+                    inputMode="decimal"
                     value={utbkTotal}
                     onChange={(e) => handleUtbkTotalChange(e.target.value)}
                     placeholder="0"
