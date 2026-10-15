@@ -394,34 +394,47 @@ class AppStore {
     };
     if (ownerUid) payload.user_id = ownerUid;
 
+    const existing = this.state.utbkScores.length > 0 ? this.state.utbkScores[0] : null;
+
     const optimistic: UtbkScore = {
-      id: -Date.now(),
+      id: existing ? existing.id : -Date.now(),
       user_id: ownerUid,
       total_score: input.total_score,
       scores: input.scores,
       label: input.label ?? null,
       recorded_on: recordedOn,
-      created_at: new Date().toISOString(),
+      created_at: existing ? existing.created_at : new Date().toISOString(),
     };
-    this.state.utbkScores = [optimistic, ...this.state.utbkScores];
-    this.sortUtbkScores();
+    this.state.utbkScores = [optimistic];
     this.notify();
 
     try {
-      const { data, error } = await supabase.from('utbk_scores').insert(payload).select().single();
-      if (error) {
-        console.warn('Gagal menyimpan nilai UTBK ke Supabase:', error.message);
-        this.state.utbkScores = this.state.utbkScores.filter(s => s.id !== optimistic.id);
-        this.notify();
-        return null;
+      let data: UtbkScore | null = null;
+      if (existing) {
+        const { error } = await supabase.from('utbk_scores').update(payload).eq('id', existing.id);
+        if (error) {
+          console.warn('Gagal memperbarui nilai UTBK:', error.message);
+          this.state.utbkScores = [];
+          this.notify();
+          return null;
+        }
+        data = { ...optimistic };
+      } else {
+        const { data: inserted, error } = await supabase.from('utbk_scores').insert(payload).select().single();
+        if (error) {
+          console.warn('Gagal menyimpan nilai UTBK ke Supabase:', error.message);
+          this.state.utbkScores = [];
+          this.notify();
+          return null;
+        }
+        data = inserted;
       }
-      this.state.utbkScores = this.state.utbkScores.map(s => (s.id === optimistic.id ? data : s));
-      this.sortUtbkScores();
+      this.state.utbkScores = [data];
       this.notify();
       return data;
     } catch (err) {
       console.warn('Supabase sync error:', err);
-      this.state.utbkScores = this.state.utbkScores.filter(s => s.id !== optimistic.id);
+      this.state.utbkScores = [];
       this.notify();
       return null;
     }
