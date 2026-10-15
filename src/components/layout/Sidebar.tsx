@@ -117,12 +117,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]
     },
     {
-      title: 'SIMULASI UJIAN',
-      items: [
-        { id: 'results', label: 'Hasil Tryout Saya', icon: Award }
-      ]
-    },
-    {
       title: 'ANALISIS & TARGET (INTI)',
       items: [
         { id: 'target_majors', label: 'Target Institut', icon: Target }
