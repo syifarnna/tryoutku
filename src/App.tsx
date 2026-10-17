@@ -229,7 +229,7 @@ export default function App() {
       case 'analisis_tryout':
         return <MantepView setActiveTab={setActiveTab} />;
       case 'tes_minat':
-        return <BingungView />;
+        return <BingungView setActiveTab={setActiveTab} />;
       case 'results':
         return <TryoutsView key="results" onTakeTryout={handleTakeTryout} />;
       case 'target_majors':

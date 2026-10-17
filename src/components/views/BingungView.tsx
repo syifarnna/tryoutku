@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { BookOpen, Brain, Briefcase, Building2, CheckCircle2, Compass, HelpCircle, Loader2, MapPin, Plus, RotateCcw, Save, Sparkles, Target, Trash2, X } from 'lucide-react';
+import { BookOpen, Brain, Briefcase, Building2, CheckCircle2, Compass, HelpCircle, Loader2, MapPin, Plus, RotateCcw, Save, Sparkles, Target, Trash2, X, TrendingUp, Award, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { appStore, useAppState } from '../../lib/store';
 import { supabase } from '../../lib/supabaseClient';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { JenjangBadge } from '@/components/ui/JenjangBadge';
+import { UtbkInputModal } from '@/components/modals/UtbkInputModal';
 
 const CLUSTERS: ClusterType[] = ['Saintek', 'Soshum', 'Campuran'];
 
@@ -44,21 +45,37 @@ interface MajorDescription {
   cluster?: string;
 }
 
-export const BingungView: React.FC = () => {
+type WizardStep = 'idle' | 'running' | 'result' | 'need_score' | 'campus_categories';
+
+interface CampusEntry {
+  institution: Institution;
+  major: Major;
+}
+
+export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({ setActiveTab }) => {
   const state = useAppState();
 
+  const [wizardStep, setWizardStep] = useState<WizardStep>('idle');
   const [phase, setPhase] = useState<'idle' | 'running' | 'result'>('idle');
   const [step, setStep] = useState(0);
   const [tally, setTally] = useState<Tally>(emptyTally());
   const [savingInterest, setSavingInterest] = useState(false);
   const [descCache, setDescCache] = useState<Record<number, MajorDescription>>({});
   const [selectedMajor, setSelectedMajor] = useState<Major | null>(null);
-  const [campusesForMajor, setCampusesForMajor] = useState<{ institution: Institution; major: Major }[]>([]);
+  const [campusesForMajor, setCampusesForMajor] = useState<CampusEntry[]>([]);
   const [loadingCampuses, setLoadingCampuses] = useState(false);
+  const [pickedMajor, setPickedMajor] = useState<Major | null>(null);
+  const [allCampusesForPicked, setAllCampusesForPicked] = useState<CampusEntry[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [scoreModalOpen, setScoreModalOpen] = useState(false);
 
   const questions = useMemo(() => state.questions.filter(q => q.is_active), [state.questions]);
 
   const total = questions.length;
+
+  const tryoutScore = state.results[0]?.total_score ?? null;
+  const utbkScore = appStore.getUtbkLatestScore();
+  const autoScore = utbkScore != null ? utbkScore : tryoutScore;
 
   const showToast = (icon: 'success' | 'error', title: string) => {
     Swal.fire({
@@ -124,7 +141,7 @@ export const BingungView: React.FC = () => {
     proximityTier(a) - proximityTier(b) || (a.passing_grade_total || 0) - (b.passing_grade_total || 0),
   [proximityTier]);
 
-  const start = () => { if (total === 0) return; setPhase('running'); setStep(0); setTally(emptyTally()); };
+  const start = () => { if (total === 0) return; setPhase('running'); setWizardStep('running'); setStep(0); setTally(emptyTally()); };
 
   const pick = (cluster: ClusterType) => {
     setTally(t => ({ ...t, [cluster]: t[cluster] + 1 }));
@@ -133,6 +150,7 @@ export const BingungView: React.FC = () => {
       setTally(next);
       const dominant = dominantOf(next);
       setPhase('result');
+      setWizardStep('result');
       try {
         localStorage.setItem('tryoutku_penjurusan_v1', JSON.stringify({ dominant, tally: next }));
       } catch {}
@@ -219,7 +237,71 @@ export const BingungView: React.FC = () => {
     }
   };
 
-  const maxCount = Math.max(1, ...CLUSTERS.map(c => (phase === 'result' ? tally[c] : (lastResult?.tally?.[c] ?? 0))));
+  const fetchCampusesForMajor = async (major: Major) => {
+    setWizardStep('campus_categories');
+    setLoadingCategories(true);
+    try {
+      const { data, error } = await supabase
+        .from('majors')
+        .select('*, institutions(id, name, location, type, grade, range_min, range_max, province, city)')
+        .ilike('name', major.name)
+        .order('passing_grade_total', { ascending: false })
+        .limit(200);
+      if (error || !data) {
+        setAllCampusesForPicked([]);
+        return;
+      }
+      const mapped = (data as any[]).map((row: any) => ({
+        institution: row.institutions as Institution,
+        major: { ...row, institution_name: row.institutions?.name, institution_location: row.institutions?.location, institution_type: row.institutions?.type } as Major,
+      })).filter(x => x.institution);
+      mapped.sort((a, b) => proximityTier(a.major) - proximityTier(b.major));
+      setAllCampusesForPicked(mapped);
+    } catch {
+      setAllCampusesForPicked([]);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  const handlePickMajor = (major: Major) => {
+    setPickedMajor(major);
+    if (autoScore == null) {
+      setWizardStep('need_score');
+    } else {
+      fetchCampusesForMajor(major);
+    }
+  };
+
+  const handleScoreSave = async (input: { total_score: number; scores: Record<string, number>; label?: string | null; recorded_on?: string }) => {
+    await appStore.addUtbkScore(input);
+    setScoreModalOpen(false);
+  };
+
+  useEffect(() => {
+    if (wizardStep === 'need_score' && autoScore != null && pickedMajor) {
+      fetchCampusesForMajor(pickedMajor);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoScore, wizardStep]);
+
+  const categorized = useMemo(() => {
+    if (autoScore == null || allCampusesForPicked.length === 0) return { top: [] as CampusEntry[], pas: [] as CampusEntry[], aman: [] as CampusEntry[] };
+    const withPg = allCampusesForPicked.filter(c => c.major.passing_grade_total != null);
+    const grade = (c: CampusEntry) => c.major.passing_grade_total || 0;
+    const top = withPg
+      .filter(c => grade(c) > autoScore)
+      .sort((a, b) => grade(a) - grade(b))
+      .slice(0, 6);
+    const below = withPg.filter(c => grade(c) <= autoScore);
+    const pas = below
+      .filter(c => autoScore - grade(c) < 100)
+      .sort((a, b) => grade(b) - grade(a));
+    const aman = below
+      .filter(c => autoScore - grade(c) >= 100)
+      .sort((a, b) => grade(b) - grade(a));
+    return { top, pas, aman };
+  }, [autoScore, allCampusesForPicked]);
 
   const renderResult = (dominant: ClusterType) => {
     const s = clusterStyle[dominant];
@@ -307,6 +389,13 @@ export const BingungView: React.FC = () => {
             )}
           </div>
 
+          <Card className="p-4 mb-4 rounded-2xl bg-primary/5 border border-primary/20 flex items-start gap-3">
+            <ArrowRight className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+              Pilih <strong>satu jurusan</strong> yang paling Anda minati. Sistem akan menampilkan kategori kampus <strong>Top</strong>, <strong>Pas</strong>, dan <strong>Aman</strong> sesuai nilai Anda.
+            </p>
+          </Card>
+
           {homeLocation.province ? (
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
               Diurutkan berdasarkan kampus terdekat dari domisilimu ({homeLocation.city ? `${homeLocation.city}, ` : ''}{homeLocation.province}) — jurusan sekota didahulukan.
@@ -378,12 +467,10 @@ export const BingungView: React.FC = () => {
                     </Button>
                     <Button
                       size="sm"
-                      variant="ghost"
-                      onClick={() => !state.targetMajorIds.includes(m.id) && appStore.addTargetMajor(m.id)}
-                      disabled={state.targetMajorIds.includes(m.id)}
-                      className="text-[11px] font-bold text-primary h-auto"
+                      onClick={() => handlePickMajor(m)}
+                      className="flex-1 text-[11px] font-bold h-auto gap-1.5"
                     >
-                      {state.targetMajorIds.includes(m.id) ? '✓ Target' : <><Plus className="w-3.5 h-3.5" /> Target</>}
+                      <Target className="w-3.5 h-3.5" /> Pilih Jurusan
                     </Button>
                   </div>
                 </Card>
@@ -400,24 +487,161 @@ export const BingungView: React.FC = () => {
     );
   };
 
-  return (
-    <div className="space-y-8 pb-16 animate-in fade-in duration-300">
-      <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-violet-600 to-fuchsia-700 text-white shadow-xl">
-        <div className="relative z-10 max-w-3xl space-y-3">
-          <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
-            <Brain className="w-3.5 h-3.5 text-fuchsia-300" /> Tes Minat dan Bakat
-          </Badge>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Temukan Jurusan Dengan Tes Penjurusan</h2>
-          <p className="text-xs sm:text-sm text-violet-100 leading-relaxed">
-            Belum menentukan arah studi? Kerjakan <strong>{total} pertanyaan minat &amp; bakat</strong> singkat — sistem akan menghitung kecenderungan rumpun Anda lalu merekomendasikan jurusan &amp; kampus yang paling sesuai.
-          </p>
-        </div>
-        <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
-          <BookOpen className="w-72 h-72" />
+  const renderCampusRow = (item: CampusEntry, badge: { label: string; className: string }) => (
+    <div key={`${item.institution.id}-${item.major.id}`} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-border">
+      <div className="min-w-0">
+        <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{item.institution.name}</p>
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {item.institution.location && (
+            <span className="text-[11px] text-slate-400 flex items-center gap-1">
+              <MapPin className="w-3 h-3" /> {item.institution.location}
+            </span>
+          )}
+          <Badge variant="outline" className="text-[9px] font-bold h-auto px-1.5 py-0.5">{item.institution.type}</Badge>
+          <Badge className={cn('text-[9px] font-bold h-auto px-1.5 py-0.5 border-0', badge.className)}>{badge.label}</Badge>
         </div>
       </div>
+      <div className="text-right shrink-0 ml-3">
+        <p className="text-xs font-black text-indigo-600 dark:text-indigo-400">PG {item.major.passing_grade_total ?? '—'}</p>
+        {!state.targetMajorIds.includes(item.major.id) ? (
+          <button
+            onClick={() => appStore.addTargetMajor(item.major.id)}
+            className="text-[10px] font-bold text-primary hover:underline mt-0.5 cursor-pointer"
+          >
+            + Target
+          </button>
+        ) : (
+          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">✓ Target</span>
+        )}
+      </div>
+    </div>
+  );
 
-      {total === 0 && (
+  const renderNeedScore = () => (
+    <div className="space-y-6 max-w-3xl mx-auto">
+      <Card className="p-8 text-center bg-card border border-amber-200 dark:border-amber-900/60 rounded-3xl">
+        <TrendingUp className="w-12 h-12 mx-auto text-amber-500 mb-3" />
+        <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Nilai Anda Belum Tersedia</h3>
+        <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto leading-relaxed">
+          Untuk menampilkan kategori kampus <strong>Top</strong>, <strong>Pas</strong>, dan <strong>Aman</strong> bagi jurusan <strong>{pickedMajor?.name}</strong>, masukkan dulu nilai tryout UTBK Anda.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+          <Button onClick={() => setScoreModalOpen(true)} className="gap-2">
+            <Target className="w-4 h-4" /> Input Nilai UTBK
+          </Button>
+          <Button variant="outline" onClick={() => setActiveTab?.('dashboard')} className="gap-2">
+            <ArrowRight className="w-4 h-4" /> Ke Dashboard
+          </Button>
+          <Button variant="ghost" onClick={() => setWizardStep('result')} className="gap-2">
+            <ArrowLeft className="w-4 h-4" /> Kembali
+          </Button>
+        </div>
+      </Card>
+
+      <UtbkInputModal
+        open={scoreModalOpen}
+        onOpenChange={setScoreModalOpen}
+        competencies={state.competencies}
+        editingId={null}
+        onSave={handleScoreSave}
+        onEditRequest={() => {}}
+        onDeleteRequest={() => {}}
+        utbkRows={state.utbkScores}
+      />
+    </div>
+  );
+
+  const renderCampusCategories = () => {
+    if (!pickedMajor) return null;
+    const s = clusterStyle[pickedMajor.cluster as ClusterType];
+    const groups = [
+      { key: 'top', data: categorized.top, title: 'Kampus Top / Favorit', icon: TrendingUp, accent: 'text-emerald-500', note: 'Passing grade di atas nilai Anda — target aspirasi. Berani coba?' },
+      { key: 'pas', data: categorized.pas, title: 'Kampus Pas', icon: Award, accent: 'text-amber-500', note: 'Selisih passing grade kurang dari 100 poin dari nilai Anda — peluang realistis.' },
+      { key: 'aman', data: categorized.aman, title: 'Kampus Aman', icon: ShieldCheck, accent: 'text-sky-500', note: 'Nilai Anda jauh di atas passing grade (selisih ≥ 100 poin) — pilihan aman.' },
+    ] as const;
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => setWizardStep('result')} className="gap-1.5 text-xs h-auto py-1.5">
+              <ArrowLeft className="w-3.5 h-3.5" /> Kembali
+            </Button>
+            <div>
+              <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">{pickedMajor.name}</h3>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <Badge className={cn('rounded-md text-[10px] font-bold text-white border-0', s?.badge || 'bg-primary')}>{pickedMajor.cluster}</Badge>
+                <JenjangBadge jenjang={pickedMajor.jenjang} />
+                <span className="text-[11px] text-slate-400">Nilai Anda: <strong className="text-primary">{autoScore ?? '—'}</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {loadingCategories ? (
+          <Card className="p-10 text-center bg-card border border-slate-100 dark:border-border rounded-3xl">
+            <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin mb-3" />
+            <p className="text-sm text-slate-500">Memuat daftar kampus...</p>
+          </Card>
+        ) : allCampusesForPicked.length === 0 ? (
+          <Card className="p-10 text-center bg-card border border-slate-100 dark:border-border rounded-3xl">
+            <HelpCircle className="w-10 h-10 mx-auto text-slate-300 mb-3" />
+            <p className="text-sm text-slate-500">Tidak ditemukan kampus lain dengan jurusan ini.</p>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {groups.map(g => {
+              const Icon = g.icon;
+              const badge =
+                g.key === 'top' ? { label: 'Top', className: 'bg-emerald-500 text-white' }
+                : g.key === 'pas' ? { label: 'Pas', className: 'bg-amber-500 text-white' }
+                : { label: 'Aman', className: 'bg-sky-500 text-white' };
+              return (
+                <div key={g.key}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon className={cn('w-5 h-5', g.accent)} />
+                    <h4 className="font-extrabold text-base text-slate-800 dark:text-white">{g.title}</h4>
+                    <Badge variant="secondary" className="text-[10px] font-bold ml-1">{g.data.length} kampus</Badge>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">{g.note}</p>
+                  {g.data.length === 0 ? (
+                    <Card className="p-4 rounded-2xl bg-card border border-dashed border-slate-200 dark:border-border text-center">
+                      <p className="text-[11px] text-slate-400">Belum ada kampus pada kategori ini untuk nilai Anda.</p>
+                    </Card>
+                  ) : (
+                    <div className="space-y-2">
+                      {g.data.map(item => renderCampusRow(item, badge))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-8 pb-16 animate-in fade-in duration-300">
+      {(wizardStep === 'idle' || wizardStep === 'running' || wizardStep === 'result') && (
+        <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-violet-600 to-fuchsia-700 text-white shadow-xl">
+          <div className="relative z-10 max-w-3xl space-y-3">
+            <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
+              <Brain className="w-3.5 h-3.5 text-fuchsia-300" /> Tes Minat dan Bakat
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Temukan Jurusan Dengan Tes Penjurusan</h2>
+            <p className="text-xs sm:text-sm text-violet-100 leading-relaxed">
+              Belum menentukan arah studi? Kerjakan <strong>{total} pertanyaan minat &amp; bakat</strong> singkat — sistem akan menghitung kecenderungan rumpun Anda lalu merekomendasikan jurusan &amp; kampus yang paling sesuai.
+            </p>
+          </div>
+          <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
+            <BookOpen className="w-72 h-72" />
+          </div>
+        </div>
+      )}
+
+      {(wizardStep === 'idle' || wizardStep === 'running' || wizardStep === 'result') && total === 0 && (
         <Card className="p-10 text-center bg-card border border-slate-100 dark:border-border rounded-3xl">
           <HelpCircle className="w-10 h-10 mx-auto text-slate-300 mb-3" />
           <h3 className="font-bold text-slate-700 dark:text-white">Belum ada soal penjurusan</h3>
@@ -425,7 +649,7 @@ export const BingungView: React.FC = () => {
         </Card>
       )}
 
-      {total > 0 && phase !== 'running' && state.profile.major_interest && (
+      {total > 0 && phase !== 'running' && state.profile.major_interest && (wizardStep === 'idle' || wizardStep === 'result') && (
         <Card className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
           <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
@@ -435,7 +659,7 @@ export const BingungView: React.FC = () => {
         </Card>
       )}
 
-      {phase === 'idle' && total > 0 && (
+      {phase === 'idle' && wizardStep === 'idle' && total > 0 && (
         <Card className="p-6 lg:p-10 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs text-center max-w-3xl mx-auto gap-0">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-linear-to-br from-violet-500 to-fuchsia-600 text-white flex items-center justify-center shadow-lg mb-4">
             <Brain className="w-8 h-8" />
@@ -457,7 +681,7 @@ export const BingungView: React.FC = () => {
         </Card>
       )}
 
-      {phase === 'running' && questions[step] && (
+      {phase === 'running' && wizardStep === 'running' && questions[step] && (
         <Card className="p-6 lg:p-10 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <Badge variant="outline" className="rounded-full text-[11px] font-bold text-slate-500">
@@ -498,10 +722,14 @@ export const BingungView: React.FC = () => {
         </Card>
       )}
 
-      {phase === 'result' && (() => {
+      {phase === 'result' && wizardStep === 'result' && (() => {
         const dom = dominantOf(tally);
         return renderResult(dom);
       })()}
+
+      {wizardStep === 'need_score' && renderNeedScore()}
+
+      {wizardStep === 'campus_categories' && renderCampusCategories()}
 
       {selectedMajor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
