@@ -38,6 +38,14 @@ type Tally = Record<ClusterType, number>;
 
 const emptyTally = (): Tally => ({ Saintek: 0, Soshum: 0, Campuran: 0 });
 
+// Nama prodi di database berbentuk "NAMA PRODI - KAMPUS" (mis. "TEKNIK KIMIA - UPNYK").
+// Halaman penjurusan bersifat general, jadi cukup tampilkan nama jurusannya saja
+// (ambil bagian sebelum pemisah " - ").
+const prodiName = (fullName: string): string => {
+  const idx = fullName.indexOf(' - ');
+  return (idx > 0 ? fullName.slice(0, idx) : fullName).trim();
+};
+
 interface MajorDescription {
   found: boolean;
   description?: string;
@@ -176,13 +184,15 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
         ? (m.cluster === 'Saintek' || m.cluster === 'Soshum')
         : m.cluster === dom
     );
-    const map = new Map<string, { name: string; major: Major; campusCount: number }>();
+    const map = new Map<string, { name: string; major: Major; campuses: Set<number> }>();
     [...pool].sort(byProximity).forEach(m => {
-      const entry = map.get(m.name);
-      if (entry) entry.campusCount += 1;
-      else map.set(m.name, { name: m.name, major: m, campusCount: 1 });
+      const key = prodiName(m.name);
+      const entry = map.get(key);
+      if (entry) entry.campuses.add(m.institution_id);
+      else map.set(key, { name: key, major: m, campuses: new Set([m.institution_id]) });
     });
     return Array.from(map.values())
+      .map(e => ({ name: e.name, major: e.major, campusCount: e.campuses.size }))
       .sort((a, b) => byProximity(a.major, b.major))
       .slice(0, 24);
   }, [state.majors, phase, tally, lastResult, byProximity]);
@@ -197,7 +207,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
       const m = reps.find(x => x.id === id);
       if (!m) return null;
       try {
-        const { data } = await supabase.rpc('get_major_description', { p_name: m.name });
+        const { data } = await supabase.rpc('get_major_description', { p_name: prodiName(m.name) });
         return { id, desc: data as MajorDescription };
       } catch {
         return { id, desc: { found: false } as MajorDescription };
@@ -218,7 +228,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
       const { data, error } = await supabase
         .from('majors')
         .select('*, institutions(id, name, location, type, grade, range_min, range_max)')
-        .ilike('name', major.name)
+        .ilike('name', `${prodiName(major.name)} - %`)
         .order('passing_grade_total', { ascending: false })
         .limit(100);
       if (error || !data) {
@@ -245,7 +255,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
       const { data, error } = await supabase
         .from('majors')
         .select('*, institutions(id, name, location, type, grade, range_min, range_max, province, city)')
-        .ilike('name', major.name)
+        .ilike('name', `${prodiName(major.name)} - %`)
         .order('passing_grade_total', { ascending: false })
         .limit(200);
       if (error || !data) {
@@ -538,7 +548,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
               <ArrowLeft className="w-3.5 h-3.5" /> Kembali
             </Button>
             <div>
-              <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">{pickedMajor.name}</h3>
+              <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">{prodiName(pickedMajor.name)}</h3>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <Badge className={cn('rounded-md text-[10px] font-bold text-white border-0', s?.badge || 'bg-primary')}>{pickedMajor.cluster}</Badge>
                 <JenjangBadge jenjang={pickedMajor.jenjang} />
@@ -707,14 +717,14 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
             <div className="p-6 border-b border-slate-100 dark:border-border flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                  <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">{selectedMajor.name}</h3>
+                  <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">{prodiName(selectedMajor.name)}</h3>
                   <Badge className={cn('rounded-md text-[10px] font-bold text-white border-0', clusterStyle[selectedMajor.cluster as ClusterType]?.badge || 'bg-primary')}>
                     {selectedMajor.cluster}
                   </Badge>
                   <JenjangBadge jenjang={selectedMajor.jenjang} />
                 </div>
                 <p className="text-xs text-slate-400">
-                  {loadingCampuses ? 'Memuat kampus...' : `${campusesForMajor.length} kampus menyediakan jurusan ini`}
+                  {loadingCampuses ? 'Memuat kampus...' : `${new Set(campusesForMajor.map(c => c.institution.id)).size} kampus menyediakan jurusan ini`}
                 </p>
               </div>
               <button onClick={() => setSelectedMajor(null)} className="p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer">
@@ -762,6 +772,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
                               </span>
                             )}
                             <Badge variant="outline" className="text-[9px] font-bold h-auto px-1.5 py-0.5">{item.institution.type}</Badge>
+                            <JenjangBadge jenjang={item.major.jenjang} />
                           </div>
                         </div>
                         <p className="text-xs font-black text-indigo-600 dark:text-indigo-400 shrink-0 ml-3">PG {item.major.passing_grade_total ?? '—'}</p>
@@ -774,7 +785,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
 
             <div className="p-4 border-t border-slate-100 dark:border-border space-y-3">
               <p className="text-[11px] text-slate-400">
-                Target disimpan untuk jurusan <strong className="text-slate-600 dark:text-slate-300">{selectedMajor.name}</strong>
+                Target disimpan untuk jurusan <strong className="text-slate-600 dark:text-slate-300">{prodiName(selectedMajor.name)}</strong>
                 {selectedMajor.institution_name ? <> (kampus terdekat: {selectedMajor.institution_name})</> : null}.
               </p>
               <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
