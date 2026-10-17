@@ -67,6 +67,8 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
   const [pickedMajor, setPickedMajor] = useState<Major | null>(null);
   const [allCampusesForPicked, setAllCampusesForPicked] = useState<CampusEntry[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [campusesByMajor, setCampusesByMajor] = useState<Record<string, CampusEntry[]>>({});
+  const [loadingResultCampuses, setLoadingResultCampuses] = useState(false);
   const [scoreModalOpen, setScoreModalOpen] = useState(false);
 
   const questions = useMemo(() => state.questions.filter(q => q.is_active), [state.questions]);
@@ -210,6 +212,45 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
     return () => { cancelled = true; };
   }, [recommendedMajors, descCache]);
 
+  useEffect(() => {
+    if (recommendedMajors.length === 0) return;
+    let cancelled = false;
+    setLoadingResultCampuses(true);
+    const names = Array.from(new Set(recommendedMajors.map(m => m.name)));
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('majors')
+          .select('*, institutions(id, name, location, type, grade, range_min, range_max, province, city)')
+          .in('name', names)
+          .order('passing_grade_total', { ascending: false })
+          .limit(1000);
+        if (cancelled) return;
+        if (error || !data) {
+          setCampusesByMajor({});
+          return;
+        }
+        const grouped: Record<string, CampusEntry[]> = {};
+        (data as any[]).forEach((row: any) => {
+          if (!row.institutions) return;
+          const key = row.name as string;
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push({
+            institution: row.institutions as Institution,
+            major: { ...row, institution_name: row.institutions?.name, institution_location: row.institutions?.location, institution_type: row.institutions?.type } as Major,
+          });
+        });
+        Object.values(grouped).forEach(list => list.sort((a, b) => (b.major.passing_grade_total || 0) - (a.major.passing_grade_total || 0)));
+        setCampusesByMajor(grouped);
+      } catch {
+        if (!cancelled) setCampusesByMajor({});
+      } finally {
+        if (!cancelled) setLoadingResultCampuses(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [recommendedMajors]);
+
   const openMajorDetail = async (major: Major) => {
     setSelectedMajor(major);
     setLoadingCampuses(true);
@@ -255,7 +296,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
         institution: row.institutions as Institution,
         major: { ...row, institution_name: row.institutions?.name, institution_location: row.institutions?.location, institution_type: row.institutions?.type } as Major,
       })).filter(x => x.institution);
-      mapped.sort((a, b) => proximityTier(a.major) - proximityTier(b.major));
+      mapped.sort((a, b) => (b.major.passing_grade_total || 0) - (a.major.passing_grade_total || 0));
       setAllCampusesForPicked(mapped);
     } catch {
       setAllCampusesForPicked([]);
@@ -289,27 +330,27 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
     if (autoScore == null || allCampusesForPicked.length === 0) return { top: [] as CampusEntry[], pas: [] as CampusEntry[], aman: [] as CampusEntry[] };
     const withPg = allCampusesForPicked.filter(c => c.major.passing_grade_total != null);
     const grade = (c: CampusEntry) => c.major.passing_grade_total || 0;
-    const top = withPg
-      .filter(c => grade(c) > autoScore)
-      .sort((a, b) => grade(a) - grade(b))
-      .slice(0, 6);
-    const below = withPg.filter(c => grade(c) <= autoScore);
+    // Top: kampus terbaik (PG tertinggi) untuk prodi ini — kota tidak dipertimbangkan.
+    const top = [...withPg].sort((a, b) => grade(b) - grade(a)).slice(0, 6);
+    const topIds = new Set(top.map(c => c.major.id));
+    const rest = withPg.filter(c => !topIds.has(c.major.id));
+    // Pas & Aman: kedekatan domisili didahulukan, lalu PG tertinggi.
+    const byNear = (a: CampusEntry, b: CampusEntry) =>
+      proximityTier(a.major) - proximityTier(b.major) || grade(b) - grade(a);
+    const below = rest.filter(c => grade(c) <= autoScore);
     const pas = below
       .filter(c => autoScore - grade(c) < 100)
-      .sort((a, b) => grade(b) - grade(a));
+      .sort(byNear);
     const aman = below
       .filter(c => autoScore - grade(c) >= 100)
-      .sort((a, b) => grade(b) - grade(a));
+      .sort(byNear);
     return { top, pas, aman };
-  }, [autoScore, allCampusesForPicked]);
+  }, [autoScore, allCampusesForPicked, proximityTier]);
 
   const renderResult = (dominant: ClusterType) => {
     const s = clusterStyle[dominant];
     const isLive = phase === 'result';
     const tallyData = isLive ? tally : lastResult?.tally ?? emptyTally();
-    const campuses = Array.from(new Set(recommendedMajors.map(m => m.institution_id)))
-      .map(id => state.institutions.find(i => i.id === id))
-      .filter((c): c is Institution => !!c);
 
     return (
       <div className="space-y-6">
@@ -419,75 +460,63 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
             </Card>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {loadingResultCampuses && (
+            <p className="text-xs text-slate-400 mb-2">Memuat daftar kampus...</p>
+          )}
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {recommendedMajors.map(m => {
-              const inst = state.institutions.find(i => i.id === m.institution_id);
               const desc = descCache[m.id];
-              const tier = proximityTier(m);
+              const list = campusesByMajor[m.name] || [];
               return (
-                <Card key={m.id} className="p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex flex-col">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <Badge className={cn('rounded-md text-[10px] font-bold text-white border-0', clusterStyle[m.cluster as ClusterType]?.badge || 'bg-primary')}>
-                        {m.cluster}
-                      </Badge>
-                      {homeLocation.province && tier === 0 && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 border-0">
-                          <MapPin className="w-2.5 h-2.5" /> Terdekat
-                        </span>
-                      )}
-                      {homeLocation.province && tier === 1 && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-sky-500 text-white text-[10px] font-bold px-1.5 py-0.5 border-0">
-                          Satu Provinsi
-                        </span>
+                <div key={m.id} className="py-5 first:pt-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className={cn('rounded-md text-[10px] font-bold text-white border-0', clusterStyle[m.cluster as ClusterType]?.badge || 'bg-primary')}>
+                          {m.cluster}
+                        </Badge>
+                        <JenjangBadge jenjang={m.jenjang} />
+                      </div>
+                      <h4 className="font-bold text-sm text-slate-800 dark:text-white mt-2">{m.name}</h4>
+                      {desc?.found && desc.description && (
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">{desc.description}</p>
                       )}
                     </div>
-                    <span className="text-[10px] font-black text-slate-400">PG {m.passing_grade_total ?? '—'}</span>
-                  </div>
-                  <h4 className="font-bold text-sm text-slate-800 dark:text-white mt-3">{m.name}</h4>
-                  <p className="text-[11px] text-slate-400 mt-1">{inst?.name || '—'}{inst?.location ? ` • ${inst.location}` : ''}</p>
-                  <div className="mt-1"><JenjangBadge jenjang={m.jenjang} /></div>
-                  {desc?.found && desc.description && (
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed">{desc.description}</p>
-                  )}
-                  {desc?.found && desc.career_prospects && (
-                    <div className="mt-2 flex items-start gap-1.5">
-                      <Briefcase className="w-3 h-3 text-emerald-500 shrink-0 mt-0.5" />
-                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 line-clamp-2 leading-relaxed">{desc.career_prospects}</p>
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openMajorDetail(m)}
+                        className="text-[11px] font-bold h-auto gap-1.5"
+                      >
+                        <Building2 className="w-3.5 h-3.5" /> Lihat Kampus
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handlePickMajor(m)}
+                        className="text-[11px] font-bold h-auto gap-1.5"
+                      >
+                        <Target className="w-3.5 h-3.5" /> Pilih Jurusan
+                      </Button>
                     </div>
-                  )}
-                  <div className="mt-auto pt-3 flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openMajorDetail(m)}
-                      className="flex-1 text-[11px] font-bold h-auto gap-1.5"
-                    >
-                      <Building2 className="w-3.5 h-3.5" /> Lihat Kampus
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => handlePickMajor(m)}
-                      className="flex-1 text-[11px] font-bold h-auto gap-1.5"
-                    >
-                      <Target className="w-3.5 h-3.5" /> Pilih Jurusan
-                    </Button>
                   </div>
-                </Card>
+                  <div className="mt-3 space-y-2">
+                    {list.length === 0 ? (
+                      <p className="text-[11px] text-slate-400">Belum ada data kampus untuk jurusan ini.</p>
+                    ) : (
+                      list.map(item => renderCampusRow(item))
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
-          {campuses.length > 0 && (
-            <p className="text-xs text-slate-500 mt-4">
-              Rekomendasi di atas tersebar di {campuses.length} kampus PTN ({campuses.map(c => c.name).join(', ')}).
-            </p>
-          )}
         </div>
       </div>
     );
   };
 
-  const renderCampusRow = (item: CampusEntry, badge: { label: string; className: string }) => (
+  const renderCampusRow = (item: CampusEntry, badge?: { label: string; className: string }) => (
     <div key={`${item.institution.id}-${item.major.id}`} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-border">
       <div className="min-w-0">
         <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{item.institution.name}</p>
@@ -498,7 +527,9 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
             </span>
           )}
           <Badge variant="outline" className="text-[9px] font-bold h-auto px-1.5 py-0.5">{item.institution.type}</Badge>
-          <Badge className={cn('text-[9px] font-bold h-auto px-1.5 py-0.5 border-0', badge.className)}>{badge.label}</Badge>
+          {badge && (
+            <Badge className={cn('text-[9px] font-bold h-auto px-1.5 py-0.5 border-0', badge.className)}>{badge.label}</Badge>
+          )}
         </div>
       </div>
       <div className="text-right shrink-0 ml-3">
@@ -555,7 +586,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
     if (!pickedMajor) return null;
     const s = clusterStyle[pickedMajor.cluster as ClusterType];
     const groups = [
-      { key: 'top', data: categorized.top, title: 'Kampus Top / Favorit', icon: TrendingUp, accent: 'text-emerald-500', note: 'Passing grade di atas nilai Anda — target aspirasi. Berani coba?' },
+      { key: 'top', data: categorized.top, title: 'Kampus Top / Favorit', icon: TrendingUp, accent: 'text-emerald-500', note: 'Kampus terbaik untuk jurusan ini (passing grade tertinggi). Kota tidak dipertimbangkan — berani coba?' },
       { key: 'pas', data: categorized.pas, title: 'Kampus Pas', icon: Award, accent: 'text-amber-500', note: 'Selisih passing grade kurang dari 100 poin dari nilai Anda — peluang realistis.' },
       { key: 'aman', data: categorized.aman, title: 'Kampus Aman', icon: ShieldCheck, accent: 'text-sky-500', note: 'Nilai Anda jauh di atas passing grade (selisih ≥ 100 poin) — pilihan aman.' },
     ] as const;

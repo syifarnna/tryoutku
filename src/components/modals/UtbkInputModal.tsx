@@ -83,6 +83,29 @@ export function UtbkInputModal({ open, onOpenChange, competencies, editingId, on
     setUtbkDate(todayISO())
   }
 
+  const fillFromRow = (row: UtbkScore) => {
+    const s: Record<string, string> = {}
+    subtests.forEach((x) => {
+      s[x.code] = row.scores?.[x.code] != null ? String(row.scores[x.code]) : ""
+    })
+    setUtbkScores(s)
+    setUtbkTotal(String(row.total_score))
+    setUtbkTotalTouched(true)
+    setUtbkLabel(row.label || "")
+    setUtbkDate(row.recorded_on || todayISO())
+  }
+
+  React.useEffect(() => {
+    if (!open) return
+    if (editingId == null) {
+      resetForm()
+      return
+    }
+    const row = utbkRows.find((r) => r.id === editingId)
+    if (row) fillFromRow(row)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editingId])
+
   const handleScoreChange = (code: string, val: string) => {
     setUtbkTotalTouched(false)
     if (val === "") {
@@ -128,15 +151,7 @@ export function UtbkInputModal({ open, onOpenChange, competencies, editingId, on
   }
 
   const handleEditClick = (row: UtbkScore) => {
-    const s: Record<string, string> = {}
-    subtests.forEach((x) => {
-      s[x.code] = row.scores?.[x.code] != null ? String(row.scores[x.code]) : ""
-    })
-    setUtbkScores(s)
-    setUtbkTotal(String(row.total_score))
-    setUtbkTotalTouched(true)
-    setUtbkLabel(row.label || "")
-    setUtbkDate(row.recorded_on || todayISO())
+    fillFromRow(row)
     onEditRequest(row)
   }
 

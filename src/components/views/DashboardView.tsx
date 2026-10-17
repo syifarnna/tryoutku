@@ -148,13 +148,17 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
     const ok = editingUtbkId == null
       ? !!(await appStore.addUtbkScore(input))
       : await appStore.updateUtbkScore(editingUtbkId, input);
-    if (ok && editingUtbkId != null) {
-      setEditingUtbkId(null);
-    }
+    if (ok) setEditingUtbkId(null);
   };
 
   const handleEditRequest = (row: UtbkScore) => {
     setEditingUtbkId(row.id);
+    setUtbkModalOpen(true);
+  };
+
+  const openUtbkModal = () => {
+    setEditingUtbkId(null);
+    setUtbkModalOpen(true);
   };
 
   const handleDeleteRequest = async (row: UtbkScore) => {
@@ -265,14 +269,14 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
           <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" /> Nilai Tryout UTBK
           </h2>
-          <Button onClick={() => setUtbkModalOpen(true)} className="gap-1.5 text-xs">
+          <Button onClick={openUtbkModal} className="gap-1.5 text-xs">
             <PlusCircle className="w-3.5 h-3.5" /> Input Nilai UTBK
           </Button>
         </div>
 
         {utbkRows.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-1 space-y-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card className="p-4 rounded-2xl border border-slate-200 dark:border-border shadow-xs gap-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-slate-800 dark:text-white">Ringkasan</span>
@@ -308,8 +312,7 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
               </Card>
             </div>
 
-            <div className="lg:col-span-2">
-              <Card className="rounded-2xl border border-slate-200 dark:border-border shadow-xs overflow-hidden gap-0">
+            <Card className="rounded-2xl border border-slate-200 dark:border-border shadow-xs overflow-hidden gap-0">
                 <div className="px-4 py-3 border-b border-slate-100 dark:border-border flex items-center justify-between">
                   <span className="text-sm font-bold text-slate-800 dark:text-white">Riwayat Input Nilai</span>
                   <span className="text-[11px] text-slate-400">Terbaru di atas</span>
@@ -334,14 +337,13 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
                   ))}
                 </div>
               </Card>
-            </div>
           </div>
         ) : (
           <Card className="p-8 rounded-2xl border border-dashed border-slate-300 dark:border-border bg-card/50 flex flex-col items-center justify-center text-center min-h-[200px]">
             <TrendingUp className="w-10 h-10 text-slate-300 mb-3" />
             <p className="text-sm font-bold text-slate-600 dark:text-slate-300">Belum Ada Data Nilai UTBK</p>
             <p className="text-xs text-slate-400 mt-1 mb-4">Klik tombol "Input Nilai UTBK" untuk memulai</p>
-            <Button onClick={() => setUtbkModalOpen(true)} className="gap-1.5 text-xs">
+            <Button onClick={openUtbkModal} className="gap-1.5 text-xs">
               <PlusCircle className="w-3.5 h-3.5" /> Input Sekarang
             </Button>
           </Card>
@@ -349,7 +351,7 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
 
         <UtbkInputModal
           open={utbkModalOpen}
-          onOpenChange={setUtbkModalOpen}
+          onOpenChange={(o) => { setUtbkModalOpen(o); if (!o) setEditingUtbkId(null); }}
           competencies={state.competencies}
           editingId={editingUtbkId}
           onSave={handleUtbkSave}
