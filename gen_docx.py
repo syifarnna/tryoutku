@@ -1,6 +1,6 @@
 import zipfile, xml.etree.ElementTree as ET, os, io
 
-OUT = r'C:\Users\Asus\Downloads\tryoutku\DOKUMENTASI_TEKNOLOGI.docx'
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DOKUMENTASI_TEKNOLOGI.docx')
 
 W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
 R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
