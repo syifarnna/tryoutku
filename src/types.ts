@@ -38,12 +38,16 @@ export interface PenjurusanQuestion {
   question: string;
   option_a: string;
   cluster_a: ClusterType;
+  weight_a: number;
   option_b: string;
   cluster_b: ClusterType;
+  weight_b: number;
   option_c: string;
   cluster_c: ClusterType;
+  weight_c: number;
   option_d: string;
   cluster_d: ClusterType;
+  weight_d: number;
   is_active: boolean;
   created_at?: string;
 }

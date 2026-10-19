@@ -461,6 +461,43 @@ CREATE POLICY admin_select_all ON public.utbk_scores FOR SELECT USING (public.is
 DROP POLICY IF EXISTS admin_all ON public.utbk_scores;
 CREATE POLICY admin_all ON public.utbk_scores FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 
+-- 19) Bank soal Tes Penjurusan (Minat & Bakat).
+--     Setiap opsi dipetakan ke rumpun (Saintek/Soshum/Campuran) + bobot 1-5.
+--     Skor rumpun = jumlah bobot opsi yang dipilih; selisih top-2 <= 10% total
+--     dianggap seimbang (Campuran).
+CREATE TABLE IF NOT EXISTS public.penjurusan_questions (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  question TEXT NOT NULL,
+  option_a TEXT NOT NULL,
+  option_b TEXT NOT NULL,
+  option_c TEXT NOT NULL,
+  option_d TEXT NOT NULL,
+  cluster_a TEXT NOT NULL DEFAULT 'Campuran',
+  cluster_b TEXT NOT NULL DEFAULT 'Campuran',
+  cluster_c TEXT NOT NULL DEFAULT 'Campuran',
+  cluster_d TEXT NOT NULL DEFAULT 'Campuran',
+  weight_a INTEGER NOT NULL DEFAULT 1 CHECK (weight_a BETWEEN 1 AND 5),
+  weight_b INTEGER NOT NULL DEFAULT 1 CHECK (weight_b BETWEEN 1 AND 5),
+  weight_c INTEGER NOT NULL DEFAULT 1 CHECK (weight_c BETWEEN 1 AND 5),
+  weight_d INTEGER NOT NULL DEFAULT 1 CHECK (weight_d BETWEEN 1 AND 5),
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Pastikan kolom bobot tersedia pada instalasi lama.
+ALTER TABLE public.penjurusan_questions
+  ADD COLUMN IF NOT EXISTS weight_a INTEGER NOT NULL DEFAULT 1 CHECK (weight_a BETWEEN 1 AND 5),
+  ADD COLUMN IF NOT EXISTS weight_b INTEGER NOT NULL DEFAULT 1 CHECK (weight_b BETWEEN 1 AND 5),
+  ADD COLUMN IF NOT EXISTS weight_c INTEGER NOT NULL DEFAULT 1 CHECK (weight_c BETWEEN 1 AND 5),
+  ADD COLUMN IF NOT EXISTS weight_d INTEGER NOT NULL DEFAULT 1 CHECK (weight_d BETWEEN 1 AND 5);
+
+ALTER TABLE public.penjurusan_questions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS penjurusan_questions_select_all ON public.penjurusan_questions;
+CREATE POLICY penjurusan_questions_select_all ON public.penjurusan_questions FOR SELECT USING (true);
+DROP POLICY IF EXISTS penjurusan_questions_admin_write ON public.penjurusan_questions;
+CREATE POLICY penjurusan_questions_admin_write ON public.penjurusan_questions FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
 NOTIFY pgrst, 'reload schema';
 `;
 

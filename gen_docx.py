@@ -202,12 +202,12 @@ body.append(p('10 tabel yang diakses oleh client code:'))
 tables = [
     ('profiles', 'Data profil user (id, auth_uid, full_name, nisn, email, role, is_profile_complete, must_change_password)'),
     ('majors', 'Program studi (id, institution_id, code, name, cluster, jenjang, passing_grade_total, requirements)'),
-    ('institutions', 'Institusi/kampus (id, name, type PTN/PTS/Kedinasan, location, grade, range_min/max)'),
+    ('institutions', 'Institusi/kampus (id, name, abbreviation untuk pencarian singkatan, type PTN/PTS/Kedinasan, location, grade, range_min/max)'),
     ('tryout_results', 'Hasil tryout (user_id, tryout_id, total_score, predicate, scores JSONB per subtes)'),
     ('utbk_scores', 'Riwayat input nilai tryout UTBK mandiri user (user_id, total_score, scores JSONB 7 subtes, label, recorded_on)'),
     ('target_institutions', 'Target prodi pilihan user (user_id, major_id, priority)'),
     ('tryouts', 'Definisi tryout (name, date, type, duration_minutes, question_count, status)'),
-    ('penjurusan_questions', 'Bank soal tes penjurusan (question, option_a-d, cluster_a-d, is_active)'),
+    ('penjurusan_questions', 'Bank soal tes penjurusan (question, option_a-d, cluster_a-d, weight_a-d bobot 1-5, is_active)'),
     ('competencies', 'Daftar kompetensi/subtes (code PU/PPU/PBM/PK/LBI/LBE/PM, name, weight)'),
     ('tutoring_centers', 'Rekomendasi bimbel (name, focus_competency_code, link_url, rating)'),
 ]
@@ -233,18 +233,18 @@ body.append(p('Perhitungan skor tryout dilakukan di client-side (store.ts submit
 for item in [
     'Weighted average dari 7 subtes (PU, PPU, PBM, PK, LBI, LBE, PM) menggunakan bobot dari tabel competencies',
     'Predicate thresholds: >= 710 Sangat Baik, >= 660 Baik, >= 600 Cukup, < 600 Kurang',
-    'Hasil di-insert ke tryout_results dengan scores JSONB berisi nilai per subtes',
-]:
+    'Sejak pembaruan sumber nilai tunggal, hasil tryout TIDAK lagi disimpan/direkam (tidak insert ke tryout_results); modal "Kerjakan Tryout" hanya menghitung & menampilkan skor sesaat',
+] :
     body.append(bullet(item))
 body.append(p(''))
 body.append(heading('5.7 Gap Analysis & Recommendation Engine', 2))
-body.append(p('getAnalysis() di store.ts melakukan analisis murni client-side:'))
+body.append(p('getAnalysis() di store.ts melakukan analisis murni client-side dengan sumber nilai tunggal dari tabel utbk_scores (input "Input Nilai UTBK" terbaru di Dashboard):'))
 for item in [
-    'Membandingkan skor user dengan passing grade target major',
+    'Membandingkan skor UTBK user dengan passing grade target major',
     'Per-competency gap classification: Aman (gap >= 0), Defisit (gap < 0), Kritis (gap < -50)',
     'Menghasilkan hingga 6 alternative majors yang passing grade-nya terjangkau, di-boost jika cluster sesuai minat user',
     'Sorting: match score -> closest gap -> alphabetical name',
-]:
+] :
     body.append(bullet(item))
 body.append(p(''))
 
@@ -256,6 +256,18 @@ for item in [
     'deleteUtbkScore - Menghapus entri riwayat',
     'syncFromSupabase memuat ulang utbk_scores saat login, sehingga riwayat tetap tampil setiap dashboard dibuka',
     'Dashboard merender rekap (skor terakhir, tertinggi, rata-rata, perubahan) dan grafik perkembangan memakai SVG line chart (tanpa library chart eksternal)',
+]:
+    body.append(bullet(item))
+body.append(p(''))
+
+body.append(heading('5.9 Tes Penjurusan (Minat & Bakat) Berbobot', 2))
+body.append(p('Tes penjurusan di BingungView.tsx memetakan tiap opsi jawaban ke rumpun (Saintek/Soshum/Campuran) dengan bobot 1-5 (kolom weight_a-d pada penjurusan_questions):'))
+for item in [
+    'Skor rumpun = akumulasi bobot opsi yang dipilih (weighted tally), bukan sekadar jumlah jawaban',
+    'Rumpun dominan = skor tertinggi; namun bila selisih skor tertinggi & kedua <= 10% total skor, hasil dianggap seimbang (Campuran)',
+    'Bar hasil menampilkan persentase = skor rumpun / total skor x 100 (plus jumlah poin)',
+    'Admin dapat mengatur bobot tiap opsi (1-5) di Bank Soal Penjurusan (AdminQuestionsView)',
+    'Pencarian kampus di seluruh aplikasi mendukung singkatan (kolom institutions.abbreviation) melalui helper institutionSearch + komponen CampusCombobox',
 ]:
     body.append(bullet(item))
 body.append(p(''))

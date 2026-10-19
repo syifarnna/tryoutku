@@ -149,10 +149,10 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
 
   const start = () => { if (total === 0) return; setPhase('running'); setWizardStep('running'); setStep(0); setTally(emptyTally()); };
 
-  const pick = (cluster: ClusterType) => {
-    setTally(t => ({ ...t, [cluster]: t[cluster] + 1 }));
+  const pick = (cluster: ClusterType, weight: number = 1) => {
+    const w = weight > 0 ? weight : 1;
     if (step + 1 >= total) {
-      const next = { ...tally, [cluster]: tally[cluster] + 1 };
+      const next = { ...tally, [cluster]: tally[cluster] + w };
       setTally(next);
       const dominant = dominantOf(next);
       setPhase('result');
@@ -161,16 +161,19 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
         localStorage.setItem('tryoutku_penjurusan_v1', JSON.stringify({ dominant, tally: next }));
       } catch {}
     } else {
+      setTally(t => ({ ...t, [cluster]: t[cluster] + w }));
       setStep(step + 1);
     }
   };
 
   const dominantOf = (t: Tally): ClusterType => {
-    const entries = CLUSTERS.map(c => ({ c, n: t[c] }));
+    const grandTotal = CLUSTERS.reduce((acc, c) => acc + (t[c] || 0), 0);
+    if (grandTotal === 0) return 'Campuran';
+    const entries = CLUSTERS.map(c => ({ c, n: t[c] || 0 }));
     entries.sort((a, b) => b.n - a.n);
-    const top = entries[0].n;
-    const winners = entries.filter(e => e.n === top);
-    if (winners.length >= 2) return 'Campuran';
+    // Aturan Campuran: bila selisih skor tertinggi & kedua <= 10% total skor,
+    // minat dianggap seimbang lintas rumpun.
+    if (entries[0].n - entries[1].n <= 0.1 * grandTotal) return 'Campuran';
     return entries[0].c;
   };
 
@@ -337,19 +340,22 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-4 leading-relaxed">{s.desc}</p>
 
           <div className="mt-6 space-y-3">
-            {CLUSTERS.map(c => {
-              const n = tallyData[c] ?? 0;
-              const pct = Math.round((n / (total || 1)) * 100);
-              return (
-                <div key={c} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 text-xs font-bold text-slate-500 dark:text-slate-400">{c}</span>
-                  <div className="flex-1 h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div className={cn('h-3 rounded-full transition-all duration-700', clusterStyle[c].bar)} style={{ width: `${pct}%` }} />
+            {(() => {
+              const grandTotal = CLUSTERS.reduce((acc, c) => acc + (tallyData[c] || 0), 0);
+              return CLUSTERS.map(c => {
+                const n = tallyData[c] ?? 0;
+                const pct = Math.round((n / (grandTotal || 1)) * 100);
+                return (
+                  <div key={c} className="flex items-center gap-3">
+                    <span className="w-24 shrink-0 text-xs font-bold text-slate-500 dark:text-slate-400">{c}</span>
+                    <div className="flex-1 h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                      <div className={cn('h-3 rounded-full transition-all duration-700', clusterStyle[c].bar)} style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="w-20 text-right text-xs font-black text-slate-700 dark:text-slate-200">{n} poin · {pct}%</span>
                   </div>
-                  <span className="w-14 text-right text-xs font-black text-slate-700 dark:text-slate-200">{n}/{total} soal</span>
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
 
           <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-100 dark:border-border">
@@ -679,12 +685,13 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
             {(['a', 'b', 'c', 'd'] as const).map((k, i) => {
               const opt = questions[step][`option_${k}`];
               const cl = questions[step][`cluster_${k}` as keyof PenjurusanQuestion] as ClusterType;
+              const w = (questions[step][`weight_${k}` as keyof PenjurusanQuestion] as number) || 1;
               if (!opt) return null;
               return (
                 <button
                   key={k}
                   type="button"
-                  onClick={() => pick(cl)}
+                  onClick={() => pick(cl, w)}
                   className="group p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-border hover:border-violet-500 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-950/30 text-left transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-3">

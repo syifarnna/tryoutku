@@ -19,17 +19,19 @@ const clusterStyle: Record<ClusterType, string> = {
   Campuran: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-900',
 };
 
-interface OptionRow { text: string; cluster: ClusterType; }
+interface OptionRow { text: string; cluster: ClusterType; weight: number; }
 
 interface QuestionForm { question: string; options: OptionRow[]; }
+
+const WEIGHTS = [1, 2, 3, 4, 5];
 
 const emptyForm: QuestionForm = {
   question: '',
   options: [
-    { text: '', cluster: 'Saintek' },
-    { text: '', cluster: 'Soshum' },
-    { text: '', cluster: 'Saintek' },
-    { text: '', cluster: 'Soshum' },
+    { text: '', cluster: 'Saintek', weight: 1 },
+    { text: '', cluster: 'Soshum', weight: 1 },
+    { text: '', cluster: 'Saintek', weight: 1 },
+    { text: '', cluster: 'Soshum', weight: 1 },
   ],
 };
 
@@ -58,10 +60,10 @@ export const AdminQuestionsView: React.FC = () => {
     setSaving(true);
     const payload = {
       question: form.question.trim(),
-      option_a: form.options[0].text.trim(), cluster_a: form.options[0].cluster,
-      option_b: form.options[1].text.trim(), cluster_b: form.options[1].cluster,
-      option_c: form.options[2].text.trim(), cluster_c: form.options[2].cluster,
-      option_d: form.options[3].text.trim(), cluster_d: form.options[3].cluster,
+      option_a: form.options[0].text.trim(), cluster_a: form.options[0].cluster, weight_a: form.options[0].weight,
+      option_b: form.options[1].text.trim(), cluster_b: form.options[1].cluster, weight_b: form.options[1].weight,
+      option_c: form.options[2].text.trim(), cluster_c: form.options[2].cluster, weight_c: form.options[2].weight,
+      option_d: form.options[3].text.trim(), cluster_d: form.options[3].cluster, weight_d: form.options[3].weight,
       is_active: true,
     };
     await appStore.addQuestion(payload as any);
@@ -117,19 +119,29 @@ export const AdminQuestionsView: React.FC = () => {
                     className="h-9"
                     placeholder={`Teks pilihan ${String.fromCharCode(65 + i)}`}
                   />
-                  <Select value={opt.cluster} onValueChange={(v) => updateOption(i, { cluster: v as ClusterType })}>
-                    <SelectTrigger className="w-full h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CLUSTERS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Select value={opt.cluster} onValueChange={(v) => updateOption(i, { cluster: v as ClusterType })}>
+                      <SelectTrigger className="w-full h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CLUSTERS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={String(opt.weight)} onValueChange={(v) => updateOption(i, { weight: Number(v) })}>
+                      <SelectTrigger className="w-28 h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {WEIGHTS.map(w => <SelectItem key={w} value={String(w)}>Bobot {w}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               ))}
             </div>
             <p className="text-[11px] text-slate-400">
-              Setiap opsi dipetakan ke rumpun minat. Opsi yang dominan dipilih siswa akan menentukan rekomendasi jurusan.
+              Setiap opsi dipetakan ke rumpun minat dengan <strong>bobot 1–5</strong> (semakin besar, semakin kuat sinyal minat terhadap rumpun). Skor tertinggi per rumpun menjadi acuan rekomendasi jurusan.
             </p>
             <div className="flex justify-end gap-3 mt-2">
               <Button variant="ghost" onClick={resetForm}>Batal</Button>
@@ -193,12 +205,14 @@ export const AdminQuestionsView: React.FC = () => {
                     {(['a', 'b', 'c', 'd'] as const).map((k) => {
                       const opt = q[`option_${k}`];
                       const cl = q[`cluster_${k}` as keyof PenjurusanQuestion] as ClusterType;
+                      const w = (q[`weight_${k}` as keyof PenjurusanQuestion] as number) ?? 1;
                       return (
                         <div key={k} className="flex items-center gap-2 text-xs">
                           <span className="w-5 h-5 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-500 text-[10px] shrink-0 uppercase">
                             {k}
                           </span>
                           <span className="flex-1 text-slate-600 dark:text-slate-300">{opt}</span>
+                          <span className="text-[9px] font-bold text-slate-400 shrink-0">×{w}</span>
                           <Badge variant="outline" className={cn('rounded-md text-[9px] font-bold h-auto px-1.5 py-0 shrink-0', clusterStyle[cl || 'Campuran'])}>
                             {cl || 'Campuran'}
                           </Badge>
