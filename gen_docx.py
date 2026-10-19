@@ -275,7 +275,7 @@ body.append(p(''))
 body.append(heading('5.10 Riwayat Login & Kontrol Akses Admin Utama', 2))
 body.append(p('Setiap kali user benar-benar login (event SIGNED_IN), AppStore memanggil Edge Function record-login yang mencatat IP, lokasi (kota/provinsi/negara via lookup IP), user-agent, dan waktu ke tabel login_events. Riwayat ditampilkan per pengguna lewat dialog LoginHistoryDialog pada halaman Daftar Pengguna (AdminUsersView).'))
 for item in [
-    'record-login (Edge Function, verify_jwt) - membaca identitas dari JWT, mencatat ke login_events memakai service role; tidak ada policy INSERT untuk authenticated agar data tidak bisa dipalsukan klien',
+    'revoke-sessions (Edge Function, verify_jwt) - admin utama membatalkan semua sesi/refresh token akun target via RPC force_logout_user; memaksa user login ulang di semua device',
     'login_events_select_own - tiap pengguna dapat melihat riwayat login miliknya sendiri',
     'login_events_select_admin - hanya admin utama (is_super_admin) yang dapat melihat riwayat seluruh akun',
     'is_super_admin() - helper yang mengunci aksi sensitif ke satu akun admin utama (hardcode auth uid admin1)',

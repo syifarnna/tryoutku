@@ -117,7 +117,7 @@ export const AdminUsersView: React.FC = () => {
     if (!confirmed.isConfirmed) return;
 
     setLoggingOutId(user.id);
-    const { data, error } = await supabase.functions.invoke('force-logout', {
+    const { data, error } = await supabase.functions.invoke('revoke-sessions', {
       method: 'POST',
       body: { user_id: user.id },
     });
