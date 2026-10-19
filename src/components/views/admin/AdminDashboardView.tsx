@@ -12,7 +12,7 @@ export const AdminDashboardView: React.FC<{ setActiveTab: (tab: string) => void 
   const [prodiStats, setProdiStats] = useState<MajorsStats | null>(null);
 
   useEffect(() => {
-    supabase.from('tryout_results').select('*', { count: 'exact', head: true }).then(({ count }) => {
+    supabase.from('utbk_scores').select('*', { count: 'exact', head: true }).then(({ count }) => {
       if (count !== null) setTotalSubmissions(count);
     });
   }, []);
@@ -33,7 +33,7 @@ export const AdminDashboardView: React.FC<{ setActiveTab: (tab: string) => void 
     { label: 'Total Kampus', value: state.institutions.length, icon: Building2, color: 'text-sky-500', bg: 'bg-sky-500/10', tab: 'admin_campuses' },
     { label: 'Total Prodi', value: prodiStats?.totalProdi ?? state.majors.length, icon: Target, color: 'text-secondary', bg: 'bg-secondary/10', tab: 'admin_majors' },
     { label: 'Total Tryout', value: state.tryouts.length, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10', tab: 'admin_tryouts' },
-    { label: 'Total Pengerjaan', value: totalSubmissions, icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10', tab: 'admin_results' },
+    { label: 'Total Input Nilai', value: totalSubmissions, icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10', tab: 'admin_results' },
   ];
 
   const prodiCards = [

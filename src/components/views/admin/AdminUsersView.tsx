@@ -4,13 +4,14 @@ import { Profile } from '../../../types';
 import { getErrorMessage, cn } from '../../../lib/utils';
 import {
   Users, Search, Mail, ShieldCheck, User as UserIcon,
-  RefreshCw, ChevronLeft, ChevronRight, Loader2, AlertCircle
+  RefreshCw, ChevronLeft, ChevronRight, Loader2, AlertCircle, History
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { LoginHistoryDialog } from './LoginHistoryDialog';
 
 const PAGE_SIZE = 20;
 
@@ -21,6 +22,7 @@ export const AdminUsersView: React.FC = () => {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [historyUser, setHistoryUser] = useState<Profile | null>(null);
 
   const fetchUsers = useCallback(async (pageNum: number) => {
     setLoading(true);
@@ -68,13 +70,22 @@ export const AdminUsersView: React.FC = () => {
     if (!confirmed.isConfirmed) return;
 
     setTogglingId(user.id);
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .update({ role: newRole })
-      .eq('id', user.id);
+      .eq('id', user.id)
+      .select('id, role')
+      .single();
 
     if (error) {
-      Swal.fire('Gagal', getErrorMessage(error), 'error');
+      Swal.fire('Gagal Mengubah Peran', getErrorMessage(error), 'error');
+    } else if (!data || data.role !== newRole) {
+      Swal.fire(
+        'Perubahan Peran Ditolak',
+        'Peran pengguna tidak berubah. Pastikan Anda login sebagai admin dan coba lagi.',
+        'warning'
+      );
+      await fetchUsers(page);
     } else {
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u));
       Swal.fire({
@@ -207,21 +218,33 @@ export const AdminUsersView: React.FC = () => {
                     })}
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      onClick={() => toggleRole(user)}
-                      disabled={togglingId === user.id}
-                      className="font-bold"
-                    >
-                      {togglingId === user.id ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : user.role === 'admin' ? (
-                        'Turunkan'
-                      ) : (
-                        'Jadikan Admin'
-                      )}
-                    </Button>
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => setHistoryUser(user)}
+                        title="Riwayat login"
+                        className="font-bold text-slate-500"
+                      >
+                        <History className="w-3.5 h-3.5" />
+                        Riwayat
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        onClick={() => toggleRole(user)}
+                        disabled={togglingId === user.id}
+                        className="font-bold"
+                      >
+                        {togglingId === user.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : user.role === 'admin' ? (
+                          'Turunkan'
+                        ) : (
+                          'Jadikan Admin'
+                        )}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -255,6 +278,13 @@ export const AdminUsersView: React.FC = () => {
           </div>
         )}
       </div>
+
+      <LoginHistoryDialog
+        open={!!historyUser}
+        onOpenChange={(o) => { if (!o) setHistoryUser(null); }}
+        userId={historyUser?.id ?? null}
+        userName={historyUser?.full_name}
+      />
     </div>
   );
 };

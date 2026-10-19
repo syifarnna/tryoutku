@@ -64,6 +64,7 @@ class AppStore {
   private state: AppState;
   private listeners: Set<() => void> = new Set();
   private _masterDataAuthed = false;
+  private _loginRecordedUserId: string | null = null;
 
   constructor() {
     this.state = { ...DEFAULT_STATE };
@@ -126,6 +127,12 @@ class AppStore {
         this.state.isLoggedIn = true;
         this.state.profile.email = session.user.email || '';
         this.syncFromSupabase(session.user.id);
+        // Catat riwayat login (lokasi/IP) sekali per sesi saat benar-benar SIGNED_IN,
+        // bukan saat pemulihan sesi (INITIAL_SESSION) / refresh token.
+        if (event === 'SIGNED_IN' && this._loginRecordedUserId !== session.user.id) {
+          this._loginRecordedUserId = session.user.id;
+          this.recordLogin();
+        }
         // Re-fetch master data dengan sesi yang sudah ter-authenticated.
         // Login pertama kadang fetch awal (anon) difilter RLS hingga prodi kosong.
         if (!this._masterDataAuthed) {
@@ -139,6 +146,7 @@ class AppStore {
         this.state.utbkScores = [];
         this.state.targetMajorIds = [];
         this._masterDataAuthed = false;
+        this._loginRecordedUserId = null;
         try { localStorage.removeItem('tryoutku_targets_v1'); } catch (e) {}
         this.notify();
       }
@@ -185,6 +193,16 @@ class AppStore {
       return;
     }
     await supabase.auth.signOut();
+  }
+
+  // Rekam riwayat login (IP + lokasi + perangkat) lewat Edge Function 'record-login'.
+  // Best-effort: kegagalan tidak boleh mengganggu alur login.
+  private async recordLogin() {
+    try {
+      await supabase.functions.invoke('record-login', { method: 'POST' });
+    } catch (e) {
+      console.warn('Gagal mencatat riwayat login:', e);
+    }
   }
 
   public mockLogin(email: string, name?: string) {
@@ -660,10 +678,9 @@ class AppStore {
         };
       }
 
-      const { data: res, error: rErr } = await supabase.from('tryout_results').select('*').eq('user_id', targetAuthId).order('created_at', { ascending: false });
-      if (!rErr && res) {
-        this.state.results = res;
-      }
+      // Tabel tryout_results sudah dihapus (sumber nilai tunggal = utbk_scores),
+      // jadi daftar hasil tryout sengaja dibiarkan kosong.
+      this.state.results = [];
 
       const { data: utbkData, error: uErr } = await supabase.from('utbk_scores').select('*').eq('user_id', targetAuthId).order('recorded_on', { ascending: false });
       if (!uErr && utbkData) {

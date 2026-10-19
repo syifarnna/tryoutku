@@ -133,6 +133,17 @@ export interface UtbkScore {
   created_at: string;
 }
 
+export interface LoginEvent {
+  id: number;
+  user_id: string;
+  ip?: string | null;
+  city?: string | null;
+  region?: string | null;
+  country?: string | null;
+  user_agent?: string | null;
+  created_at: string;
+}
+
 export interface LeaderboardEntry {
   id: number;
   user_id: string;

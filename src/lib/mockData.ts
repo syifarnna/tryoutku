@@ -321,8 +321,9 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 14b) KEAMANAN: hanya admin yang boleh mengubah kolom 'role'.
---      Non-admin yang menyisipkan role istimewa lewat payload akan dibersihkan
---      (role dikembalikan ke nilai lama).
+--      Non-admin yang mencoba mengubah role akan ditolak dengan error 42501
+--      (insufficient_privilege) sehingga kegagalan terlihat jelas di aplikasi,
+--      bukan dibatalkan secara senyap.
 CREATE OR REPLACE FUNCTION public.guard_profile_role()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -330,10 +331,10 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF public.is_admin() THEN
-    RETURN NEW;
+  IF NEW.role IS DISTINCT FROM OLD.role AND NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Hanya admin yang dapat mengubah peran pengguna.'
+      USING ERRCODE = '42501';
   END IF;
-  NEW.role := OLD.role;
   RETURN NEW;
 END;
 $$;
@@ -401,30 +402,37 @@ REVOKE ALL ON FUNCTION public.mark_password_changed() FROM public, anon;
 GRANT EXECUTE ON FUNCTION public.mark_password_changed() TO authenticated;
 NOTIFY pgrst, 'reload schema';
 
--- 17) RPC: leaderboard (dukung filter per tipe TO)
+-- 17) RPC: leaderboard nasional (sumber nilai tunggal = utbk_scores).
+--     Parameter p_type dipertahankan untuk kompatibilitas signature, namun
+--     diabaikan (filter tipe tryout sudah tidak relevan). Peringkat = skor
+--     total terbaik per user.
 CREATE OR REPLACE FUNCTION public.get_leaderboard(p_type text DEFAULT NULL)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE result JSONB;
 BEGIN
-  WITH filtered AS (
-    SELECT * FROM tryout_results
-    WHERE (p_type IS NULL OR tryout_type = p_type)
-  ),
-  ranked AS (
-    SELECT DISTINCT ON (r.user_id::text)
-      r.id, r.user_id, r.student_id, r.total_score, r.predicate,
-      r.created_at, r.tryout_name, r.tryout_type, r.tryout_date, r.scores,
+  WITH ranked AS (
+    SELECT DISTINCT ON (s.user_id::text)
+      s.id, s.user_id, s.user_id AS student_id, s.total_score,
+      CASE
+        WHEN s.total_score >= 710 THEN 'Sangat Baik'
+        WHEN s.total_score >= 660 THEN 'Baik'
+        WHEN s.total_score >= 600 THEN 'Cukup'
+        ELSE 'Kurang'
+      END AS predicate,
+      s.created_at, COALESCE(s.label, 'Input Nilai UTBK') AS tryout_name,
+      ''::text AS tryout_type, s.recorded_on::text AS tryout_date, s.scores,
       jsonb_build_object(
         'full_name', p.full_name,
         'nisn', p.nisn,
         'school', p.school,
         'email', p.email
       ) AS profiles
-    FROM filtered r
-    LEFT JOIN profiles p ON p.id::text = r.user_id::text OR p.auth_uid::text = r.user_id::text
-    ORDER BY r.user_id::text, r.total_score DESC
+    FROM public.utbk_scores s
+    LEFT JOIN public.profiles p
+      ON p.id::text = s.user_id::text OR p.auth_uid::text = s.user_id::text
+    ORDER BY s.user_id::text, s.total_score DESC
   )
   SELECT jsonb_agg(sub) INTO result FROM (SELECT * FROM ranked ORDER BY total_score DESC) sub;
   RETURN COALESCE(result, '[]'::JSONB);
@@ -497,6 +505,32 @@ DROP POLICY IF EXISTS penjurusan_questions_select_all ON public.penjurusan_quest
 CREATE POLICY penjurusan_questions_select_all ON public.penjurusan_questions FOR SELECT USING (true);
 DROP POLICY IF EXISTS penjurusan_questions_admin_write ON public.penjurusan_questions;
 CREATE POLICY penjurusan_questions_admin_write ON public.penjurusan_questions FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- 20) Riwayat login (lokasi + IP + perangkat). Diisi oleh Edge Function
+--     'record-login' memakai service role. Tidak ada policy INSERT untuk
+--     authenticated agar klien tidak dapat memalsukan data.
+CREATE TABLE IF NOT EXISTS public.login_events (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  ip TEXT,
+  city TEXT,
+  region TEXT,
+  country TEXT,
+  user_agent TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS login_events_user_idx ON public.login_events (user_id, created_at DESC);
+
+ALTER TABLE public.login_events ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS login_events_select_own ON public.login_events;
+CREATE POLICY login_events_select_own ON public.login_events
+  FOR SELECT USING ((user_id)::text = (auth.uid())::text);
+
+DROP POLICY IF EXISTS login_events_select_admin ON public.login_events;
+CREATE POLICY login_events_select_admin ON public.login_events
+  FOR SELECT USING (public.is_admin());
 
 NOTIFY pgrst, 'reload schema';
 `;

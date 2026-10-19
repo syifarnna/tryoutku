@@ -1,54 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
-import { LeaderboardEntry } from '../../../types';
+import { LeaderboardEntry, UtbkScore } from '../../../types';
 import { getErrorMessage, cn } from '../../../lib/utils';
-import { Award, TrendingUp, Crown, Loader2, AlertCircle, Medal, User, School } from 'lucide-react';
+import { Award, TrendingUp, Crown, Loader2, AlertCircle, Medal, School } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-const TRYOUT_TYPES = ['Semua', 'UTBK SNBT', 'Ujian Mandiri', 'Ujian Kedinasan'] as const;
-
-const TYPE_COLORS: Record<string, string> = {
-  'Semua': 'bg-primary',
-  'UTBK SNBT': 'bg-cyan-500',
-  'Ujian Mandiri': 'bg-orange-500',
-  'Ujian Kedinasan': 'bg-emerald-500',
+const predicateFromScore = (score: number): string => {
+  if (score >= 710) return 'Sangat Baik';
+  if (score >= 660) return 'Baik';
+  if (score >= 600) return 'Cukup';
+  return 'Kurang';
 };
 
 export const AdminResultsView: React.FC = () => {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState<string>('Semua');
 
-  const fetchLeaderboard = async (type: string) => {
+  const fetchLeaderboard = async () => {
     setLoading(true);
-    const typeParam = type === 'Semua' ? null : type;
 
-    // Coba pake RPC dulu (bypass RLS), fallback ke direct query
-    const { data: rpcData, error: rpcErr } = await supabase.rpc('get_leaderboard', { p_type: typeParam });
-
-    if (!rpcErr && rpcData) {
-      setEntries(rpcData as LeaderboardEntry[]);
-      setLoading(false);
-      return;
-    }
-
-    // Fallback: query langsung
-    let resultsQuery = supabase.from('tryout_results').select('*').order('total_score', { ascending: false });
-    if (typeParam) {
-      resultsQuery = resultsQuery.eq('tryout_type', typeParam);
-    }
-
-    const [resResults, resProfiles] = await Promise.all([
-      resultsQuery,
+    const [resScores, resProfiles] = await Promise.all([
+      supabase.from('utbk_scores').select('*').order('total_score', { ascending: false }),
       supabase.from('profiles').select('id, auth_uid, full_name, nisn, school, email'),
     ]);
 
-    if (resResults.error) {
-      Swal.fire('Gagal Memuat Leaderboard', getErrorMessage(resResults.error), 'error');
+    if (resScores.error) {
+      Swal.fire('Gagal Memuat Leaderboard', getErrorMessage(resScores.error), 'error');
       setEntries([]);
       setLoading(false);
       return;
@@ -66,14 +47,26 @@ export const AdminResultsView: React.FC = () => {
       }
     }
 
+    // Ambil satu nilai terbaik per peserta dari tabel utbk_scores.
     const bestPerUser = new Map<string, LeaderboardEntry>();
-    for (const row of resResults.data as any[]) {
-      const uid = row.user_id || row.student_id;
-      if (!bestPerUser.has(uid) || row.total_score > bestPerUser.get(uid)!.total_score) {
+    for (const row of (resScores.data as UtbkScore[]) || []) {
+      const uid = row.user_id;
+      if (!uid) continue;
+      const prev = bestPerUser.get(uid);
+      if (!prev || row.total_score > prev.total_score) {
         const profile = profileMap.get(uid);
         bestPerUser.set(uid, {
-          ...row,
-          profiles: profile || { full_name: 'Tidak dikenal', nisn: '-', school: '-', email: '' }
+          id: row.id,
+          user_id: uid,
+          student_id: uid,
+          total_score: row.total_score,
+          predicate: predicateFromScore(row.total_score),
+          created_at: row.created_at,
+          tryout_name: row.label || 'Input Nilai UTBK',
+          tryout_type: '',
+          tryout_date: row.recorded_on,
+          scores: row.scores,
+          profiles: profile || { full_name: 'Tidak dikenal', nisn: '-', school: '-', email: '' },
         });
       }
     }
@@ -83,12 +76,8 @@ export const AdminResultsView: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchLeaderboard(selectedType);
-  }, [selectedType]);
-
-  const handleTypeChange = (type: string) => {
-    setSelectedType(type);
-  };
+    fetchLeaderboard();
+  }, []);
 
   const topScore = entries[0]?.total_score || 0;
   const avgScore = entries.length
@@ -120,34 +109,19 @@ export const AdminResultsView: React.FC = () => {
             Leaderboard Nasional
           </h2>
           <p className="text-slate-500 dark:text-muted-foreground mt-1">
-            Peringkat peserta berdasarkan nilai tryout{selectedType !== 'Semua' ? ` ${selectedType}` : ''} terbaik.
+            Peringkat peserta berdasarkan nilai UTBK terbaik yang diinput.
             {!loading && <span className="ml-2">({entries.length} peserta)</span>}
           </p>
         </div>
         <Button
           variant="outline"
-          onClick={() => fetchLeaderboard(selectedType)}
+          onClick={() => fetchLeaderboard()}
           disabled={loading}
           className="gap-2"
         >
           <TrendingUp className={cn('w-4 h-4', loading && 'animate-pulse')} />
           Refresh
         </Button>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {TRYOUT_TYPES.map(t => (
-          <Button
-            key={t}
-            variant={selectedType === t ? 'default' : 'outline'}
-            onClick={() => handleTypeChange(t)}
-            className={cn(
-              selectedType === t && `${TYPE_COLORS[t]} text-white shadow-md scale-105 hover:opacity-90`
-            )}
-          >
-            {t}
-          </Button>
-        ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -202,7 +176,7 @@ export const AdminResultsView: React.FC = () => {
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={6} className="px-6 py-16 text-center">
                   <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                  <p className="text-slate-500 dark:text-muted-foreground">Belum ada hasil tryout dari peserta.</p>
+                  <p className="text-slate-500 dark:text-muted-foreground">Belum ada nilai UTBK dari peserta.</p>
                 </TableCell>
               </TableRow>
             ) : (
@@ -232,8 +206,8 @@ export const AdminResultsView: React.FC = () => {
                     {e.profiles?.nisn || '-'}
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={cn('rounded-md text-[11px] font-bold h-auto py-1 px-2.5', getPredicateClass(e.predicate))}
                     >
                       {e.predicate}
