@@ -17,6 +17,7 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
   const targetMajorsList = appStore.getTargetMajors();
   const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0] || null;
   const summary = appStore.getAnalysis(activeTargetMajorId);
+  const hasUtbk = appStore.getUtbkLatestScore() != null;
 
   if (!summary) {
     return (
@@ -35,14 +36,14 @@ export const RecomAlternativesView: React.FC<RecomAlternativesViewProps> = ({ se
         <div className="p-12 text-center bg-card rounded-3xl border border-slate-100 space-y-4">
           <Compass className="w-10 h-10 mx-auto text-slate-300" />
           <p className="text-sm text-slate-500 max-w-md mx-auto">
-            {state.results.length === 0
-              ? 'Selesaikan minimal satu tryout terlebih dahulu agar skor Anda menjadi acuan rekomendasi.'
+            {!hasUtbk
+              ? 'Masukkan nilai tryout UTBK Anda lewat tombol "Input Nilai UTBK" di Dashboard agar skor Anda menjadi acuan rekomendasi.'
               : 'Pilih prodi target terlebih dahulu agar sistem dapat menghitung peluang kelulusan & memberikan kampus alternatif yang sesuai pilihan Anda.'}
           </p>
           <div className="flex justify-center">
-            <Button onClick={() => setActiveTab(state.results.length === 0 ? 'dashboard' : 'target_majors')} className="gap-1.5">
+            <Button onClick={() => setActiveTab(!hasUtbk ? 'dashboard' : 'target_majors')} className="gap-1.5">
               <Target className="w-4 h-4" />
-              {state.results.length === 0 ? 'Kerjakan Tryout Sekarang' : 'Pilih Prodi Target'}
+              {!hasUtbk ? 'Input Nilai UTBK' : 'Pilih Prodi Target'}
             </Button>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Search, Building2, GraduationCap, Target, Layers, Loader2, ArrowLeft, M
 import { useAppState, appStore } from '../../lib/store';
 import { cn } from '../../lib/utils';
 import { searchMajors, getMajorsStats, useDebouncedValue, MajorsStats } from '../../lib/prodiSearch';
+import { matchesInstitution, primaryAbbreviation } from '../../lib/institutionSearch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -131,11 +132,9 @@ export const CampusList: React.FC = () => {
   const filtered = useMemo(
     () =>
       state.institutions.filter(
-        i =>
-          (typeFilter === 'SEMUA' || i.type === typeFilter) &&
-          (!q || i.name.toLowerCase().includes(q) || (i.location || '').toLowerCase().includes(q))
+        i => (typeFilter === 'SEMUA' || i.type === typeFilter) && matchesInstitution(i, search)
       ),
-    [state.institutions, q, typeFilter]
+    [state.institutions, search, typeFilter]
   );
 
   const prodiCount = (id: number) => state.majors.filter(m => m.institution_id === id).length;
@@ -181,7 +180,7 @@ export const CampusList: React.FC = () => {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Cari nama kampus atau lokasi (mis. ITB, Bandung, Kedinasan)..."
+            placeholder="Cari nama kampus, singkatan, atau lokasi (mis. ITB, Bandung, Kedinasan)..."
             className="pl-9"
           />
         </div>
@@ -215,6 +214,7 @@ export const CampusList: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map(i => {
           const n = prodiCount(i.id);
+          const abbr = primaryAbbreviation(i);
           return (
             <button
               key={i.id}
@@ -223,9 +223,16 @@ export const CampusList: React.FC = () => {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-800 dark:text-white text-sm leading-snug group-hover:text-primary transition-colors">
-                    {i.name}
-                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-bold text-slate-800 dark:text-white text-sm leading-snug group-hover:text-primary transition-colors">
+                      {i.name}
+                    </p>
+                    {abbr && (
+                      <Badge variant="outline" className="rounded-md text-[10px] font-bold h-auto px-1.5 py-0.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900">
+                        {abbr}
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-500 dark:text-muted-foreground mt-1 flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 shrink-0" /> {i.location || '—'}
                   </p>
@@ -357,6 +364,11 @@ export const CampusDetail: React.FC<{ campusId: number }> = ({ campusId }) => {
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{institution.name}</h2>
+              {primaryAbbreviation(institution) && (
+                <Badge variant="outline" className="rounded-md text-[11px] font-bold h-auto px-2 py-1 bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900">
+                  {primaryAbbreviation(institution)}
+                </Badge>
+              )}
               <Badge variant="outline" className={cn('rounded-md text-[11px] font-bold h-auto px-2 py-1', TYPE_STYLE[institution.type] || TYPE_STYLE.PTN)}>
                 {institution.type}
               </Badge>

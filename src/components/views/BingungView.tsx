@@ -81,9 +81,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
 
   const total = questions.length;
 
-  const tryoutScore = state.results[0]?.total_score ?? null;
-  const utbkScore = appStore.getUtbkLatestScore();
-  const autoScore = utbkScore != null ? utbkScore : tryoutScore;
+  const autoScore = appStore.getUtbkLatestScore();
 
   const showToast = (icon: 'success' | 'error', title: string) => {
     Swal.fire({

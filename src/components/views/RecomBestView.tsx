@@ -27,9 +27,7 @@ const RANK_ALT = 6;
 export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({ setActiveTab }) => {
   const state = useAppState();
 
-  const tryoutScore = state.results[0]?.total_score ?? null;
-  const utbkScore = appStore.getUtbkLatestScore();
-  const autoScore = utbkScore != null ? utbkScore : tryoutScore;
+  const autoScore = appStore.getUtbkLatestScore();
   const interest = state.profile.major_interest;
 
   const { tier1, tier2, totalReachable } = useMemo(() => {
@@ -100,7 +98,7 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
           </Badge>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Rekomendasi Prodi Terbaik</h2>
           <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">
-            Perpaduan <strong>Nilai Tryout Anda</strong> dengan <strong>Hasil Tes Minat &amp; Bakat</strong>. Sistem hanya merekomendasikan prodi yang memenuhi <strong>dua kriteria</strong>: nilai mencukupi passing grade <em>dan</em> rumpun keilmuan sesuai minat — diurutkan dari paling relevan hingga alternatif.
+            Perpaduan <strong>Nilai UTBK Anda</strong> dengan <strong>Hasil Tes Minat &amp; Bakat</strong>. Sistem hanya merekomendasikan prodi yang memenuhi <strong>dua kriteria</strong>: nilai mencukupi passing grade <em>dan</em> rumpun keilmuan sesuai minat — diurutkan dari paling relevan hingga alternatif.
           </p>
         </div>
         <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
@@ -115,7 +113,7 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
             <TrendingUp className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nilai Tryout</p>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nilai UTBK</p>
             <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-0.5">{autoScore != null ? autoScore : '—'}</p>
           </div>
         </Card>
@@ -145,12 +143,12 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
       {autoScore == null && (
         <Card className="p-8 text-center bg-card border border-amber-200 dark:border-amber-900/60 rounded-3xl">
           <XCircle className="w-10 h-10 mx-auto text-amber-500 mb-3" />
-          <h3 className="font-bold text-lg text-slate-800 dark:text-white">Nilai Tryout Belum Tersedia</h3>
+          <h3 className="font-bold text-lg text-slate-800 dark:text-white">Nilai UTBK Belum Diinput</h3>
           <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
-            Untuk mendapatkan rekomendasi terintegrasi, selesaikan minimal satu tryout terlebih dahulu agar nilai Anda menjadi acuan kelayakan.
+            Masukkan nilai tryout UTBK Anda lewat tombol <strong>Input Nilai UTBK</strong> di Dashboard agar sistem dapat menghitung peluang lolos secara otomatis.
           </p>
           <Button onClick={() => setActiveTab?.('dashboard')} className="mt-5 gap-2">
-            <Target className="w-4 h-4" /> Kerjakan Tryout Sekarang
+            <Target className="w-4 h-4" /> Input Nilai UTBK
           </Button>
         </Card>
       )}

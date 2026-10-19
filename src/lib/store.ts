@@ -332,30 +332,10 @@ class AppStore {
       scores
     };
 
-    try {
-      const { data, error } = await supabase.from('tryout_results').insert({
-        user_id: this.state.profile.id,
-        student_id: this.state.profile.id,
-        tryout_id: tr.id,
-        tryout_name: tr.name,
-        tryout_type: tr.type,
-        tryout_date: newResult.tryout_date,
-        total_score: finalTotal,
-        predicate: pred,
-        scores
-      }).select().single();
-      
-      if (error) {
-        console.warn('Gagal simpan hasil ke Supabase:', error.message);
-      } else if (data) {
-        newResult.id = data.id;
-      }
-    } catch (err) {
-      console.warn('Supabase sync error:', err);
-    }
-    
-    this.state.results = [newResult, ...this.state.results];
-    this.notify();
+    // Hasil tryout TIDAK lagi disimpan/direkam. Nilai yang dipakai di seluruh
+    // halaman analisis hanya berasal dari "Input Nilai UTBK" di Dashboard
+    // (tabel utbk_scores). Method ini tetap menghitung & mengembalikan hasil
+    // agar modal "Kerjakan Tryout" bisa menampilkan skor sesaat tanpa persist.
     return newResult;
   }
 
@@ -489,48 +469,45 @@ class AppStore {
     }
   }
 
-  public getUtbkLatestScore(): number | null {
-    if (this.state.utbkScores.length === 0) return null;
-    return this.state.utbkScores[0].total_score;
+  public getUtbkLatest(): UtbkScore | null {
+    return this.state.utbkScores[0] ?? null;
   }
 
-  // Analysis & Recommendation Engine
-  public getAnalysis(targetMajorId?: number | null, specificResultId?: number): AnalysisSummary | null {
+  public getUtbkLatestScore(): number | null {
+    return this.state.utbkScores[0]?.total_score ?? null;
+  }
+
+  // Analysis & Recommendation Engine.
+  // Sumber nilai tunggal: "Input Nilai UTBK" di Dashboard (utbk_scores terbaru).
+  // Hasil "Kerjakan Tryout" tidak lagi dipakai karena tidak lagi direkam.
+  public getAnalysis(targetMajorId?: number | null): AnalysisSummary | null {
     const majorId = targetMajorId ?? this.state.activeTargetMajorId ?? this.state.targetMajorIds[0] ?? null;
     if (majorId == null) return null;
     const major = this.state.majors.find(m => m.id === majorId);
     if (!major) return null;
-    
-    let result = specificResultId 
-      ? this.state.results.find(r => r.id === specificResultId) 
-      : this.state.results[0];
 
-    const utbkScore = this.getUtbkLatestScore();
+    const latest = this.getUtbkLatest();
+    if (!latest) return null;
 
-    if (!result && utbkScore == null) return null;
+    const totalScore = latest.total_score;
+    let predicate: TryoutResult['predicate'] = 'Kurang';
+    if (totalScore >= 710) predicate = 'Sangat Baik';
+    else if (totalScore >= 660) predicate = 'Baik';
+    else if (totalScore >= 600) predicate = 'Cukup';
 
-    if (!result && utbkScore != null) {
-      result = {
-        id: -999,
-        user_id: '',
-        student_id: '',
-        tryout_id: -1,
-        tryout_name: 'Input Nilai UTBK',
-        tryout_type: 'UTBK',
-        tryout_date: new Date().toISOString().split('T')[0],
-        total_score: utbkScore,
-        predicate: 'Cukup',
-        scores: {},
-        created_at: new Date().toISOString(),
-      } as TryoutResult;
-    } else if (result && utbkScore != null && utbkScore > result.total_score) {
-      result = {
-        ...result,
-        total_score: utbkScore,
-      };
-    }
-
-    if (!result) return null;
+    const result: TryoutResult = {
+      id: latest.id,
+      user_id: latest.user_id ?? '',
+      student_id: this.state.profile.id,
+      tryout_id: -1,
+      tryout_name: latest.label || 'Input Nilai UTBK',
+      tryout_type: 'UTBK',
+      tryout_date: latest.recorded_on,
+      total_score: totalScore,
+      predicate,
+      scores: latest.scores || {},
+      created_at: latest.created_at,
+    };
 
     const isPassedTotal = result.total_score >= major.passing_grade_total;
     const totalGap = Math.round((result.total_score - major.passing_grade_total) * 10) / 10;

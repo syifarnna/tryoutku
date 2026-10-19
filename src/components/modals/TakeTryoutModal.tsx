@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Award, CheckCircle2, Clock, Play, Sparkles, X } from 'lucide-react';
+import Swal from 'sweetalert2';
 import { Tryout } from '../../types';
 import { appStore, useAppState } from '../../lib/store';
 import { cn } from '../../lib/utils';
@@ -87,13 +88,23 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
     setScores(prev => ({ ...prev, [code]: Math.max(0, Math.min(1000, val)) }));
   };
 
-  const handleSubmitResult = (e: React.FormEvent) => {
-    e.preventDefault();
-    appStore.submitResult(tryout.id, scores);
+  const showScore = async (total: number) => {
+    await Swal.fire({
+      icon: 'info',
+      title: 'Hasil Tryout',
+      html: `Skor total Anda: <b>${total}</b><br/><br/>Hasil tryout tidak lagi disimpan otomatis. Silakan masukkan nilainya melalui menu <b>Input Nilai UTBK</b> di Dashboard agar menjadi acuan analisis.`,
+      confirmButtonColor: '#6355d8',
+    });
     onFinished();
   };
 
-  const handleQuizFinish = () => {
+  const handleSubmitResult = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const result = await appStore.submitResult(tryout.id, scores);
+    await showScore(result.total_score);
+  };
+
+  const handleQuizFinish = async () => {
     const newScores = {
       PU: quizAnswers[1] === 1 ? 760 : 610,
       PPU: 695,
@@ -103,8 +114,8 @@ export const TakeTryoutModal: React.FC<TakeTryoutModalProps> = ({ tryout, isOpen
       LBE: quizAnswers[3] === 1 ? 710 : 580,
       PM: quizAnswers[4] === 2 ? 725 : 605
     };
-    appStore.submitResult(tryout.id, newScores);
-    onFinished();
+    const result = await appStore.submitResult(tryout.id, newScores);
+    await showScore(result.total_score);
   };
 
   return (

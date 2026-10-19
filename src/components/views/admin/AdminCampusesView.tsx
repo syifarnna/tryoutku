@@ -3,6 +3,7 @@ import { useAppState, appStore } from '../../../lib/store';
 import { Building2, Pencil, Plus, Search, Trash2, X, ArrowLeft, Loader2, GraduationCap, School } from 'lucide-react';
 import { Institution, InstitutionType, ClusterType, Major } from '../../../types';
 import { searchMajors } from '../../../lib/prodiSearch';
+import { matchesInstitution } from '../../../lib/institutionSearch';
 import { JenjangBadge } from '@/components/ui/JenjangBadge';
 import { cn } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ const typeColor: Record<string, string> = {
 
 interface CampusForm {
   name: string;
+  abbreviation: string;
   type: InstitutionType;
   location: string;
   grade: string;
@@ -30,7 +32,7 @@ interface CampusForm {
   range_max: string;
 }
 
-const emptyForm: CampusForm = { name: '', type: 'PTN', location: '', grade: '', range_min: '', range_max: '' };
+const emptyForm: CampusForm = { name: '', abbreviation: '', type: 'PTN', location: '', grade: '', range_min: '', range_max: '' };
 
 export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({ setActiveTab }) => {
   const state = useAppState();
@@ -52,11 +54,9 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
   }, []);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = search.trim();
     if (!q) return state.institutions;
-    return state.institutions.filter(i =>
-      i.name.toLowerCase().includes(q) || i.location.toLowerCase().includes(q)
-    );
+    return state.institutions.filter(i => matchesInstitution(i, q));
   }, [state.institutions, search]);
 
   const [prodiCounts, setProdiCounts] = useState<Record<number, number>>({});
@@ -111,6 +111,7 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
     setIsAdding(true);
     setForm({
       name: inst.name,
+      abbreviation: inst.abbreviation || '',
       type: inst.type,
       location: inst.location || '',
       grade: inst.grade != null ? String(inst.grade) : '',
@@ -124,6 +125,7 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
     setSaving(true);
     const payload = {
       name: form.name.trim(),
+      abbreviation: form.abbreviation.trim() || null,
       type: form.type,
       location: form.location.trim(),
       grade: form.grade ? Number(form.grade) : null,
@@ -183,6 +185,10 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
                     {TYPE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Singkatan (opsional)</Label>
+                <Input type="text" value={form.abbreviation} onChange={e => setForm({ ...form, abbreviation: e.target.value })} className="h-10" placeholder="contoh: UI (boleh beberapa: UPNVYK, UPNYK)" />
               </div>
               <div>
                 <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Lokasi</Label>

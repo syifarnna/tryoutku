@@ -323,7 +323,7 @@ export default function App() {
         onClose={() => setActiveTryoutModal(null)}
         onFinished={() => {
           setActiveTryoutModal(null);
-          setActiveTab('results');
+          setActiveTab('dashboard');
         }}
       />
 

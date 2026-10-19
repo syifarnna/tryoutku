@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { CampusCombobox } from '@/components/ui/CampusCombobox';
 import { JenjangBadge } from '@/components/ui/JenjangBadge';
 
 export const TargetMajorsView: React.FC = () => {
@@ -204,19 +205,15 @@ export const TargetMajorsView: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">1. Pilih Kampus / Institut</Label>
-            <select
-              value={selectedInstitutionId}
-              onChange={(e) => {
-                setSelectedInstitutionId(e.target.value);
+            <CampusCombobox
+              institutions={state.institutions}
+              value={selectedInstitutionId ? Number(selectedInstitutionId) : null}
+              onChange={(id) => {
+                setSelectedInstitutionId(id != null ? String(id) : '');
                 setSelectedMajorId('');
               }}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-primary dark:text-white"
-            >
-              <option value="">-- Pilih Kampus --</option>
-              {state.institutions.map(inst => (
-                <option key={inst.id} value={inst.id}>{inst.name} ({inst.location})</option>
-              ))}
-            </select>
+              placeholder="-- Pilih Kampus --"
+            />
           </div>
 
           <div className="space-y-2">

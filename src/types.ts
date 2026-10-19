@@ -22,6 +22,7 @@ export interface Profile {
 export interface Institution {
   id: number;
   name: string;
+  abbreviation?: string; // singkatan populer, boleh beberapa dipisah koma (mis. "ITB")
   type: InstitutionType;
   location: string;
   province?: string;

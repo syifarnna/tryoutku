@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { CampusCombobox } from '@/components/ui/CampusCombobox';
 import { JenjangBadge, normalizeJenjang } from '@/components/ui/JenjangBadge';
 
 const DEFAULT_ALTERNATIVE_LIMIT = 3;
@@ -24,8 +25,8 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
   const [majorsLoading, setMajorsLoading] = useState(false);
   const [majorsLoaded, setMajorsLoaded] = useState(false);
 
-  const latestResult = state.results[0];
-  const autoScore = latestResult?.total_score ?? null;
+  const latestUtbk = appStore.getUtbkLatest();
+  const autoScore = latestUtbk?.total_score ?? null;
 
   const campuses = useMemo(
     () => [...state.institutions].sort((a, b) => a.name.localeCompare(b.name)),
@@ -117,7 +118,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
             </Badge>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Analisis Kelayakan Nilai terhadap Kampus Tujuan</h2>
             <p className="text-xs sm:text-sm text-sky-100 leading-relaxed">
-              Sistem mengambil nilai<strong> Hasil Tryout</strong> terbaru Anda secara otomatis untuk dikomparasikan dengan <strong>Grade Campus</strong> &amp; passing grade prodi yang Anda pilih.
+              Sistem mengambil nilai<strong> Input Nilai UTBK</strong> terbaru Anda dari Dashboard secara otomatis untuk dikomparasikan dengan <strong>Grade Campus</strong> &amp; passing grade prodi yang Anda pilih.
             </p>
           </div>
           <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
@@ -127,12 +128,12 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
 
         <Card className="p-10 text-center bg-card border border-amber-200 dark:border-amber-900/60 rounded-3xl max-w-2xl mx-auto">
           <XCircle className="w-12 h-12 mx-auto text-amber-500 mb-4" />
-          <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Belum Ada Hasil Tryout</h3>
+          <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Belum Ada Nilai UTBK</h3>
           <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-            Untuk menjalankan Analisis Hasil Tryout, Anda perlu menyelesaikan minimal satu tryout terlebih dahulu. Nilai dari tryout tersebut akan otomatis menjadi acuan kelayakan.
+            Untuk menjalankan analisis kelayakan, masukkan dulu nilai tryout UTBK Anda lewat tombol <strong>Input Nilai UTBK</strong> di Dashboard. Nilai tersebut akan otomatis menjadi acuan kelayakan.
           </p>
           <Button onClick={() => setActiveTab?.('dashboard')} className="mt-6 px-6 py-3 h-auto rounded-xl gap-2">
-            <Target className="w-4 h-4" /> Kerjakan Tryout Sekarang
+            <Target className="w-4 h-4" /> Input Nilai UTBK
           </Button>
         </Card>
       </div>
@@ -166,9 +167,9 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
           <TrendingUp className="w-6 h-6" />
         </div>
         <div className="flex-1 min-w-[200px]">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Nilai Otomatis — Hasil Tryout Terakhir Anda</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Nilai Otomatis — Input Nilai UTBK Terakhir Anda</p>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5">
-            {latestResult?.tryout_name} • {latestResult?.tryout_date}
+            {latestUtbk?.label || 'Input Nilai UTBK'} • {latestUtbk?.recorded_on}
           </p>
         </div>
         <div className="text-right">
@@ -181,18 +182,12 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
       <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
         <div className="space-y-2">
           <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">1. Pilih Kampus Tujuan</Label>
-          <select
-            value={selectedCampusId}
-            onChange={(e) => { setSelectedCampusId(e.target.value); setSelectedMajorId(null); setInsist(false); setJenjangFilter('SEMUA'); }}
-            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-sm focus:outline-none focus:border-primary dark:text-white h-12"
-          >
-            <option value="">-- Pilih Kampus Tujuan --</option>
-            {campuses.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-          </select>
+          <CampusCombobox
+            institutions={campuses}
+            value={selectedCampusId ? Number(selectedCampusId) : null}
+            onChange={(id) => { setSelectedCampusId(id != null ? String(id) : ''); setSelectedMajorId(null); setInsist(false); setJenjangFilter('SEMUA'); }}
+            placeholder="-- Pilih Kampus Tujuan --"
+          />
         </div>
 
         {selectedCampus && (

@@ -129,10 +129,10 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
   const fmt = (n?: number | null) => n == null ? '—' : formatNumber(n);
   const activeTargetMajorId = state.activeTargetMajorId || state.targetMajorIds[0];
   const targetMajor = activeTargetMajorId ? state.majors.find(m => m.id === activeTargetMajorId) : undefined;
-  const latestResult = state.results[0];
-  const avgScore = state.results.length > 0 ? (state.results.reduce((a, b) => a + b.total_score, 0) / state.results.length).toFixed(1) : '0';
-  const isPassedTarget = latestResult && targetMajor && latestResult.total_score >= targetMajor.passing_grade_total;
-  const gapValue = latestResult && targetMajor ? (latestResult.total_score - targetMajor.passing_grade_total).toFixed(1) : '0';
+  const latestUtbkScore = appStore.getUtbkLatestScore();
+  const avgScore = state.utbkScores.length > 0 ? (state.utbkScores.reduce((a, b) => a + b.total_score, 0) / state.utbkScores.length).toFixed(1) : '0';
+  const isPassedTarget = latestUtbkScore != null && targetMajor && latestUtbkScore >= targetMajor.passing_grade_total;
+  const gapValue = latestUtbkScore != null && targetMajor ? (latestUtbkScore - targetMajor.passing_grade_total).toFixed(1) : '0';
   const completedTryoutIds = new Set(state.results.map(r => r.tryout_id));
   const availableTryouts = state.tryouts.filter(t => !completedTryoutIds.has(t.id));
 
@@ -471,7 +471,7 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
             { label: 'Total Prodi', value: stats?.totalProdi ?? 0, icon: GraduationCap, color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40' },
             { label: 'Total PTN', value: stats?.universitas ?? 0, icon: Building2, color: 'text-sky-500 bg-sky-50 dark:bg-sky-950/40' },
             { label: 'Rata-rata Keketatan', value: stats ? `${((stats.saintek * 100 + stats.soshum * 100) / (stats.saintek + stats.soshum || 1)).toFixed(1)}%` : '—', icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40' },
-            { label: 'Tryout Selesai', value: state.results.length, icon: Award, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/40' },
+            { label: 'Input Nilai UTBK', value: state.utbkScores.length, icon: Award, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/40' },
           ].map((s, i) => (
             <Card key={i} className="p-4 rounded-2xl flex items-center gap-3 border-slate-200/70 dark:border-border">
               <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", s.color)}><s.icon className="w-5 h-5" /></div>

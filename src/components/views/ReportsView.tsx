@@ -59,7 +59,8 @@ export const ReportsView: React.FC = () => {
           </div>
           <Button
             onClick={() => exportResultsPDF(filteredResults, state.profile.full_name)}
-            className="mt-6 w-full py-2.5 h-auto rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-xs gap-2"
+            disabled={filteredResults.length === 0}
+            className="mt-6 w-full py-2.5 h-auto rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-xs gap-2 disabled:opacity-50"
           >
             <Download className="w-4 h-4" /> Export PDF
           </Button>
@@ -94,7 +95,8 @@ export const ReportsView: React.FC = () => {
           </div>
           <Button
             onClick={() => exportResultsExcel(filteredResults, state.profile.full_name)}
-            className="mt-6 w-full py-2.5 h-auto rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs gap-2"
+            disabled={filteredResults.length === 0}
+            className="mt-6 w-full py-2.5 h-auto rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs gap-2 disabled:opacity-50"
           >
             <Download className="w-4 h-4" /> Export Excel (.xlsx)
           </Button>
