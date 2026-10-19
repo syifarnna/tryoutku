@@ -5,7 +5,7 @@ import { Profile } from '../../../types';
 import { getErrorMessage, cn } from '../../../lib/utils';
 import {
   Users, Search, Mail, ShieldCheck, User as UserIcon,
-  RefreshCw, ChevronLeft, ChevronRight, Loader2, AlertCircle, History
+  RefreshCw, ChevronLeft, ChevronRight, Loader2, AlertCircle, History, LogOut
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ export const AdminUsersView: React.FC = () => {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [loggingOutId, setLoggingOutId] = useState<string | null>(null);
   const [historyUser, setHistoryUser] = useState<Profile | null>(null);
 
   const fetchUsers = useCallback(async (pageNum: number) => {
@@ -100,6 +101,41 @@ export const AdminUsersView: React.FC = () => {
       });
     }
     setTogglingId(null);
+  };
+
+  const forceLogout = async (user: Profile) => {
+    const confirmed = await Swal.fire({
+      icon: 'warning',
+      title: `Logout paksa ${user.full_name}?`,
+      text: 'User akan dikeluarkan dari semua device dan harus login ulang.',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, logout paksa',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#dc2626',
+    });
+
+    if (!confirmed.isConfirmed) return;
+
+    setLoggingOutId(user.id);
+    const { data, error } = await supabase.functions.invoke('force-logout', {
+      method: 'POST',
+      body: { user_id: user.id },
+    });
+
+    if (error) {
+      Swal.fire('Gagal', getErrorMessage(error), 'error');
+    } else if (data?.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: `${user.full_name} telah di-logout dari semua device.`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      Swal.fire('Gagal', data?.error || 'Terjadi kesalahan', 'error');
+    }
+    setLoggingOutId(null);
   };
 
   const filteredUsers = users.filter(u =>
@@ -222,7 +258,7 @@ export const AdminUsersView: React.FC = () => {
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
                     {isSuperAdmin ? (
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1">
                         <Button
                           variant="ghost"
                           size="xs"
@@ -231,7 +267,20 @@ export const AdminUsersView: React.FC = () => {
                           className="font-bold text-slate-500"
                         >
                           <History className="w-3.5 h-3.5" />
-                          Riwayat
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => forceLogout(user)}
+                          disabled={loggingOutId === user.id}
+                          title="Logout paksa"
+                          className="font-bold text-red-600"
+                        >
+                          {loggingOutId === user.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <LogOut className="w-3.5 h-3.5" />
+                          )}
                         </Button>
                         <Button
                           variant="outline"
