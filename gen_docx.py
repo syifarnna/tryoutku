@@ -204,7 +204,7 @@ tables = [
     ('majors', 'Program studi (id, institution_id, code, name, cluster, jenjang, passing_grade_total, requirements)'),
     ('institutions', 'Institusi/kampus (id, name, abbreviation untuk pencarian singkatan, type PTN/PTS/Kedinasan, location, grade, range_min/max)'),
     ('utbk_scores', 'Riwayat input nilai tryout UTBK mandiri user (user_id, total_score, scores JSONB 7 subtes, label, recorded_on) — sumber nilai tunggal menggantikan tryout_results yang telah dihapus'),
-    ('login_events', 'Riwayat login user (user_id, ip, city, region, country, user_agent, created_at) — diisi Edge Function record-login via service role, dibaca admin/pemilik akun'),
+    ('login_events', 'Riwayat login user (user_id, ip, city, region, country, user_agent, created_at) — diisi Edge Function record-login via service role, dibaca admin utama/pemilik akun'),
     ('target_institutions', 'Target prodi pilihan user (user_id, major_id, priority)'),
     ('tryouts', 'Definisi tryout (name, date, type, duration_minutes, question_count, status)'),
     ('penjurusan_questions', 'Bank soal tes penjurusan (question, option_a-d, cluster_a-d, weight_a-d bobot 1-5, is_active)'),
@@ -268,6 +268,19 @@ for item in [
     'Bar hasil menampilkan persentase = skor rumpun / total skor x 100 (plus jumlah poin)',
     'Admin dapat mengatur bobot tiap opsi (1-5) di Bank Soal Penjurusan (AdminQuestionsView)',
     'Pencarian kampus di seluruh aplikasi mendukung singkatan (kolom institutions.abbreviation) melalui helper institutionSearch + komponen CampusCombobox',
+]:
+    body.append(bullet(item))
+body.append(p(''))
+
+body.append(heading('5.10 Riwayat Login & Kontrol Akses Admin Utama', 2))
+body.append(p('Setiap kali user benar-benar login (event SIGNED_IN), AppStore memanggil Edge Function record-login yang mencatat IP, lokasi (kota/provinsi/negara via lookup IP), user-agent, dan waktu ke tabel login_events. Riwayat ditampilkan per pengguna lewat dialog LoginHistoryDialog pada halaman Daftar Pengguna (AdminUsersView).'))
+for item in [
+    'record-login (Edge Function, verify_jwt) - membaca identitas dari JWT, mencatat ke login_events memakai service role; tidak ada policy INSERT untuk authenticated agar data tidak bisa dipalsukan klien',
+    'login_events_select_own - tiap pengguna dapat melihat riwayat login miliknya sendiri',
+    'login_events_select_admin - hanya admin utama (is_super_admin) yang dapat melihat riwayat seluruh akun',
+    'is_super_admin() - helper yang mengunci aksi sensitif ke satu akun admin utama (hardcode auth uid admin1)',
+    'guard_profile_role() - perubahan kolom role hanya boleh dilakukan admin utama; pelanggaran memunculkan error 42501 (bukan dibatalkan senyap)',
+    'UI Daftar Pengguna menyembunyikan tombol Riwayat dan ubah peran (Jadikan/Turunkan Admin) bagi admin non-utama',
 ]:
     body.append(bullet(item))
 body.append(p(''))

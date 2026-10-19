@@ -923,6 +923,10 @@ class AppStore {
   }
 }
 
+// Admin utama (super admin). Satu-satunya akun yang boleh mengubah peran
+// pengguna dan melihat riwayat login seluruh akun (lihat is_super_admin() di DB).
+export const SUPER_ADMIN_ID = '38f32ff8-1940-44ca-9457-0a52d0fbc2fe';
+
 export const appStore = new AppStore();
 
 export function useAppState() {

@@ -320,8 +320,19 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 14b) KEAMANAN: hanya admin yang boleh mengubah kolom 'role'.
---      Non-admin yang mencoba mengubah role akan ditolak dengan error 42501
+-- 14b) KEAMANAN: hanya admin UTAMA (admin1) yang boleh mengubah kolom 'role'
+--      dan membaca riwayat login seluruh akun. Satu titik hardcode ID admin1.
+CREATE OR REPLACE FUNCTION public.is_super_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT (auth.uid())::text = '38f32ff8-1940-44ca-9457-0a52d0fbc2fe';
+$$;
+
+--      Admin lain yang mencoba mengubah role akan ditolak dengan error 42501
 --      (insufficient_privilege) sehingga kegagalan terlihat jelas di aplikasi,
 --      bukan dibatalkan secara senyap.
 CREATE OR REPLACE FUNCTION public.guard_profile_role()
@@ -331,8 +342,8 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF NEW.role IS DISTINCT FROM OLD.role AND NOT public.is_admin() THEN
-    RAISE EXCEPTION 'Hanya admin yang dapat mengubah peran pengguna.'
+  IF NEW.role IS DISTINCT FROM OLD.role AND NOT public.is_super_admin() THEN
+    RAISE EXCEPTION 'Hanya admin utama yang dapat mengubah peran pengguna.'
       USING ERRCODE = '42501';
   END IF;
   RETURN NEW;
@@ -358,7 +369,7 @@ CREATE POLICY own_insert ON public.profiles
   );
 
 -- 14d) Halaman manajemen admin berhak mengubah role pengguna lain.
---      Trigger guard_profile_role memastikan hanya admin yang lolos.
+--      Trigger guard_profile_role memastikan hanya admin utama yang lolos.
 DROP POLICY IF EXISTS admin_update_all ON public.profiles;
 CREATE POLICY admin_update_all ON public.profiles
   FOR UPDATE
@@ -509,6 +520,8 @@ CREATE POLICY penjurusan_questions_admin_write ON public.penjurusan_questions FO
 -- 20) Riwayat login (lokasi + IP + perangkat). Diisi oleh Edge Function
 --     'record-login' memakai service role. Tidak ada policy INSERT untuk
 --     authenticated agar klien tidak dapat memalsukan data.
+--     Hanya admin utama (is_super_admin) yang dapat melihat riwayat seluruh
+--     akun; tiap pengguna tetap bisa melihat riwayat miliknya sendiri.
 CREATE TABLE IF NOT EXISTS public.login_events (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -530,7 +543,7 @@ CREATE POLICY login_events_select_own ON public.login_events
 
 DROP POLICY IF EXISTS login_events_select_admin ON public.login_events;
 CREATE POLICY login_events_select_admin ON public.login_events
-  FOR SELECT USING (public.is_admin());
+  FOR SELECT USING (public.is_super_admin());
 
 NOTIFY pgrst, 'reload schema';
 `;

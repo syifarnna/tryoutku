@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
+import { useAppState, SUPER_ADMIN_ID } from '../../../lib/store';
 import { Profile } from '../../../types';
 import { getErrorMessage, cn } from '../../../lib/utils';
 import {
@@ -16,6 +17,8 @@ import { LoginHistoryDialog } from './LoginHistoryDialog';
 const PAGE_SIZE = 20;
 
 export const AdminUsersView: React.FC = () => {
+  const state = useAppState();
+  const isSuperAdmin = state.profile.id === SUPER_ADMIN_ID;
   const [users, setUsers] = useState<Profile[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -218,33 +221,37 @@ export const AdminUsersView: React.FC = () => {
                     })}
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => setHistoryUser(user)}
-                        title="Riwayat login"
-                        className="font-bold text-slate-500"
-                      >
-                        <History className="w-3.5 h-3.5" />
-                        Riwayat
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        onClick={() => toggleRole(user)}
-                        disabled={togglingId === user.id}
-                        className="font-bold"
-                      >
-                        {togglingId === user.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : user.role === 'admin' ? (
-                          'Turunkan'
-                        ) : (
-                          'Jadikan Admin'
-                        )}
-                      </Button>
-                    </div>
+                    {isSuperAdmin ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => setHistoryUser(user)}
+                          title="Riwayat login"
+                          className="font-bold text-slate-500"
+                        >
+                          <History className="w-3.5 h-3.5" />
+                          Riwayat
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => toggleRole(user)}
+                          disabled={togglingId === user.id}
+                          className="font-bold"
+                        >
+                          {togglingId === user.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : user.role === 'admin' ? (
+                            'Turunkan'
+                          ) : (
+                            'Jadikan Admin'
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="text-slate-300 dark:text-slate-600">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
