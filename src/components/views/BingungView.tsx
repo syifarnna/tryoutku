@@ -310,10 +310,10 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
       proximityTier(a.major) - proximityTier(b.major) || grade(b) - grade(a);
     const below = rest.filter(c => grade(c) <= autoScore);
     const pas = below
-      .filter(c => autoScore - grade(c) < 100)
+      .filter(c => autoScore - grade(c) < 50)
       .sort(byNear);
     const aman = below
-      .filter(c => autoScore - grade(c) >= 100)
+      .filter(c => autoScore - grade(c) >= 50)
       .sort(byNear);
     return { top, pas, aman };
   }, [autoScore, allCampusesForPicked, proximityTier]);
@@ -540,8 +540,8 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
     const s = clusterStyle[pickedMajor.cluster as ClusterType];
     const groups = [
       { key: 'top', data: categorized.top, title: 'Kampus Top / Favorit', icon: TrendingUp, accent: 'text-emerald-500', note: 'Kampus terbaik untuk jurusan ini (passing grade tertinggi). Kota tidak dipertimbangkan — berani coba?' },
-      { key: 'pas', data: categorized.pas, title: 'Kampus Pas', icon: Award, accent: 'text-amber-500', note: 'Selisih passing grade kurang dari 100 poin dari nilai Anda — peluang realistis.' },
-      { key: 'aman', data: categorized.aman, title: 'Kampus Aman', icon: ShieldCheck, accent: 'text-sky-500', note: 'Nilai Anda jauh di atas passing grade (selisih ≥ 100 poin) — pilihan aman.' },
+      { key: 'pas', data: categorized.pas, title: 'Kampus Pas', icon: Award, accent: 'text-amber-500', note: 'Selisih passing grade kurang dari 50 poin dari nilai Anda — peluang realistis.' },
+      { key: 'aman', data: categorized.aman, title: 'Kampus Aman', icon: ShieldCheck, accent: 'text-sky-500', note: 'Nilai Anda di atas passing grade (selisih ≥ 50 poin) — pilihan aman.' },
     ] as const;
 
     return (
@@ -729,7 +729,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
                   <JenjangBadge jenjang={selectedMajor.jenjang} />
                 </div>
                 <p className="text-xs text-slate-400">
-                  {loadingCampuses ? 'Memuat kampus...' : `${new Set(campusesForMajor.map(c => c.institution.id)).size} kampus menyediakan jurusan ini`}
+                  {loadingCampuses ? 'Memuat kampus...' : ''}
                 </p>
               </div>
               <button onClick={() => setSelectedMajor(null)} className="p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer">
