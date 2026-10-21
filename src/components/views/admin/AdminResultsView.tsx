@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { LeaderboardEntry, UtbkScore } from '../../../types';
 import { getErrorMessage, cn } from '../../../lib/utils';
-import { Award, TrendingUp, Crown, Loader2, AlertCircle, Medal, School } from 'lucide-react';
+import { Award, RefreshCw, Crown, Loader2, AlertCircle, Medal, School, Search, Download } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Pagination } from '@/components/ui/Pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+const PAGE_SIZE = 20;
+
+const PREDICATES = ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'] as const;
 
 const predicateFromScore = (score: number): string => {
   if (score >= 710) return 'Sangat Baik';
@@ -16,9 +22,17 @@ const predicateFromScore = (score: number): string => {
   return 'Kurang';
 };
 
+const csvCell = (v: string | number | undefined | null): string => {
+  const s = String(v ?? '');
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
 export const AdminResultsView: React.FC = () => {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [predicate, setPredicate] = useState('');
+  const [page, setPage] = useState(1);
 
   const fetchLeaderboard = async () => {
     setLoading(true);
@@ -84,6 +98,45 @@ export const AdminResultsView: React.FC = () => {
     ? entries.reduce((s, e) => s + e.total_score, 0) / entries.length
     : 0;
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return entries.filter(e => {
+      if (predicate && e.predicate !== predicate) return false;
+      if (!q) return true;
+      return (
+        e.profiles?.full_name?.toLowerCase().includes(q) ||
+        e.profiles?.school?.toLowerCase().includes(q) ||
+        e.profiles?.nisn?.toLowerCase().includes(q)
+      );
+    });
+  }, [entries, search, predicate]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageOffset = (currentPage - 1) * PAGE_SIZE;
+  const paginated = filtered.slice(pageOffset, pageOffset + PAGE_SIZE);
+
+  const exportCsv = () => {
+    const header = ['Rank', 'Nama', 'Sekolah', 'NISN', 'Email', 'Predikat', 'Skor Terbaik'];
+    const rows = filtered.map((e, i) => [
+      i + 1,
+      e.profiles?.full_name || '',
+      e.profiles?.school || '',
+      e.profiles?.nisn || '',
+      e.profiles?.email || '',
+      e.predicate,
+      e.total_score,
+    ]);
+    const csv = [header, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `leaderboard-utbk-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const getPredicateClass = (pred: string) => {
     switch (pred) {
       case 'Sangat Baik': return 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900';
@@ -113,15 +166,26 @@ export const AdminResultsView: React.FC = () => {
             {!loading && <span className="ml-2">({entries.length} peserta)</span>}
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => fetchLeaderboard()}
-          disabled={loading}
-          className="gap-2"
-        >
-          <TrendingUp className={cn('w-4 h-4', loading && 'animate-pulse')} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={exportCsv}
+            disabled={loading || filtered.length === 0}
+            className="gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Ekspor CSV
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => fetchLeaderboard()}
+            disabled={loading}
+            className="gap-2"
+          >
+            <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -147,11 +211,32 @@ export const AdminResultsView: React.FC = () => {
       </div>
 
       <div className="bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card">
+        <div className="p-4 border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card flex flex-col sm:flex-row sm:items-center gap-3">
           <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
             <Crown className="w-4 h-4 text-yellow-500" />
             Peringkat Skor Terbaik Peserta
           </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:ml-auto w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                placeholder="Cari nama, sekolah, NISN..."
+                className="pl-9 h-9"
+                aria-label="Cari peserta"
+              />
+            </div>
+            <select
+              value={predicate}
+              onChange={(e) => { setPredicate(e.target.value); setPage(1); }}
+              className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-slate-700 dark:text-slate-200 cursor-pointer"
+              aria-label="Filter predikat"
+            >
+              <option value="">Semua predikat</option>
+              {PREDICATES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
         </div>
         <div className="overflow-x-auto">
         <Table>
@@ -173,17 +258,21 @@ export const AdminResultsView: React.FC = () => {
                   Memuat data leaderboard...
                 </TableCell>
               </TableRow>
-            ) : entries.length === 0 ? (
+            ) : filtered.length === 0 ? (
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={6} className="px-6 py-16 text-center">
                   <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                  <p className="text-slate-500 dark:text-muted-foreground">Belum ada nilai UTBK dari peserta.</p>
+                  <p className="text-slate-500 dark:text-muted-foreground">
+                    {entries.length === 0
+                      ? 'Belum ada nilai UTBK dari peserta.'
+                      : 'Tidak ada peserta yang cocok dengan pencarian/filter.'}
+                  </p>
                 </TableCell>
               </TableRow>
             ) : (
-              entries.map((e, i) => (
+              paginated.map((e, i) => (
                 <TableRow key={e.user_id} className="hover:bg-slate-50/50 dark:hover:bg-muted/80">
-                  <TableCell className="px-6 py-4 text-center">{getRankDisplay(i)}</TableCell>
+                  <TableCell className="px-6 py-4 text-center">{getRankDisplay(pageOffset + i)}</TableCell>
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-indigo-900/30 flex items-center justify-center text-primary font-bold shrink-0">
@@ -223,6 +312,14 @@ export const AdminResultsView: React.FC = () => {
           </TableBody>
         </Table>
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card/50">
+            <span className="text-xs text-slate-500 dark:text-muted-foreground">
+              Halaman {currentPage} dari {totalPages} · {filtered.length} peserta
+            </span>
+            <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
+          </div>
+        )}
       </div>
     </div>
   );

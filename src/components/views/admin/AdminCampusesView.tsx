@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Pagination } from '@/components/ui/Pagination';
 
 const TYPE_OPTIONS: InstitutionType[] = ['PTN', 'PTS', 'Kedinasan'];
 
@@ -62,39 +63,18 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
     return state.institutions.filter(i => matchesInstitution(i, q));
   }, [state.institutions, search]);
 
-  const [prodiCounts, setProdiCounts] = useState<Record<number, number>>({});
-  const [countsLoading, setCountsLoading] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadCounts = async () => {
-      if (filtered.length === 0) {
-        setProdiCounts({});
-        setCountsLoading(false);
-        return;
-      }
-      setCountsLoading(true);
-      try {
-        const counts: Record<number, number> = {};
-        await Promise.all(filtered.map(async (inst) => {
-          const res = await searchMajors({ institutionId: inst.id, page: 1, pageSize: 1 });
-          if (!cancelled) counts[inst.id] = res.total;
-        }));
-        if (!cancelled) setProdiCounts(counts);
-      } catch {
-        const fallback: Record<number, number> = {};
-        for (const inst of filtered) fallback[inst.id] = state.majors.filter(m => m.institution_id === inst.id).length;
-        if (!cancelled) setProdiCounts(fallback);
-      } finally {
-        if (!cancelled) setCountsLoading(false);
-      }
-    };
-    loadCounts();
-    return () => { cancelled = true; };
-  }, [filtered, state.majors]);
-
+  // Hitung jumlah prodi per kampus langsung dari state.majors (sudah dimuat
+  // oleh fetchMasterData) — menghindari N+1 query ke server.
+  const prodiCounts = useMemo(() => {
+    const counts: Record<number, number> = {};
+    for (const m of state.majors) {
+      const iid = (m as any).institution_id;
+      if (iid != null) counts[iid] = (counts[iid] || 0) + 1;
+    }
+    return counts;
+  }, [state.majors]);
   const campusProdiCount = (id: number) => prodiCounts[id] ?? 0;
-  const majorsReady = !countsLoading;
+  const majorsReady = state.majors.length > 0;
 
   if (selectedCampus) {
     return (
@@ -349,7 +329,7 @@ const CLUSTER_BADGE: Record<ClusterType, string> = {
   Campuran: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-900',
 };
 
-const PRODI_PAGE_SIZE = 1000;
+const PRODI_PAGE_SIZE = 25;
 
 const AdminCampusDetail: React.FC<{
   campus: Institution;
@@ -361,7 +341,9 @@ const AdminCampusDetail: React.FC<{
   const [rows, setRows] = useState<Major[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -377,10 +359,18 @@ const AdminCampusDetail: React.FC<{
 
   const majorsReady = state.majors.length > 0;
 
+  // Debounce pencarian prodi (server-side).
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PRODI_PAGE_SIZE));
+
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await searchMajors({ institutionId: campus.id, page: 1, pageSize: PRODI_PAGE_SIZE, sort: 'name' });
+      const res = await searchMajors({ institutionId: campus.id, search: debouncedSearch, page, pageSize: PRODI_PAGE_SIZE, sort: 'name' });
       setRows(res.data);
       setTotal(res.total);
     } catch (e) {
@@ -389,17 +379,18 @@ const AdminCampusDetail: React.FC<{
     } finally {
       setLoading(false);
     }
-  }, [campus.id]);
+  }, [campus.id, debouncedSearch, page]);
 
   useEffect(() => {
     reload();
   }, [reload]);
 
-  const q = search.trim().toLowerCase();
-  const filtered = useMemo(
-    () => (q ? rows.filter(m => m.name.toLowerCase().includes(q) || (m.code || '').toLowerCase().includes(q)) : rows),
-    [rows, q]
-  );
+  // Reset ke halaman 1 saat pencarian berubah.
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const filtered = rows;
 
   const resetAddForm = () => {
     setForm({
@@ -409,23 +400,32 @@ const AdminCampusDetail: React.FC<{
   };
 
   const handleAdd = async () => {
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      Swal.fire('Validasi', 'Nama prodi wajib diisi.', 'warning');
+      return;
+    }
     setSaving(true);
-    await appStore.addMajor({
-      institution_id: campus.id,
-      name: form.name.trim(),
-      code: form.code.trim() || undefined,
-      cluster: form.cluster,
-      jenjang: form.jenjang,
-      passing_grade_total: form.passing_grade_total ? Number(form.passing_grade_total) : 0,
-      passing_grade_percentage: form.passing_grade_percentage ? Number(form.passing_grade_percentage) : undefined,
-      daya_tampung: form.daya_tampung ? Number(form.daya_tampung) : undefined,
-      peminat: form.peminat ? Number(form.peminat) : undefined,
-    } as Major);
-    setSaving(false);
-    setShowAdd(false);
-    resetAddForm();
-    await reload();
+    try {
+      await appStore.addMajor({
+        institution_id: campus.id,
+        name: form.name.trim(),
+        code: form.code.trim() || undefined,
+        cluster: form.cluster,
+        jenjang: form.jenjang,
+        passing_grade_total: form.passing_grade_total ? Number(form.passing_grade_total) : 0,
+        passing_grade_percentage: form.passing_grade_percentage ? Number(form.passing_grade_percentage) : undefined,
+        daya_tampung: form.daya_tampung ? Number(form.daya_tampung) : undefined,
+        peminat: form.peminat ? Number(form.peminat) : undefined,
+      } as Major);
+      setShowAdd(false);
+      resetAddForm();
+      await reload();
+      Swal.fire({ icon: 'success', title: 'Prodi ditambahkan', timer: 1500, showConfirmButton: false });
+    } catch (e: any) {
+      Swal.fire('Gagal', getErrorMessage(e), 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (m: Major) => {
@@ -591,7 +591,7 @@ const AdminCampusDetail: React.FC<{
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nama prodi atau kode di kampus ini..." className="pl-9 h-9" />
         </div>
-        <span className="ml-auto text-xs font-semibold text-slate-400">{filtered.length} prodi tampil</span>
+        <span className="ml-auto text-xs font-semibold text-slate-400">{total.toLocaleString('id-ID')} prodi</span>
       </div>
 
       <div className="bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
@@ -613,9 +613,9 @@ const AdminCampusDetail: React.FC<{
               {!loading && filtered.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-slate-400 text-sm">
-                    {rows.length === 0
-                      ? 'Belum ada prodi untuk kampus ini. Gunakan "Tambah Prodi" di atas.'
-                      : 'Tidak ada prodi ditemukan untuk pencarian ini.'}
+                    {debouncedSearch
+                      ? 'Tidak ada prodi ditemukan untuk pencarian ini.'
+                      : 'Belum ada prodi untuk kampus ini. Gunakan "Tambah Prodi" di atas.'}
                   </td>
                 </tr>
               )}
@@ -659,6 +659,14 @@ const AdminCampusDetail: React.FC<{
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card/50">
+            <span className="text-xs text-slate-500 dark:text-muted-foreground">
+              Halaman {page} dari {totalPages} · {total.toLocaleString('id-ID')} prodi
+            </span>
+            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -24,23 +24,37 @@ export const AdminUsersView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [loggingOutId, setLoggingOutId] = useState<string | null>(null);
   const [historyUser, setHistoryUser] = useState<Profile | null>(null);
 
-  const fetchUsers = useCallback(async (pageNum: number) => {
+  // Debounce pencarian (server-side).
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const fetchUsers = useCallback(async (pageNum: number, query: string) => {
     setLoading(true);
     const from = pageNum * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
+    const safe = query.replace(/[%,()]/g, ' ').trim();
 
-    const [countRes, dataRes] = await Promise.all([
-      supabase.from('profiles').select('*', { count: 'exact', head: true }),
-      supabase
-        .from('profiles')
-        .select('*')
-        .order('updated_at', { ascending: false })
-        .range(from, to),
-    ]);
+    let countQ = supabase.from('profiles').select('*', { count: 'exact', head: true });
+    let dataQ = supabase
+      .from('profiles')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .range(from, to);
+    if (safe) {
+      const like = `%${safe}%`;
+      const filter = `full_name.ilike.${like},email.ilike.${like},nisn.ilike.${like}`;
+      countQ = countQ.or(filter);
+      dataQ = dataQ.or(filter);
+    }
+
+    const [countRes, dataRes] = await Promise.all([countQ, dataQ]);
 
     if (dataRes.error) {
       Swal.fire('Gagal Memuat Data', getErrorMessage(dataRes.error), 'error');
@@ -54,8 +68,13 @@ export const AdminUsersView: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchUsers(page);
-  }, [page, fetchUsers]);
+    fetchUsers(page, debouncedSearch);
+  }, [page, debouncedSearch, fetchUsers]);
+
+  // Kembali ke halaman pertama tiap pencarian berubah.
+  useEffect(() => {
+    setPage(0);
+  }, [debouncedSearch]);
 
   const toggleRole = async (user: Profile) => {
     const newRole = user.role === 'admin' ? 'peserta' : 'admin';
@@ -89,7 +108,7 @@ export const AdminUsersView: React.FC = () => {
         'Peran pengguna tidak berubah. Pastikan Anda login sebagai admin dan coba lagi.',
         'warning'
       );
-      await fetchUsers(page);
+      await fetchUsers(page, debouncedSearch);
     } else {
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u));
       Swal.fire({
@@ -138,11 +157,7 @@ export const AdminUsersView: React.FC = () => {
     setLoggingOutId(null);
   };
 
-  const filteredUsers = users.filter(u =>
-    u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-    u.email?.toLowerCase().includes(search.toLowerCase()) ||
-    u.nisn?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = users;
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
@@ -161,7 +176,7 @@ export const AdminUsersView: React.FC = () => {
         </div>
         <Button
           variant="outline"
-          onClick={() => fetchUsers(page)}
+          onClick={() => fetchUsers(page, debouncedSearch)}
           disabled={loading}
           className="gap-2"
         >
@@ -184,7 +199,7 @@ export const AdminUsersView: React.FC = () => {
           </div>
           {search && (
             <span className="ml-3 text-xs text-slate-400 whitespace-nowrap">
-              {filteredUsers.length} dari {users.length} ditampilkan
+              {totalCount} hasil ditemukan
             </span>
           )}
         </div>
@@ -313,7 +328,7 @@ export const AdminUsersView: React.FC = () => {
         </Table>
         </div>
 
-        {totalPages > 1 && !search && (
+        {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card/50 text-sm">
             <span className="text-slate-500 dark:text-muted-foreground text-xs">
               Halaman {page + 1} dari {totalPages}
@@ -324,6 +339,7 @@ export const AdminUsersView: React.FC = () => {
                 size="icon-xs"
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
+                aria-label="Halaman sebelumnya"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -332,6 +348,7 @@ export const AdminUsersView: React.FC = () => {
                 size="icon-xs"
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
+                aria-label="Halaman berikutnya"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
