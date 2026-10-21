@@ -13,6 +13,17 @@ import { UtbkInputModal } from '@/components/modals/UtbkInputModal';
 
 const CLUSTERS: ClusterType[] = ['Saintek', 'Soshum', 'Campuran'];
 
+const OPTION_KEYS = ['a', 'b', 'c', 'd'] as const;
+
+const shuffle = <T,>(arr: T[]): T[] => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
 const clusterStyle: Record<ClusterType, { label: string; bar: string; badge: string; desc: string }> = {
   Saintek: {
     label: 'Saintek',
@@ -79,7 +90,11 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
 
   const questions = useMemo(() => state.questions.filter(q => q.is_active), [state.questions]);
 
+  const [deck, setDeck] = useState<{ q: PenjurusanQuestion; order: number[] }[]>([]);
+
   const total = questions.length;
+
+  const current = deck[step];
 
   const autoScore = appStore.getUtbkLatestScore();
 
@@ -147,7 +162,12 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
     proximityTier(a) - proximityTier(b) || (a.passing_grade_total || 0) - (b.passing_grade_total || 0),
   [proximityTier]);
 
-  const start = () => { if (total === 0) return; setPhase('running'); setWizardStep('running'); setStep(0); setTally(emptyTally()); };
+  const start = () => {
+    if (total === 0) return;
+    // Acak urutan soal + posisi opsi setiap kali tes dimulai agar polanya tidak sama.
+    setDeck(shuffle(questions).map(q => ({ q, order: shuffle([0, 1, 2, 3]) })));
+    setPhase('running'); setWizardStep('running'); setStep(0); setTally(emptyTally());
+  };
 
   const pick = (cluster: ClusterType, weight: number = 1) => {
     // Bobot per jawaban/opsi (1-5) yang dipilih.
@@ -666,7 +686,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
         </Card>
       )}
 
-      {phase === 'running' && wizardStep === 'running' && questions[step] && (
+      {phase === 'running' && wizardStep === 'running' && current && (
         <Card className="p-6 lg:p-10 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <Badge variant="outline" className="rounded-full text-[11px] font-bold text-slate-500">
@@ -679,14 +699,15 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
           </div>
 
           <h3 className="font-extrabold text-base sm:text-lg text-slate-800 dark:text-white leading-relaxed">
-            {questions[step].question}
+            {current.q.question}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
-            {(['a', 'b', 'c', 'd'] as const).map((k, i) => {
-              const opt = questions[step][`option_${k}`];
-              const cl = questions[step][`cluster_${k}` as keyof PenjurusanQuestion] as ClusterType;
-              const w = (questions[step][`weight_${k}` as keyof PenjurusanQuestion] as number) || 1;
+            {current.order.map((origIdx, i) => {
+              const k = OPTION_KEYS[origIdx];
+              const opt = current.q[`option_${k}`];
+              const cl = current.q[`cluster_${k}` as keyof PenjurusanQuestion] as ClusterType;
+              const w = (current.q[`weight_${k}` as keyof PenjurusanQuestion] as number) || 1;
               if (!opt) return null;
               return (
                 <button
