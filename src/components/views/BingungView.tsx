@@ -122,7 +122,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
 
   const lastResult = useMemo<{ dominant: ClusterType; tally: Tally } | null>(() => {
     try {
-      const raw = localStorage.getItem('tryoutku_penjurusan_v2');
+      const raw = localStorage.getItem('tryoutku_penjurusan_v3');
       return raw ? JSON.parse(raw) : null;
     } catch { return null; }
   }, []);
@@ -149,9 +149,9 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
 
   const start = () => { if (total === 0) return; setPhase('running'); setWizardStep('running'); setStep(0); setTally(emptyTally()); };
 
-  const pick = (cluster: ClusterType) => {
-    // Bobot = tingkat kepentingan soal (1-5), bukan bobot per opsi.
-    const w = (questions[step]?.weight ?? 1) || 1;
+  const pick = (cluster: ClusterType, weight: number = 1) => {
+    // Bobot per jawaban/opsi (1-5) yang dipilih.
+    const w = weight > 0 ? weight : 1;
     if (step + 1 >= total) {
       const next = { ...tally, [cluster]: tally[cluster] + w };
       setTally(next);
@@ -159,7 +159,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
       setPhase('result');
       setWizardStep('result');
       try {
-        localStorage.setItem('tryoutku_penjurusan_v2', JSON.stringify({ dominant, tally: next }));
+        localStorage.setItem('tryoutku_penjurusan_v3', JSON.stringify({ dominant, tally: next }));
       } catch {}
     } else {
       setTally(t => ({ ...t, [cluster]: t[cluster] + w }));
@@ -686,12 +686,13 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
             {(['a', 'b', 'c', 'd'] as const).map((k, i) => {
               const opt = questions[step][`option_${k}`];
               const cl = questions[step][`cluster_${k}` as keyof PenjurusanQuestion] as ClusterType;
+              const w = (questions[step][`weight_${k}` as keyof PenjurusanQuestion] as number) || 1;
               if (!opt) return null;
               return (
                 <button
                   key={k}
                   type="button"
-                  onClick={() => pick(cl)}
+                  onClick={() => pick(cl, w)}
                   className="group p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-border hover:border-violet-500 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-950/30 text-left transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-3">

@@ -207,7 +207,7 @@ tables = [
     ('login_events', 'Riwayat login user (user_id, ip, city, region, country, user_agent, created_at) — diisi Edge Function record-login via service role, dibaca admin utama/pemilik akun'),
     ('target_institutions', 'Target prodi pilihan user (user_id, major_id, priority)'),
     ('tryouts', 'Definisi tryout (name, date, type, duration_minutes, question_count, status)'),
-    ('penjurusan_questions', 'Bank soal tes penjurusan (question, option_a-d, cluster_a-d, weight bobot per-soal 1-5, is_active; weight_a-d lama tidak dipakai lagi)'),
+    ('penjurusan_questions', 'Bank soal tes penjurusan (question, option_a-d, cluster_a-d, weight_a-d bobot per-jawaban 1-5, is_active)'),
     ('competencies', 'Daftar kompetensi/subtes (code PU/PPU/PBM/PK/LBI/LBE/PM, name, weight)'),
     ('tutoring_centers', 'Rekomendasi bimbel (name, focus_competency_code, link_url, rating)'),
 ]
@@ -261,12 +261,12 @@ for item in [
 body.append(p(''))
 
 body.append(heading('5.9 Tes Penjurusan (Minat & Bakat) Berbobot', 2))
-body.append(p('Tes penjurusan di BingungView.tsx memetakan tiap opsi jawaban ke rumpun (Saintek/Soshum/Campuran). Setiap SOAL memiliki bobot kepentingan 1-5 (kolom weight pada penjurusan_questions):'))
+body.append(p('Tes penjurusan di BingungView.tsx memetakan tiap opsi jawaban ke rumpun (Saintek/Soshum/Campuran) dengan bobot per jawaban 1-5 (kolom weight_a-d pada penjurusan_questions):'))
 for item in [
-    'Skor rumpun = akumulasi bobot soal yang dijawab ke rumpun itu (weighted tally), bukan sekadar jumlah jawaban; soal inti berbobot 4-5 dan soal pendukung 2-3',
+    'Skor rumpun = akumulasi bobot jawaban yang dipilih (weighted tally), bukan sekadar jumlah jawaban',
     'Rumpun dominan = skor tertinggi; namun bila selisih skor tertinggi & kedua <= 10% total skor, hasil dianggap seimbang (Campuran)',
     'Bar hasil menampilkan persentase ternormalisasi = skor rumpun / total bobot terjawab x 100 (plus jumlah poin)',
-    'Admin dapat mengubah bobot soal (1-5) langsung dari tabel Bank Soal Penjurusan (AdminQuestionsView) maupun saat menambah soal',
+    'Admin dapat mengubah bobot tiap jawaban (1-5) langsung dari tabel Bank Soal Penjurusan (AdminQuestionsView) maupun saat menambah soal',
     'Pencarian kampus di seluruh aplikasi mendukung singkatan (kolom institutions.abbreviation) melalui helper institutionSearch + komponen CampusCombobox',
 ]:
     body.append(bullet(item))

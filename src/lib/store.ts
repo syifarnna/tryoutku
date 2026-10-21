@@ -905,15 +905,16 @@ class AppStore {
     return null;
   }
 
-  public async updateQuestionWeight(id: number, weight: number) {
+  public async updateOptionWeight(id: number, option: 'a' | 'b' | 'c' | 'd', weight: number) {
     const w = Math.min(5, Math.max(1, Math.round(weight)));
-    const { error } = await supabase.from('penjurusan_questions').update({ weight: w }).eq('id', id);
+    const patch = { [`weight_${option}`]: w } as Record<string, number>;
+    const { error } = await supabase.from('penjurusan_questions').update(patch).eq('id', id);
     if (!error) {
-      this.state.questions = this.state.questions.map(q => q.id === id ? { ...q, weight: w } : q);
+      this.state.questions = this.state.questions.map(q => q.id === id ? { ...q, ...patch } : q);
       this.notify();
       return true;
     }
-    if (error) console.warn('Gagal update bobot soal:', error.message);
+    if (error) console.warn('Gagal update bobot jawaban:', error.message);
     return false;
   }
 

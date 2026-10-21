@@ -36,22 +36,22 @@ export interface Institution {
 export interface PenjurusanQuestion {
   id: number;
   question: string;
-  // Bobot per soal (1-5): semakin besar, semakin kuat pengaruh soal terhadap skor rumpun.
-  weight: number;
   option_a: string;
   cluster_a: ClusterType;
+  // Bobot per jawaban (1-5): semakin besar, semakin kuat sinyal rumpun dari opsi tsb.
+  weight_a: number;
   option_b: string;
   cluster_b: ClusterType;
+  weight_b: number;
   option_c: string;
   cluster_c: ClusterType;
+  weight_c: number;
   option_d: string;
   cluster_d: ClusterType;
-  // Deprecated: bobot per opsi tidak lagi dipakai untuk skor. Dipertahankan
-  // agar kompatibel dengan kolom lama di database.
-  weight_a?: number;
-  weight_b?: number;
-  weight_c?: number;
-  weight_d?: number;
+  weight_d: number;
+  // Deprecated: bobot per soal tidak dipakai untuk skor. Dipertahankan agar
+  // kompatibel dengan kolom di database.
+  weight?: number;
   is_active: boolean;
   created_at?: string;
 }
