@@ -3,6 +3,8 @@ import { useAppState, appStore } from '../../../lib/store';
 import { ListChecks, Plus, Power, Trash2, X } from 'lucide-react';
 import { ClusterType, PenjurusanQuestion } from '../../../types';
 import { cn } from '../../../lib/utils';
+import { getErrorMessage } from '../../../lib/utils';
+import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -56,7 +58,10 @@ export const AdminQuestionsView: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!form.question.trim() || form.options.some(o => !o.text.trim())) return;
+    if (!form.question.trim() || form.options.some(o => !o.text.trim())) {
+      Swal.fire('Validasi', 'Pertanyaan dan semua opsi wajib diisi.', 'warning');
+      return;
+    }
     setSaving(true);
     const payload = {
       question: form.question.trim(),
@@ -66,9 +71,34 @@ export const AdminQuestionsView: React.FC = () => {
       option_d: form.options[3].text.trim(), cluster_d: form.options[3].cluster, weight_d: form.options[3].weight,
       is_active: true,
     };
-    await appStore.addQuestion(payload as any);
-    setSaving(false);
-    resetForm();
+    try {
+      await appStore.addQuestion(payload as any);
+      resetForm();
+      Swal.fire({ icon: 'success', title: 'Pertanyaan ditambahkan', timer: 1500, showConfirmButton: false });
+    } catch (e: any) {
+      Swal.fire('Gagal', getErrorMessage(e), 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    const confirmed = await Swal.fire({
+      icon: 'warning',
+      title: 'Hapus pertanyaan ini?',
+      text: 'Tindakan ini tidak dapat dibatalkan.',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, hapus',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#dc2626',
+    });
+    if (!confirmed.isConfirmed) return;
+    try {
+      await appStore.deleteQuestion(id);
+      Swal.fire({ icon: 'success', title: 'Pertanyaan dihapus', timer: 1500, showConfirmButton: false });
+    } catch (e: any) {
+      Swal.fire('Gagal', getErrorMessage(e), 'error');
+    }
   };
 
   return (
@@ -93,9 +123,9 @@ export const AdminQuestionsView: React.FC = () => {
           <CardContent className="space-y-4 p-6">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800 dark:text-white">Tambah Pertanyaan Penjurusan</h3>
-              <button onClick={resetForm} className="p-1.5 rounded-lg text-slate-400 hover:bg-muted hover:text-slate-700 dark:hover:text-white transition-all cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
+                      <button onClick={resetForm} className="p-1.5 rounded-lg text-slate-400 hover:bg-muted hover:text-slate-700 dark:hover:text-white transition-all cursor-pointer" aria-label="Tutup form">
+                        <X className="w-4 h-4" />
+                      </button>
             </div>
             <div>
               <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Pertanyaan</Label>
@@ -177,8 +207,9 @@ export const AdminQuestionsView: React.FC = () => {
         <span className="ml-auto text-xs font-semibold text-slate-400">{displayed.length} soal</span>
       </div>
 
-      <div className="bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
-        <Table>
+       <div className="bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm">
+         <div className="overflow-x-auto">
+         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold w-12 text-center">#</TableHead>
@@ -237,15 +268,16 @@ export const AdminQuestionsView: React.FC = () => {
                   </button>
                 </TableCell>
                 <TableCell className="px-6 py-4 text-right">
-                  <Button variant="destructive" size="icon-xs" onClick={() => appStore.deleteQuestion(q.id)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                   <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(q.id)} aria-label="Hapus pertanyaan">
+                     <Trash2 className="w-4 h-4" />
+                   </Button>
                 </TableCell>
               </TableRow>
             ))}
-          </TableBody>
-        </Table>
-      </div>
+           </TableBody>
+         </Table>
+         </div>
+       </div>
     </div>
   );
 };

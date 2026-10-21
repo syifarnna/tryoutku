@@ -6,6 +6,8 @@ import { searchMajors } from '../../../lib/prodiSearch';
 import { matchesInstitution } from '../../../lib/institutionSearch';
 import { JenjangBadge } from '@/components/ui/JenjangBadge';
 import { cn } from '../../../lib/utils';
+import { getErrorMessage } from '../../../lib/utils';
+import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -41,6 +43,7 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
   const [form, setForm] = useState<CampusForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [selectedCampus, setSelectedCampus] = useState<Institution | null>(null);
   const healedRef = useRef(false);
 
@@ -121,7 +124,10 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      Swal.fire('Validasi', 'Nama kampus wajib diisi.', 'warning');
+      return;
+    }
     setSaving(true);
     const payload = {
       name: form.name.trim(),
@@ -132,13 +138,20 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
       range_min: form.range_min ? Number(form.range_min) : null,
       range_max: form.range_max ? Number(form.range_max) : null,
     };
-    if (editingId != null) {
-      await appStore.updateInstitution({ ...payload, id: editingId } as Institution);
-    } else {
-      await appStore.addInstitution(payload as any);
+    try {
+      if (editingId != null) {
+        await appStore.updateInstitution({ ...payload, id: editingId } as Institution);
+        Swal.fire({ icon: 'success', title: 'Kampus diperbarui', timer: 1500, showConfirmButton: false });
+      } else {
+        await appStore.addInstitution(payload as any);
+        Swal.fire({ icon: 'success', title: 'Kampus ditambahkan', timer: 1500, showConfirmButton: false });
+      }
+      resetForm();
+    } catch (e: any) {
+      Swal.fire('Gagal', getErrorMessage(e), 'error');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    resetForm();
   };
 
   const numCampus = state.institutions.length;
@@ -166,9 +179,9 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
               <h3 className="font-bold text-lg text-slate-800 dark:text-white">
                 {editingId != null ? 'Ubah Data Kampus' : 'Tambah Kampus Baru'}
               </h3>
-              <button onClick={resetForm} className="p-1.5 rounded-lg text-slate-400 hover:bg-muted hover:text-slate-700 dark:hover:text-white transition-all cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
+                      <button onClick={resetForm} className="p-1.5 rounded-lg text-slate-400 hover:bg-muted hover:text-slate-700 dark:hover:text-white transition-all cursor-pointer" aria-label="Tutup form">
+                        <X className="w-4 h-4" />
+                      </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2">
@@ -283,14 +296,34 @@ export const AdminCampusesView: React.FC<{ setActiveTab?: (tab: string) => void 
                   </TableCell>
                   <TableCell className="px-6 py-4 text-right">
                     <div className="inline-flex gap-1.5">
-                      <Button variant="outline" size="icon-xs" onClick={() => setSelectedCampus(inst)} className="cursor-pointer" title="Lihat & kelola prodi kampus">
+                      <Button variant="outline" size="icon-xs" onClick={() => setSelectedCampus(inst)} className="cursor-pointer" title="Lihat & kelola prodi kampus" aria-label="Lihat prodi kampus">
                         <School className="w-4 h-4" />
                       </Button>
-                      <Button variant="outline" size="icon-xs" onClick={() => startEdit(inst)} className="cursor-pointer">
+                      <Button variant="outline" size="icon-xs" onClick={() => startEdit(inst)} className="cursor-pointer" aria-label="Edit kampus">
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button variant="destructive" size="icon-xs" onClick={() => appStore.deleteInstitution(inst.id)} className="cursor-pointer">
-                        <Trash2 className="w-4 h-4" />
+                      <Button variant="destructive" size="icon-xs" onClick={async () => {
+                        const confirmed = await Swal.fire({
+                          icon: 'warning',
+                          title: `Hapus kampus ${inst.name}?`,
+                          text: 'Semua prodi terkait akan ikut terhapus. Tindakan tidak dapat dibatalkan.',
+                          showCancelButton: true,
+                          confirmButtonText: 'Ya, hapus',
+                          cancelButtonText: 'Batal',
+                          confirmButtonColor: '#dc2626',
+                        });
+                        if (!confirmed.isConfirmed) return;
+                        setDeletingId(inst.id);
+                        try {
+                          await appStore.deleteInstitution(inst.id);
+                          Swal.fire({ icon: 'success', title: 'Kampus dihapus', timer: 1500, showConfirmButton: false });
+                        } catch (e: any) {
+                          Swal.fire('Gagal', getErrorMessage(e), 'error');
+                        } finally {
+                          setDeletingId(null);
+                        }
+                      }} className="cursor-pointer" aria-label="Hapus kampus" disabled={deletingId === inst.id}>
+                        {deletingId === inst.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                       </Button>
                     </div>
                   </TableCell>
@@ -396,9 +429,23 @@ const AdminCampusDetail: React.FC<{
   };
 
   const handleDelete = async (m: Major) => {
-    if (!window.confirm(`Hapus prodi "${m.name}" dari ${campus.name}?`)) return;
-    await appStore.deleteMajor(m.id);
-    await reload();
+    const confirmed = await Swal.fire({
+      icon: 'warning',
+      title: `Hapus prodi ${m.name}?`,
+      text: `Akan dihapus dari ${campus.name}.`,
+      showCancelButton: true,
+      confirmButtonText: 'Ya, hapus',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#dc2626',
+    });
+    if (!confirmed.isConfirmed) return;
+    try {
+      await appStore.deleteMajor(m.id);
+      await reload();
+      Swal.fire({ icon: 'success', title: 'Prodi dihapus', timer: 1500, showConfirmButton: false });
+    } catch (e: any) {
+      Swal.fire('Gagal', getErrorMessage(e), 'error');
+    }
   };
 
   const localTotal = majorsReady
@@ -409,9 +456,9 @@ const AdminCampusDetail: React.FC<{
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header aksi */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button onClick={onBack} className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">
-          <ArrowLeft className="w-4 h-4" /> Daftar Kampus
-        </button>
+          <button onClick={onBack} className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer" aria-label="Kembali ke daftar kampus">
+            <ArrowLeft className="w-4 h-4" /> Daftar Kampus
+          </button>
         <div className="flex flex-wrap gap-2">
           {setActiveTab && (
             <Button variant="outline" className="gap-2" onClick={() => setActiveTab('admin_majors')}>
@@ -603,9 +650,9 @@ const AdminCampusDetail: React.FC<{
                     {m.passing_grade_total != null ? m.passing_grade_total : '—'}
                   </td>
                   <td className="px-6 py-3 text-right">
-                    <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(m)} className="cursor-pointer">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                     <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(m)} className="cursor-pointer" aria-label="Hapus prodi">
+                       <Trash2 className="w-4 h-4" />
+                     </Button>
                   </td>
                 </tr>
               ))}

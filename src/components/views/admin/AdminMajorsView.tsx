@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppState, appStore } from '../../../lib/store';
-import { Plus, Trash2, Upload, FileSpreadsheet, AlertCircle, Pencil, Search, X } from 'lucide-react';
+import { Plus, Trash2, Upload, FileSpreadsheet, AlertCircle, Pencil, Search, X, Loader2 } from 'lucide-react';
 import { Major } from '../../../types';
 import * as XLSX from 'xlsx';
 import { supabase } from '../../../lib/supabaseClient';
 import { getErrorMessage, cn, formatNumber } from '../../../lib/utils';
+import Swal from 'sweetalert2';
 import { searchMajors, getMajorsStats, useDebouncedValue, MajorsStats } from '../../../lib/prodiSearch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -55,6 +56,7 @@ export const AdminMajorsView: React.FC = () => {
   const [loadError, setLoadError] = useState('');
   const [stats, setStats] = useState<MajorsStats | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const hasActiveFilter = jenjangFilter !== 'SEMUA' || debouncedQuery.trim().length > 0;
@@ -157,8 +159,10 @@ export const AdminMajorsView: React.FC = () => {
     if (editingId) {
       const original = rows.find(r => r.id === editingId) ?? state.majors.find(m => m.id === editingId);
       appStore.updateMajor({ ...original, ...payload } as Major);
+      Swal.fire({ icon: 'success', title: 'Prodi diperbarui', timer: 1500, showConfirmButton: false });
     } else {
       appStore.addMajor(payload);
+      Swal.fire({ icon: 'success', title: 'Prodi ditambahkan', timer: 1500, showConfirmButton: false });
     }
 
     setIsAdding(false);
@@ -167,9 +171,28 @@ export const AdminMajorsView: React.FC = () => {
     refresh();
   };
 
-  const handleDelete = (id: number) => {
-    appStore.deleteMajor(id);
-    refresh();
+  const handleDelete = async (id: number, name?: string) => {
+    const confirmed = await Swal.fire({
+      icon: 'warning',
+      title: `Hapus prodi ${name || ''}?`,
+      text: 'Tindakan ini tidak dapat dibatalkan.',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, hapus',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#dc2626',
+    });
+    if (!confirmed.isConfirmed) return;
+
+    setDeletingId(id);
+    try {
+      await appStore.deleteMajor(id);
+      refresh();
+      Swal.fire({ icon: 'success', title: 'Prodi dihapus', timer: 1500, showConfirmButton: false });
+    } catch (e: any) {
+      Swal.fire('Gagal', getErrorMessage(e), 'error');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -428,6 +451,7 @@ export const AdminMajorsView: React.FC = () => {
       </div>
 
       <div className={cn("bg-card rounded-2xl border border-slate-200 dark:border-border overflow-hidden shadow-sm transition-opacity", loading && rows.length > 0 && 'opacity-60')}>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
@@ -493,11 +517,11 @@ export const AdminMajorsView: React.FC = () => {
                 </TableCell>
                 <TableCell className="px-6 py-4 text-right">
                   <div className="inline-flex gap-1.5">
-                    <Button variant="outline" size="icon-xs" onClick={() => startEdit(m)} title="Edit Prodi">
+                    <Button variant="outline" size="icon-xs" onClick={() => startEdit(m)} title="Edit Prodi" aria-label="Edit prodi">
                       <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(m.id)} title="Hapus Prodi">
-                      <Trash2 className="w-4 h-4" />
+                    <Button variant="destructive" size="icon-xs" onClick={() => handleDelete(m.id, m.name)} title="Hapus Prodi" aria-label="Hapus prodi" disabled={deletingId === m.id}>
+                      {deletingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                     </Button>
                   </div>
                 </TableCell>
@@ -505,6 +529,7 @@ export const AdminMajorsView: React.FC = () => {
             ))}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-3 flex-wrap">

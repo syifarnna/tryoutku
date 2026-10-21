@@ -189,6 +189,7 @@ export const AdminUsersView: React.FC = () => {
           )}
         </div>
 
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
@@ -264,6 +265,7 @@ export const AdminUsersView: React.FC = () => {
                           size="xs"
                           onClick={() => setHistoryUser(user)}
                           title="Riwayat login"
+                          aria-label="Riwayat login"
                           className="font-bold text-slate-500"
                         >
                           <History className="w-3.5 h-3.5" />
@@ -274,6 +276,7 @@ export const AdminUsersView: React.FC = () => {
                           onClick={() => forceLogout(user)}
                           disabled={loggingOutId === user.id}
                           title="Logout paksa"
+                          aria-label="Logout paksa"
                           className="font-bold text-red-600"
                         >
                           {loggingOutId === user.id ? (
@@ -288,6 +291,7 @@ export const AdminUsersView: React.FC = () => {
                           onClick={() => toggleRole(user)}
                           disabled={togglingId === user.id}
                           className="font-bold"
+                          aria-label="Ubah peran"
                         >
                           {togglingId === user.id ? (
                             <Loader2 className="w-3 h-3 animate-spin" />
@@ -307,6 +311,7 @@ export const AdminUsersView: React.FC = () => {
             )}
           </TableBody>
         </Table>
+        </div>
 
         {totalPages > 1 && !search && (
           <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-card/50 text-sm">

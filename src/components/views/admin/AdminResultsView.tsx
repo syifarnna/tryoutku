@@ -153,6 +153,7 @@ export const AdminResultsView: React.FC = () => {
             Peringkat Skor Terbaik Peserta
           </h3>
         </div>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
@@ -221,6 +222,7 @@ export const AdminResultsView: React.FC = () => {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );
