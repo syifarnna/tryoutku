@@ -481,12 +481,14 @@ DROP POLICY IF EXISTS admin_all ON public.utbk_scores;
 CREATE POLICY admin_all ON public.utbk_scores FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- 19) Bank soal Tes Penjurusan (Minat & Bakat).
---     Setiap opsi dipetakan ke rumpun (Saintek/Soshum/Campuran) + bobot 1-5.
---     Skor rumpun = jumlah bobot opsi yang dipilih; selisih top-2 <= 10% total
---     dianggap seimbang (Campuran).
+--     Setiap opsi dipetakan ke rumpun (Saintek/Soshum/Campuran).
+--     Setiap SOAL punya bobot 1-5 (kolom weight): makin besar, makin kuat
+--     pengaruhnya ke skor rumpun. Skor rumpun = akumulasi bobot soal yang
+--     dijawab ke rumpun itu; selisih top-2 <= 10% total dianggap Campuran.
 CREATE TABLE IF NOT EXISTS public.penjurusan_questions (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   question TEXT NOT NULL,
+  weight INTEGER NOT NULL DEFAULT 1 CHECK (weight BETWEEN 1 AND 5),
   option_a TEXT NOT NULL,
   option_b TEXT NOT NULL,
   option_c TEXT NOT NULL,
@@ -503,7 +505,12 @@ CREATE TABLE IF NOT EXISTS public.penjurusan_questions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Pastikan kolom bobot tersedia pada instalasi lama.
+-- Pastikan kolom bobot soal tersedia pada instalasi lama.
+ALTER TABLE public.penjurusan_questions
+  ADD COLUMN IF NOT EXISTS weight INTEGER NOT NULL DEFAULT 1 CHECK (weight BETWEEN 1 AND 5);
+
+-- Kolom lama weight_a..d (bobot per opsi) tidak dipakai lagi untuk skor.
+-- Dipertahankan agar kompatibel dengan data/instalasi lama.
 ALTER TABLE public.penjurusan_questions
   ADD COLUMN IF NOT EXISTS weight_a INTEGER NOT NULL DEFAULT 1 CHECK (weight_a BETWEEN 1 AND 5),
   ADD COLUMN IF NOT EXISTS weight_b INTEGER NOT NULL DEFAULT 1 CHECK (weight_b BETWEEN 1 AND 5),

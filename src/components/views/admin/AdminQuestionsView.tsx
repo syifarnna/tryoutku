@@ -21,19 +21,20 @@ const clusterStyle: Record<ClusterType, string> = {
   Campuran: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-900',
 };
 
-interface OptionRow { text: string; cluster: ClusterType; weight: number; }
+interface OptionRow { text: string; cluster: ClusterType; }
 
-interface QuestionForm { question: string; options: OptionRow[]; }
+interface QuestionForm { question: string; weight: number; options: OptionRow[]; }
 
 const WEIGHTS = [1, 2, 3, 4, 5];
 
 const emptyForm: QuestionForm = {
   question: '',
+  weight: 2,
   options: [
-    { text: '', cluster: 'Saintek', weight: 1 },
-    { text: '', cluster: 'Soshum', weight: 1 },
-    { text: '', cluster: 'Saintek', weight: 1 },
-    { text: '', cluster: 'Soshum', weight: 1 },
+    { text: '', cluster: 'Saintek' },
+    { text: '', cluster: 'Soshum' },
+    { text: '', cluster: 'Saintek' },
+    { text: '', cluster: 'Soshum' },
   ],
 };
 
@@ -42,6 +43,7 @@ export const AdminQuestionsView: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [form, setForm] = useState<QuestionForm>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [savingWeightId, setSavingWeightId] = useState<number | null>(null);
   const [isActiveFilter, setIsActiveFilter] = useState<'SEMUA' | boolean>('SEMUA');
 
   const activeQuestions = state.questions.filter(q => q.is_active).length;
@@ -57,6 +59,20 @@ export const AdminQuestionsView: React.FC = () => {
     setForm({ ...form, options: next });
   };
 
+  const handleWeightChange = async (id: number, weight: number) => {
+    setSavingWeightId(id);
+    const ok = await appStore.updateQuestionWeight(id, weight);
+    setSavingWeightId(null);
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: ok ? 'success' : 'error',
+      title: ok ? 'Bobot soal diperbarui' : 'Gagal menyimpan bobot',
+      showConfirmButton: false,
+      timer: 1600,
+    });
+  };
+
   const handleSave = async () => {
     if (!form.question.trim() || form.options.some(o => !o.text.trim())) {
       Swal.fire('Validasi', 'Pertanyaan dan semua opsi wajib diisi.', 'warning');
@@ -65,10 +81,11 @@ export const AdminQuestionsView: React.FC = () => {
     setSaving(true);
     const payload = {
       question: form.question.trim(),
-      option_a: form.options[0].text.trim(), cluster_a: form.options[0].cluster, weight_a: form.options[0].weight,
-      option_b: form.options[1].text.trim(), cluster_b: form.options[1].cluster, weight_b: form.options[1].weight,
-      option_c: form.options[2].text.trim(), cluster_c: form.options[2].cluster, weight_c: form.options[2].weight,
-      option_d: form.options[3].text.trim(), cluster_d: form.options[3].cluster, weight_d: form.options[3].weight,
+      weight: form.weight,
+      option_a: form.options[0].text.trim(), cluster_a: form.options[0].cluster,
+      option_b: form.options[1].text.trim(), cluster_b: form.options[1].cluster,
+      option_c: form.options[2].text.trim(), cluster_c: form.options[2].cluster,
+      option_d: form.options[3].text.trim(), cluster_d: form.options[3].cluster,
       is_active: true,
     };
     try {
@@ -136,6 +153,20 @@ export const AdminQuestionsView: React.FC = () => {
                 placeholder="contoh: Saat belajar mandiri, kegiatan mana yang paling Anda nikmati?"
               />
             </div>
+            <div className="max-w-xs">
+              <Label className="text-xs font-semibold text-slate-500 mb-1.5 block">Bobot Soal</Label>
+              <Select value={String(form.weight)} onValueChange={(v) => setForm({ ...form, weight: Number(v) })}>
+                <SelectTrigger className="w-full h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {WEIGHTS.map(w => <SelectItem key={w} value={String(w)}>Bobot {w}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-slate-400 mt-1.5">
+                Soal inti gunakan bobot 4–5, soal pendukung 2–3.
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {form.options.map((opt, i) => (
                 <div key={i} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-border space-y-2">
@@ -149,29 +180,19 @@ export const AdminQuestionsView: React.FC = () => {
                     className="h-9"
                     placeholder={`Teks pilihan ${String.fromCharCode(65 + i)}`}
                   />
-                  <div className="grid grid-cols-[1fr_auto] gap-2">
-                    <Select value={opt.cluster} onValueChange={(v) => updateOption(i, { cluster: v as ClusterType })}>
-                      <SelectTrigger className="w-full h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CLUSTERS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Select value={String(opt.weight)} onValueChange={(v) => updateOption(i, { weight: Number(v) })}>
-                      <SelectTrigger className="w-28 h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {WEIGHTS.map(w => <SelectItem key={w} value={String(w)}>Bobot {w}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Select value={opt.cluster} onValueChange={(v) => updateOption(i, { cluster: v as ClusterType })}>
+                    <SelectTrigger className="w-full h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLUSTERS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
               ))}
             </div>
             <p className="text-[11px] text-slate-400">
-              Setiap opsi dipetakan ke rumpun minat dengan <strong>bobot 1–5</strong> (semakin besar, semakin kuat sinyal minat terhadap rumpun). Skor tertinggi per rumpun menjadi acuan rekomendasi jurusan.
+              Setiap opsi dipetakan ke rumpun minat. <strong>Bobot soal (1–5)</strong> menentukan seberapa besar soal ini memengaruhi skor rumpun — semakin besar, semakin kuat pengaruhnya. Skor tertinggi per rumpun menjadi acuan rekomendasi jurusan.
             </p>
             <div className="flex justify-end gap-3 mt-2">
               <Button variant="ghost" onClick={resetForm}>Batal</Button>
@@ -214,6 +235,7 @@ export const AdminQuestionsView: React.FC = () => {
             <TableRow className="bg-slate-50 dark:bg-card hover:bg-slate-50 dark:hover:bg-black border-b border-slate-200 dark:border-border">
               <TableHead className="px-6 py-4 font-semibold w-12 text-center">#</TableHead>
               <TableHead className="px-6 py-4 font-semibold">Pertanyaan & Opsi</TableHead>
+              <TableHead className="px-6 py-4 font-semibold text-center">Bobot</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-center">Status</TableHead>
               <TableHead className="px-6 py-4 font-semibold text-right">Aksi</TableHead>
             </TableRow>
@@ -221,7 +243,7 @@ export const AdminQuestionsView: React.FC = () => {
           <TableBody>
             {displayed.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="px-6 py-12 text-center text-slate-400 text-sm">
+                <TableCell colSpan={5} className="px-6 py-12 text-center text-slate-400 text-sm">
                   <ListChecks className="w-8 h-8 mx-auto mb-2 opacity-40" />
                   Belum ada pertanyaan. Tambahkan bank soal di atas agar siswa dapat mengerjakan Tes Penjurusan.
                 </TableCell>
@@ -236,14 +258,12 @@ export const AdminQuestionsView: React.FC = () => {
                     {(['a', 'b', 'c', 'd'] as const).map((k) => {
                       const opt = q[`option_${k}`];
                       const cl = q[`cluster_${k}` as keyof PenjurusanQuestion] as ClusterType;
-                      const w = (q[`weight_${k}` as keyof PenjurusanQuestion] as number) ?? 1;
                       return (
                         <div key={k} className="flex items-center gap-2 text-xs">
                           <span className="w-5 h-5 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-500 text-[10px] shrink-0 uppercase">
                             {k}
                           </span>
                           <span className="flex-1 text-slate-600 dark:text-slate-300">{opt}</span>
-                          <span className="text-[9px] font-bold text-slate-400 shrink-0">×{w}</span>
                           <Badge variant="outline" className={cn('rounded-md text-[9px] font-bold h-auto px-1.5 py-0 shrink-0', clusterStyle[cl || 'Campuran'])}>
                             {cl || 'Campuran'}
                           </Badge>
@@ -251,6 +271,20 @@ export const AdminQuestionsView: React.FC = () => {
                       );
                     })}
                   </div>
+                </TableCell>
+                <TableCell className="px-6 py-4 text-center">
+                  <Select
+                    value={String(q.weight ?? 1)}
+                    onValueChange={(v) => handleWeightChange(q.id, Number(v))}
+                    disabled={savingWeightId === q.id}
+                  >
+                    <SelectTrigger className="w-24 h-8 mx-auto" aria-label="Ubah bobot soal">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WEIGHTS.map(w => <SelectItem key={w} value={String(w)}>×{w}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
                 <TableCell className="px-6 py-4 text-center">
                   <button

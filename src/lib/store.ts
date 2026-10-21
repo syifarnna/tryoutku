@@ -905,6 +905,18 @@ class AppStore {
     return null;
   }
 
+  public async updateQuestionWeight(id: number, weight: number) {
+    const w = Math.min(5, Math.max(1, Math.round(weight)));
+    const { error } = await supabase.from('penjurusan_questions').update({ weight: w }).eq('id', id);
+    if (!error) {
+      this.state.questions = this.state.questions.map(q => q.id === id ? { ...q, weight: w } : q);
+      this.notify();
+      return true;
+    }
+    if (error) console.warn('Gagal update bobot soal:', error.message);
+    return false;
+  }
+
   public async toggleQuestionActive(id: number, isActive: boolean) {
     const { error } = await supabase.from('penjurusan_questions').update({ is_active: isActive }).eq('id', id);
     if (!error) {
