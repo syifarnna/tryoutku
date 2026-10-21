@@ -331,7 +331,7 @@ dirs = [
     ('src/components/ui/', '22 shadcn/ui primitives + 2 custom (JenjangBadge, Pagination)'),
     ('src/components/layout/', 'App chrome: Navbar, Sidebar (menu definition + role-based sections), Footer'),
     ('src/components/modals/', 'TakeTryoutModal (simulasi ujian), SupabaseSqlModal (SQL blueprint viewer)'),
-    ('src/components/views/', '14 participant views + 7 admin views, semuanya code-split via React.lazy'),
+    ('src/components/views/', '14 participant views + 6 admin views, semuanya code-split via React.lazy'),
 ]
 for path, desc in dirs:
     body.append(bullet('%s - %s' % (path, desc)))

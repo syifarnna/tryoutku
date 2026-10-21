@@ -34,7 +34,7 @@ const SupabaseSqlView = lazyView(() => import('./components/views/SupabaseSqlVie
 const ChangePasswordView = lazyView(() => import('./components/views/ChangePasswordView'), 'ChangePasswordView');
 
 const AdminDashboardView = lazyView(() => import('./components/views/admin/AdminDashboardView'), 'AdminDashboardView');
-const AdminTryoutsView = lazyView(() => import('./components/views/admin/AdminTryoutsView'), 'AdminTryoutsView');
+
 const AdminMajorsView = lazyView(() => import('./components/views/admin/AdminMajorsView'), 'AdminMajorsView');
 const AdminCampusesView = lazyView(() => import('./components/views/admin/AdminCampusesView'), 'AdminCampusesView');
 const AdminQuestionsView = lazyView(() => import('./components/views/admin/AdminQuestionsView'), 'AdminQuestionsView');
@@ -54,7 +54,7 @@ export default function App() {
 
   const TAB_HASH: Record<string, string> = {
     dashboard: 'dashboard',
-    admin_tryouts: 'admin/tryouts',
+
     admin_majors: 'admin/majors',
     admin_campuses: 'admin/campuses',
     admin_questions: 'admin/questions',
@@ -202,8 +202,6 @@ export default function App() {
       switch (activeTab) {
         case 'dashboard':
           return <AdminDashboardView setActiveTab={setActiveTab} />;
-        case 'admin_tryouts':
-          return <AdminTryoutsView />;
         case 'admin_majors':
           return <AdminMajorsView />;
         case 'admin_campuses':

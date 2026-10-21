@@ -79,12 +79,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]
     },
     {
-      title: 'MANAJEMEN UJIAN',
-      items: [
-        { id: 'admin_tryouts', label: 'Kelola Tryout', icon: BookOpen, badge: '' }
-      ]
-    },
-    {
       title: 'MANAJEMEN DATA',
       items: [
         { id: 'admin_users', label: 'Daftar Pengguna', icon: Users, badge: '' },
