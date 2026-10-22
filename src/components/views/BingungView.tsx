@@ -647,16 +647,6 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
         </Card>
       )}
 
-      {total > 0 && phase !== 'running' && state.profile.major_interest && (wizardStep === 'idle' || wizardStep === 'result') && (
-        <Card className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-          <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-            Minat tersimpan: <strong>{clusterStyle[state.profile.major_interest]?.label ?? state.profile.major_interest}</strong>.
-            {lastResult && ` Hasil terakhir: ${clusterStyle[lastResult.dominant].label}.`}
-          </p>
-        </Card>
-      )}
-
       {phase === 'idle' && wizardStep === 'idle' && total > 0 && (
         <>
           <Card className="p-6 lg:p-10 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs text-center max-w-3xl mx-auto gap-0">

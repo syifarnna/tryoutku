@@ -196,7 +196,7 @@ export const TargetMajorsView: React.FC = () => {
       </div>
 
       {/* Add New Target Dropdowns Grid */}
-      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6">
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6 overflow-visible">
         <div>
           <h3 className="font-bold text-base text-slate-800 dark:text-white">Tambah Target Institut Baru</h3>
           <p className="text-xs text-slate-400 mt-1">Pilih Kampus lalu Pilih Program Studi incaran Anda.</p>

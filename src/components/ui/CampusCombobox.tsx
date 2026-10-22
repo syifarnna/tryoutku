@@ -80,8 +80,8 @@ export function CampusCombobox({
         <ChevronDown className={cn("w-4 h-4 shrink-0 text-slate-400 transition-transform", open && "rotate-180")} />
       </button>
 
-      {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-xl border border-slate-200 dark:border-border bg-card shadow-xl overflow-hidden">
+       {open && (
+         <div className="absolute z-[100] mt-1 w-full rounded-xl border border-slate-200 dark:border-border bg-card shadow-xl overflow-hidden">
           <div className="relative p-2 border-b border-slate-100 dark:border-border">
             <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input
