@@ -346,7 +346,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
 
     return (
       <div className="space-y-6">
-        <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs">
+        <Card className="w-full p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs">
           <div className="flex items-center gap-4">
             <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md', s.badge)}>
               <Compass className="w-7 h-7" />
@@ -658,25 +658,27 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
       )}
 
       {phase === 'idle' && wizardStep === 'idle' && total > 0 && (
-        <Card className="p-6 lg:p-10 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs text-center max-w-3xl mx-auto gap-0">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-linear-to-br from-violet-500 to-fuchsia-600 text-white flex items-center justify-center shadow-lg mb-4">
-            <Brain className="w-8 h-8" />
-          </div>
-          <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Siap Menemukan Arah?</h3>
-          <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-            Tes terdiri dari <strong>{total} soal</strong>. Jawab sesuai insting Anda — tidak ada jawaban benar atau salah. Butuh sekitar 2 menit.
-          </p>
-          <Button onClick={start} size="lg" className="mt-6 px-8 py-3 h-auto rounded-xl bg-linear-to-r from-violet-600 to-fuchsia-600 text-white font-bold shadow-lg gap-2">
-            <Target className="w-4 h-4" /> Mulai Tes Penjurusan
-          </Button>
+        <>
+          <Card className="p-6 lg:p-10 rounded-3xl bg-card border border-slate-100 dark:border-border shadow-xs text-center max-w-3xl mx-auto gap-0">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-linear-to-br from-violet-500 to-fuchsia-600 text-white flex items-center justify-center shadow-lg mb-4">
+              <Brain className="w-8 h-8" />
+            </div>
+            <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Siap Menemukan Arah?</h3>
+            <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
+              Tes terdiri dari <strong>{total} soal</strong>. Jawab sesuai insting Anda — tidak ada jawaban benar atau salah. Butuh sekitar 2 menit.
+            </p>
+            <Button onClick={start} size="lg" className="mt-6 px-8 py-3 h-auto rounded-xl bg-linear-to-r from-violet-600 to-fuchsia-600 text-white font-bold shadow-lg gap-2">
+              <Target className="w-4 h-4" /> Mulai Tes Penjurusan
+            </Button>
+          </Card>
 
           {lastResult && (
-            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-border">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Lihat hasil terakhir Anda</p>
+            <div className="space-y-3">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Lihat hasil terakhir Anda</p>
               {renderResult(lastResult.dominant)}
             </div>
           )}
-        </Card>
+        </>
       )}
 
       {phase === 'running' && wizardStep === 'running' && current && (
