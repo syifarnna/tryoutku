@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Award, CheckCircle2, Compass, GraduationCap, Layers, Plus, Sparkles, Target, TrendingUp, XCircle } from 'lucide-react';
+import { Award, CheckCircle2, Compass, Layers, Plus, Sparkles, Target, TrendingUp, XCircle } from 'lucide-react';
 import { appStore, useAppState } from '../../lib/store';
 import { ClusterType } from '../../types';
 import { cn } from '../../lib/utils';
@@ -97,22 +97,6 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
 
   return (
     <div className="space-y-8 pb-16 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-r from-emerald-600 to-teal-700 text-white shadow-xl">
-        <div className="relative z-10 max-w-3xl space-y-3">
-          <Badge className="bg-white/15 text-white border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md h-auto px-3 py-1 gap-2">
-            <Layers className="w-3.5 h-3.5 text-emerald-200" /> Korelasi Nilai ⊕ Minat
-          </Badge>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Rekomendasi Prodi Terbaik</h2>
-          <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">
-            Perpaduan <strong>Nilai UTBK Anda</strong> dengan <strong>Hasil Tes Minat &amp; Bakat</strong>. Sistem hanya merekomendasikan prodi yang memenuhi <strong>dua kriteria</strong>: nilai mencukupi passing grade <em>dan</em> rumpun keilmuan sesuai minat — diurutkan dari paling relevan hingga alternatif.
-          </p>
-        </div>
-        <div className="absolute right-0 bottom-0 top-0 hidden lg:flex items-center justify-center opacity-10 pointer-events-none pr-6">
-          <GraduationCap className="w-72 h-72" />
-        </div>
-      </div>
-
       {/* Ringkasan sinyal */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5 rounded-2xl bg-card border border-slate-100 dark:border-border shadow-xs flex items-center gap-4">
