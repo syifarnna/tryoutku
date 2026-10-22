@@ -425,13 +425,6 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
             )}
           </div>
 
-          <Card className="p-4 mb-4 rounded-2xl bg-primary/5 border border-primary/20 flex items-start gap-3">
-            <ArrowRight className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-            <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-              Klik <strong>satu jurusan</strong> untuk melihat penjelasan &amp; kampus yang menyediakannya, lalu jadikan prodi target. Saran kampus <strong>Top/Pas/Aman</strong> tersedia di dalamnya.
-            </p>
-          </Card>
-
           {homeLocation.province ? (
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
               Diurutkan dari jurusan dengan kampus terdekat dari domisilimu ({homeLocation.city ? `${homeLocation.city}, ` : ''}{homeLocation.province}).
