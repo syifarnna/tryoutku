@@ -363,7 +363,7 @@ export const BingungView: React.FC<{ setActiveTab?: (tab: string) => void }> = (
           <div className="mt-6 space-y-3">
             {(() => {
               const grandTotal = CLUSTERS.reduce((acc, c) => acc + (tallyData[c] || 0), 0);
-              return CLUSTERS.map(c => {
+              return (['Saintek', 'Soshum'] as ClusterType[]).map(c => {
                 const n = tallyData[c] ?? 0;
                 const pct = Math.round((n / (grandTotal || 1)) * 100);
                 return (

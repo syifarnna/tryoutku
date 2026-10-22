@@ -28,7 +28,14 @@ export const RecomBestView: React.FC<{ setActiveTab?: (tab: string) => void }> =
   const state = useAppState();
 
   const autoScore = appStore.getUtbkLatestScore();
-  const interest = state.profile.major_interest;
+  const lastResult = useMemo<{ dominant: ClusterType; tally: { Saintek: number; Soshum: number; Campuran: number } } | null>(() => {
+    try {
+      const raw = localStorage.getItem('tryoutku_penjurusan_v3');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }, []);
+  // Fallback: jika user belum menyimpan minat, pakai hasil tes penjurusan (jika ada).
+  const interest = state.profile.major_interest ?? lastResult?.dominant ?? null;
 
   const { tier1, tier2, totalReachable } = useMemo(() => {
     if (autoScore == null || !interest) return { tier1: [] as typeof state.majors, tier2: [] as typeof state.majors, totalReachable: 0 };
