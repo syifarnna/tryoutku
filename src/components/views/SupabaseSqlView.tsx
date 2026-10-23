@@ -70,16 +70,14 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO tryouts (id, name, date, type, duration_minutes, question_count, status) VALUES
 (1, 'Simulasi Akbar Nasional UTBK SNBT 2026 - Episode 1', '2026-05-10', 'UTBK SNBT', 195, 155, 'Selesai'),
 (2, 'Simulasi Akbar Nasional UTBK SNBT 2026 - Episode 2', '2026-06-15', 'UTBK SNBT', 195, 155, 'Selesai'),
-(3, 'Tryout Intensif Kedinasan STAN & STIS 2026', '2026-06-20', 'Ujian Kedinasan', 120, 100, 'Tersedia'),
-(4, 'Simulasi SIMAK UI & Ujian Mandiri ITB 2026', '2026-06-28', 'Ujian Mandiri', 150, 120, 'Segera')
+(3, 'Tryout Intensif Kedinasan STAN & STIS 2026', '2026-06-20', 'Ujian Kedinasan', 120, 100, 'Tersedia')
 ON CONFLICT (id) DO NOTHING;
 
 -- 5. Insert Master Tryouts Nasional
 INSERT INTO tryouts (id, name, date, type, duration_minutes, question_count, status) VALUES
 (1, 'Simulasi Akbar Nasional UTBK SNBT 2026 - Episode 1', '2026-05-10', 'UTBK SNBT', 195, 155, 'Selesai'),
 (2, 'Simulasi Akbar Nasional UTBK SNBT 2026 - Episode 2', '2026-06-15', 'UTBK SNBT', 195, 155, 'Selesai'),
-(3, 'Tryout Intensif Kedinasan STAN & STIS 2026', '2026-06-20', 'Ujian Kedinasan', 120, 100, 'Tersedia'),
-(4, 'Simulasi SIMAK UI & Ujian Mandiri ITB 2026', '2026-06-28', 'Ujian Mandiri', 150, 120, 'Segera')
+(3, 'Tryout Intensif Kedinasan STAN & STIS 2026', '2026-06-20', 'Ujian Kedinasan', 120, 100, 'Tersedia')
 ON CONFLICT (id) DO NOTHING;
 `;
 

@@ -79,8 +79,7 @@ export const INITIAL_MAJORS: Major[] = [
 export const INITIAL_TRYOUTS: Tryout[] = [
   { id: 1, name: 'Simulasi Akbar Nasional UTBK SNBT 2026 - Episode 1', date: '2026-05-10', type: 'UTBK SNBT', duration_minutes: 195, question_count: 155, status: 'Selesai', description: 'Simulasi resmi menguji 7 komponen subtes sesuai standar SNBT SNPMB terbaru.' },
   { id: 2, name: 'Simulasi Akbar Nasional UTBK SNBT 2026 - Episode 2', date: '2026-06-15', type: 'UTBK SNBT', duration_minutes: 195, question_count: 155, status: 'Selesai', description: 'Simulasi penguatan penalaran matematika & literasi akademis tingkat tinggi.' },
-  { id: 3, name: 'Tryout Intensif Kedinasan STAN & STIS 2026', date: '2026-06-20', type: 'Ujian Kedinasan', duration_minutes: 120, question_count: 100, status: 'Tersedia', description: 'Ujian SKD & Tes Potensi Akademik khusus seleksi masuk perguruan tinggi kedinasan.' },
-  { id: 4, name: 'Simulasi SIMAK UI & Ujian Mandiri ITB 2026', date: '2026-06-28', type: 'Ujian Mandiri', duration_minutes: 150, question_count: 120, status: 'Segera', description: 'Simulasi seleksi ujian mandiri PTN ternama dengan tingkat kesulitan +20%.' }
+  { id: 3, name: 'Tryout Intensif Kedinasan STAN & STIS 2026', date: '2026-06-20', type: 'Ujian Kedinasan', duration_minutes: 120, question_count: 100, status: 'Tersedia', description: 'Ujian SKD & Tes Potensi Akademik khusus seleksi masuk perguruan tinggi kedinasan.' }
 ];
 
 export const EMPTY_PROFILE: Profile = {

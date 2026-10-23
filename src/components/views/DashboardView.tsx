@@ -136,6 +136,43 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
   const completedTryoutIds = new Set(state.results.map(r => r.tryout_id));
   const availableTryouts = state.tryouts.filter(t => !completedTryoutIds.has(t.id));
 
+// ===== Countdown UTBK-SNBT 2027 =====
+const UTBK_EVENTS = [
+  { name: 'Registrasi Akun SNPMB', start: '2027-01-12', end: '2027-04-07' },
+  { name: 'Pendaftaran UTBK-SNBT', start: '2027-03-25', end: '2027-04-07' },
+  { name: 'Pembayaran UTBK', start: '2027-03-25', end: '2027-04-08' },
+  { name: 'Unduh Kartu Peserta', start: '2027-04-11', end: '2027-04-15' },
+  { name: 'Pelaksanaan UTBK', start: '2027-04-21', end: '2027-04-30' },
+  { name: 'Pengumuman Hasil SNBT', start: '2027-05-25', end: '2027-05-25' },
+  { name: 'Unduh Sertifikat UTBK', start: '2027-05-26', end: '2027-07-31' },
+];
+
+const [utbkNow, setUtbkNow] = useState(new Date());
+useEffect(() => {
+  const id = setInterval(() => setUtbkNow(new Date()), 1000);
+  return () => clearInterval(id);
+}, []);
+
+const utbkCountdown = useMemo(() => {
+  const now = utbkNow;
+  let target: Date | null = null;
+  let phase: string | null = null;
+  let ongoing = false;
+  for (const e of UTBK_EVENTS) {
+    const s = new Date(e.start + 'T00:00:00');
+    const en = new Date(e.end + 'T23:59:59');
+    if (now < s) { target = s; phase = e.name; ongoing = false; break; }
+    if (now <= en) { target = en; phase = e.name; ongoing = true; break; }
+  }
+  if (!target) return { phase: null, target: null, ongoing: false, days: 0, hours: 0, minutes: 0, seconds: 0 };
+  const diff = Math.max(0, target.getTime() - now.getTime());
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+  return { phase, target, ongoing, days, hours, minutes, seconds };
+}, [utbkNow]);
+
   // ===== Input Nilai Tryout UTBK (mandiri) =====
   const subtests = state.competencies.length > 0
     ? state.competencies.map(c => ({ code: c.code, name: c.name }))
@@ -193,27 +230,51 @@ export const DashboardView: React.FC<{ onTakeTryout: (t: any) => void; setActive
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
 
-      {/* SECTION 1: Personal Welcome & Status Bar */}
+      {/* SECTION 1: Personal Welcome & Status Bar + Countdown UTBK (kanan) */}
       <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-primary to-secondary p-6 lg:p-8 text-white shadow-xl shadow-primary/20">
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <Badge className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-bold backdrop-blur-xs border-0 text-white hover:bg-white/20">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
-            <span>Simulasi UTBK SNBT & Ujian Mandiri 2026</span>
-          </Badge>
-          <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight">Selamat Datang, {state.profile.full_name}! 🎓</h1>
-          <p className="text-sm text-indigo-100 leading-relaxed">
-            Target aktif Anda saat ini adalah <strong>{targetMajor?.name || 'Belum dipilih'} ({targetMajor?.institution_name || '—'})</strong> dengan passing grade <strong>{targetMajor?.passing_grade_total ?? '—'}</strong>. Terus asah kompetensi berhitung dan literasi akademis Anda!
-          </p>
-          <div className="pt-2 flex flex-wrap items-center gap-3">
-            {availableTryouts[0] && (
-              <Button onClick={() => onTakeTryout(availableTryouts[0])} className="px-5 py-2.5 rounded-xl bg-black/80 text-white text-xs font-semibold hover:bg-black transition-all border border-white/20">
-                <BookOpen className="w-3.5 h-3.5 fill-current" /><span>Kerjakan {availableTryouts[0].name.split(' - ')[0]}</span>
-              </Button>
-            )}
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="max-w-2xl space-y-3">
+            <Badge className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-bold backdrop-blur-xs border-0 text-white hover:bg-white/20">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
+              <span>UTBK-SNBT 2027</span>
+            </Badge>
+            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight">Selamat Datang, {state.profile.full_name}! 🎓</h1>
+            <p className="text-sm text-indigo-100 leading-relaxed">
+              Target aktif Anda saat ini adalah <strong>{targetMajor?.name || 'Belum dipilih'} ({targetMajor?.institution_name || '—'})</strong> dengan passing grade <strong>{targetMajor?.passing_grade_total ?? '—'}</strong>. Terus asah kompetensi berhitung dan literasi akademis Anda!
+            </p>
           </div>
-        </div>
-        <div className="absolute right-0 bottom-0 top-0 hidden md:flex items-center justify-center opacity-15 pointer-events-none pr-8">
-          <GraduationCap className="w-64 h-64 -rotate-12" />
+
+          {/* Countdown UTBK-SNBT 2027 (kanan) */}
+          <div className="shrink-0 w-full lg:w-auto lg:min-w-[260px]">
+            <div className="rounded-2xl bg-black/25 backdrop-blur-sm border border-white/20 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-100 mb-1">
+                {utbkCountdown.phase ? (utbkCountdown.ongoing ? 'Sedang berlangsung' : 'Fase berikutnya') : 'Semua tahapan selesai'}
+              </p>
+              <p className="text-sm font-extrabold text-white mb-3 truncate">
+                {utbkCountdown.phase || 'UTBK-SNBT 2027 selesai'}
+              </p>
+              {utbkCountdown.target && (
+                <>
+                  <div className="grid grid-cols-4 gap-2 mb-2">
+                    {[
+                      { label: 'Hari', value: utbkCountdown.days },
+                      { label: 'Jam', value: utbkCountdown.hours },
+                      { label: 'Menit', value: utbkCountdown.minutes },
+                      { label: 'Detik', value: utbkCountdown.seconds },
+                    ].map(c => (
+                      <div key={c.label} className="flex flex-col items-center rounded-xl bg-white/15 py-2">
+                        <span className="text-lg font-black tabular-nums leading-none">{String(c.value).padStart(2, '0')}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-100 mt-1">{c.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-indigo-100">
+                    {utbkCountdown.ongoing ? 'Berakhir' : 'Mulai'}: {utbkCountdown.target.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
