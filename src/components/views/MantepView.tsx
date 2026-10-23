@@ -357,7 +357,7 @@ export const MantepView: React.FC<{ setActiveTab?: (tab: string) => void }> = ({
 
         if (overallMet) {
           return (
-      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6 overflow-visible">
+      <Card className="p-6 lg:p-8 rounded-3xl ring-0 bg-card border border-slate-100 dark:border-border shadow-xs gap-6 !overflow-visible">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-6 h-6" />
