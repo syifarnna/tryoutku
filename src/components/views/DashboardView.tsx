@@ -154,23 +154,23 @@ useEffect(() => {
 }, []);
 
 const utbkCountdown = useMemo(() => {
+  // Countdown hanya ke Pelaksanaan UTBK (21-30 Apr 2027).
   const now = utbkNow;
-  let target: Date | null = null;
-  let phase: string | null = null;
+  const start = new Date('2027-04-21T00:00:00');
+  const end = new Date('2027-04-30T23:59:59');
+  let target: Date;
+  let phase: string;
   let ongoing = false;
-  for (const e of UTBK_EVENTS) {
-    const s = new Date(e.start + 'T00:00:00');
-    const en = new Date(e.end + 'T23:59:59');
-    if (now < s) { target = s; phase = e.name; ongoing = false; break; }
-    if (now <= en) { target = en; phase = e.name; ongoing = true; break; }
-  }
-  if (!target) return { phase: null, target: null, ongoing: false, days: 0, hours: 0, minutes: 0, seconds: 0 };
+  if (now < start) { target = start; phase = 'Menuju Pelaksanaan UTBK'; ongoing = false; }
+  else if (now <= end) { target = end; phase = 'Pelaksanaan UTBK berlangsung'; ongoing = true; }
+  else { target = end; phase = 'Pelaksanaan UTBK 2027 selesai'; ongoing = false; }
   const diff = Math.max(0, target.getTime() - now.getTime());
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
   const seconds = Math.floor((diff / 1000) % 60);
-  return { phase, target, ongoing, days, hours, minutes, seconds };
+  const finished = now > end;
+  return { phase, target, ongoing, finished, days, hours, minutes, seconds };
 }, [utbkNow]);
 
   // ===== Input Nilai Tryout UTBK (mandiri) =====
@@ -245,15 +245,15 @@ const utbkCountdown = useMemo(() => {
           </div>
 
           {/* Countdown UTBK-SNBT 2027 (kanan) */}
-          <div className="shrink-0 w-full lg:w-auto lg:min-w-[260px]">
+            <div className="shrink-0 w-full lg:w-auto lg:min-w-[260px]">
             <div className="rounded-2xl bg-black/25 backdrop-blur-sm border border-white/20 p-4">
               <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-100 mb-1">
-                {utbkCountdown.phase ? (utbkCountdown.ongoing ? 'Sedang berlangsung' : 'Fase berikutnya') : 'Semua tahapan selesai'}
+                Countdown Pelaksanaan UTBK-SNBT 2027
               </p>
               <p className="text-sm font-extrabold text-white mb-3 truncate">
-                {utbkCountdown.phase || 'UTBK-SNBT 2027 selesai'}
+                {utbkCountdown.finished ? 'Pelaksanaan UTBK 2027 selesai' : utbkCountdown.phase}
               </p>
-              {utbkCountdown.target && (
+              {!utbkCountdown.finished && utbkCountdown.target && (
                 <>
                   <div className="grid grid-cols-4 gap-2 mb-2">
                     {[
